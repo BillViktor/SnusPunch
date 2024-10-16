@@ -1,4 +1,4 @@
-﻿<div class="top-row ps-3 navbar navbar-dark">
+﻿@* <div class="top-row ps-3 navbar navbar-dark">
     <div class="container-fluid">
         <a class="navbar-brand" href="">SnusPunch</a>
         <button title="Navigation menu" class="navbar-toggler" @onclick="ToggleNavMenu">
@@ -27,3 +27,27 @@
         collapseNavMenu = !collapseNavMenu;
     }
 }
+ *@
+
+ <header>
+     <div class="header-wrapper">
+        <a href="">
+            <h1>SnusPunch</h1>
+        </a>
+
+        <nav>
+            <ul>
+                <li>
+                    <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
+                        Hem
+                    </NavLink>
+                </li>
+                <li>
+                    <NavLink class="nav-link" href="Snus" Match="NavLinkMatch.All">
+                        Snus
+                    </NavLink>
+                </li>
+            </ul>
+        </nav>
+     </div>
+ </header>
