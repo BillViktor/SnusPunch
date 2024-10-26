@@ -1,7 +1,8 @@
 ﻿/* Variabler */
 :root {
     --website-width: 74rem;
-    --background-color: #212427;
+    --background-color: #18191A;
+    --foreground-color: #242526;
     --font-color: #ffffff;
 }
 
@@ -18,7 +19,7 @@ body {
 
 /* Navbar/huvud */
 header {
-    border: 2px solid orange;
+    background-color: var(--foreground-color);
 }
 
 header a {
@@ -37,10 +38,11 @@ header nav ul li a {
     text-decoration: none;
     margin: 0 1rem;
     font-size: 2rem;
+    font-weight: bold;
 }
 
 header nav ul li .active {
-    background-color: blue;
+    text-decoration: underline;
 }
 
 .header-wrapper {
@@ -65,12 +67,33 @@ main {
     padding: 1rem;
     margin: 1rem auto;
     max-width: var(--website-width);
-    border: 2px solid red;
+    background-color: var(--foreground-color);
 }
 
+table {
+    width: 100%;
+}
 
+table thead {
+    border-bottom: 2px solid #fff;
+}
 
+table tbody tr:hover {
+    background-color: rgba(255, 255, 255, 0.25);
+}
 
+table th {
+    font-weight: bold;
+    text-align: left;
+}
+
+table th, table td {
+    padding: 0.5rem;
+}
+
+table tr:nth-child(even) {
+    background-color: #3c3c3c;
+}
 
 
 
