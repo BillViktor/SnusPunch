@@ -1,5 +1,7 @@
-﻿using System.ComponentModel;
+﻿using SnusPunch.Shared.Models.Errors;
+using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace SnusPunch.Web.ViewModels
 {
@@ -7,6 +9,8 @@ namespace SnusPunch.Web.ViewModels
     {
         #region Fields
         private bool mIsBusy = false;
+        private List<ErrorModel> mErrors = new List<ErrorModel>(); 
+        private List<string> mSuccessMessages = new List<string>();
         #endregion
 
         #region Properties
@@ -18,7 +22,33 @@ namespace SnusPunch.Web.ViewModels
             }
             set
             {
-                IsBusy = value;
+                mIsBusy = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public List<ErrorModel> Errors
+        {
+            get
+            {
+                return mErrors;
+            }
+            set
+            {
+                mErrors = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public List<string> SuccessMessages
+        {
+            get
+            {
+                return mSuccessMessages;
+            }
+            set
+            {
+                mSuccessMessages = value;
                 OnPropertyChanged();
             }
         }

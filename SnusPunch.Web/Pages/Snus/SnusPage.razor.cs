@@ -8,6 +8,9 @@ namespace SnusPunch.Web.Pages.Snus
         [Inject]
         SnusViewModel SnusViewModel { get; set; }
 
-
+        protected override async Task OnInitializedAsync()
+        {
+            await SnusViewModel.GetSnus();
+        }
     }
 }

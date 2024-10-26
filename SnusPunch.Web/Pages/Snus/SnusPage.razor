@@ -2,7 +2,7 @@
 
 <PageTitle>SnusPunch - Snus</PageTitle>
 
-<MessageComponent IsBusy="SnusViewModel.IsBusy"/>
+<MessageComponent Errors="SnusViewModel.Errors" SuccessMessages="SnusViewModel.SuccessMessages" IsBusy="SnusViewModel.IsBusy"/>
 
 <h1>Snus</h1>
 
@@ -19,41 +19,17 @@
         </tr>
     </thead>
     <tbody>
-        <tr>
-            <td>Knox White Stark Portion</td>
-            <td>31,49</td>
-            <td>24</td>
-            <td>19,2</td>
-            <td>16</td>
-            <td>1,31</td>
-            <td>12,8</td>
-        </tr>
-        <tr>
-            <td>Knox White Stark Portion</td>
-            <td>31,49</td>
-            <td>24</td>
-            <td>19,2</td>
-            <td>16</td>
-            <td>1,31</td>
-            <td>12,8</td>
-        </tr>
-        <tr>
-            <td>Knox White Stark Portion</td>
-            <td>31,49</td>
-            <td>24</td>
-            <td>19,2</td>
-            <td>16</td>
-            <td>1,31</td>
-            <td>12,8</td>
-        </tr>
-        <tr>
-            <td>Knox White Stark Portion</td>
-            <td>31,49</td>
-            <td>24</td>
-            <td>19,2</td>
-            <td>16</td>
-            <td>1,31</td>
-            <td>12,8</td>
-        </tr>
+        @foreach(var sSnus in SnusViewModel.Snus)
+        {
+            <tr>
+                <td>@sSnus.Name</td>
+                <td>@sSnus.PriceInSek</td>
+                <td>@sSnus.PortionCount</td>
+                <td>@sSnus.WeightInGrams</td>
+                <td>@sSnus.NicotineInMgPerGram</td>
+                <td>@sSnus.PricePerPortion</td>
+                <td>@sSnus.NicotinePerPortion</td>
+            </tr>
+        }
     </tbody>
 </table>

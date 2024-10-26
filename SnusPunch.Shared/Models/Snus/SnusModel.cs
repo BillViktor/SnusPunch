@@ -13,7 +13,7 @@
         {
             get
             {
-                return PortionCount != 0 ? PriceInSek / PortionCount : -1;
+                return PortionCount != 0 ? Math.Round(PriceInSek / PortionCount, 2) : -1;
             }
         }
 
@@ -21,7 +21,7 @@
         {
             get
             {
-                return PortionCount != 0 ? NicotineInMgPerGram * WeightInGrams / PortionCount : -1;
+                return PortionCount != 0 ? Math.Round(NicotineInMgPerGram * WeightInGrams / PortionCount, 2) : -1;
             }
         }
     }
