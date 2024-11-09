@@ -1,3 +1,5 @@
+using Blazored.Modal;
+using Blazored.Toast;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using SnusPunch.Web;
@@ -10,6 +12,11 @@ builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
 
 builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
+
+#region Blazored
+builder.Services.AddBlazoredModal();
+builder.Services.AddBlazoredToast();
+#endregion
 
 #region Clients
 string sBaseUrl = builder.Configuration.GetValue<string>("BaseUrl");

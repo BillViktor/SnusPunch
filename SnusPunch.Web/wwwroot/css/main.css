@@ -95,10 +95,26 @@ table tr:nth-child(even) {
     background-color: #3c3c3c;
 }
 
+/* Loading  */
+.loading-spinner {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 999;
+}
 
+.spinner-image {
+    width: 20rem;
+    height: 20rem;
+    animation: spinner 2s linear infinite;
+}
 
-
-
+@keyframes spinner {
+    to {
+        transform: rotate(360deg);
+    }
+}
 
 
 /* Från app.css */
@@ -134,6 +150,7 @@ table tr:nth-child(even) {
     position: fixed;
     width: 100%;
     z-index: 1000;
+    color: var(--background-color);
 }
 
 #blazor-error-ui .dismiss {
