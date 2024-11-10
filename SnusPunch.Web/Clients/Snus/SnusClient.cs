@@ -1,4 +1,5 @@
-﻿using SnusPunch.Shared.Models.ResultModel;
+﻿using SnusPunch.Shared.Models.Pagination;
+using SnusPunch.Shared.Models.ResultModel;
 using SnusPunch.Shared.Models.Snus;
 using System.Net.Http.Json;
 
@@ -53,6 +54,31 @@ namespace SnusPunch.Web.Clients.Snus
                 }
 
                 sResultModel = await sResponse.Content.ReadFromJsonAsync<ResultModel<List<SnusModel>>>();
+            }
+            catch (Exception aException)
+            {
+                sResultModel.Success = false;
+                sResultModel.AddExceptionError(aException);
+            }
+
+            return sResultModel;
+        }
+
+        public async Task<ResultModel<PaginationResponse<SnusModel>>> GetSnusPaginated(PaginationParameters aPaginationParameters)
+        {
+            ResultModel<PaginationResponse<SnusModel>> sResultModel = new ResultModel<PaginationResponse<SnusModel>>();
+
+            try
+            {
+                var sHttpClient = mHttpClientFactory.CreateClient(HttpClientEnum.Snus.ToString());
+                var sResponse = await sHttpClient.PostAsJsonAsync("GetSnusPaginated", aPaginationParameters);
+
+                if (!sResponse.IsSuccessStatusCode)
+                {
+                    throw new Exception("Non-success status code at GetSnusPaginated in SnusClient");
+                }
+
+                sResultModel = await sResponse.Content.ReadFromJsonAsync<ResultModel<PaginationResponse<SnusModel>>>();
             }
             catch (Exception aException)
             {

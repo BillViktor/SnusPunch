@@ -21,7 +21,12 @@ namespace SnusPunch.Data.DbContexts
                     tb.HasTrigger("TR_Snus_Update");
                 });
 
-                entity.Property(p => p.PriceInSek).HasColumnType("decimal(18,2)");
+                entity.Property(p => p.PriceInSek).HasColumnType("decimal(6,2)");
+
+                entity.Property(p => p.PricePerPortion).HasComputedColumnSql().HasColumnType("decimal(6,2)");
+                entity.Property(p => p.NicotinePerPortion).HasComputedColumnSql();
+
+                entity.Property(c => c.CreateDate).HasDefaultValue(DateTime.Now);
             });
         }
     }

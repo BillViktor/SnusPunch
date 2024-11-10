@@ -70,6 +70,90 @@ main {
     background-color: var(--foreground-color);
 }
 
+/* Inputs */
+input {
+    height: 1.5rem;
+    font-size: 1.5rem;
+}
+
+select {
+    height: 2rem;
+    font-size: 1.5rem;
+}
+
+/* Paginering */
+.pagination-buttons {
+    display: flex;
+}
+
+.pagination-button {
+    padding: 0.5rem;
+    border: 0.1rem solid white;
+}
+
+.pagination-button-disabled {
+    opacity: 0.5;
+}
+
+.pagination-button-active {
+    background-color: lightblue;
+}
+
+.pagination-text {
+    font-size: 1.5rem;
+}
+
+/* Margins */
+.px-1 {
+    margin-left: 1rem;
+    margin-right: 1rem;
+}
+
+.pl-1 {
+    margin-left: 1rem;
+}
+
+.pb-1 {
+    margin-bottom: 1rem;
+}
+
+/* Paddings */
+
+/* Misc */
+.row {
+    display: flex;
+}
+
+.full-width {
+    width: 100%;
+}
+
+.flex-grow-1 {
+    flex-grow: 1;
+}
+
+.justify-content-between {
+    justify-content: space-between;
+}
+
+.align-items-center {
+    align-items: center;
+}
+
+.align-items-bottom {
+    align-items: baseline;
+}
+
+/* Cursor */
+.cursor-pointer {
+    cursor: pointer;
+}
+
+.cursor-default {
+    cursor: default;
+}
+
+/* Tabell */
 table {
     width: 100%;
 }

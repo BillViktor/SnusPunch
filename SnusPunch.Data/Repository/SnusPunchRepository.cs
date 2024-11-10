@@ -1,6 +1,9 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using SnusPunch.Data.DbContexts;
+using SnusPunch.Data.Helpers;
+using SnusPunch.Shared.Models.Pagination;
 using SnusPunch.Shared.Models.Snus;
+using System.Linq;
 
 namespace SnusPunch.Data.Repository
 {
@@ -24,6 +27,22 @@ namespace SnusPunch.Data.Repository
         public async Task<List<SnusModel>> GetSnus()
         {
             return await mSnusPunchDbContext.Snus.AsNoTracking().ToListAsync();
+        }
+
+        public async Task<PaginationResponse<SnusModel>> GetSnusPaginated(PaginationParameters aPaginationParameters)
+        {
+            var sSnus = await mSnusPunchDbContext.Snus
+                .SearchByProperty(aPaginationParameters.SearchPropertyName, aPaginationParameters.SearchString)
+                .OrderByProperty(aPaginationParameters.SortPropertyName, aPaginationParameters.SortOrder)
+                .Skip(aPaginationParameters.Skip)
+                .Take(aPaginationParameters.PageSize)
+                .AsNoTracking().ToListAsync();
+
+            var sCount = await mSnusPunchDbContext.Snus
+                .SearchByProperty(aPaginationParameters.SearchPropertyName, aPaginationParameters.SearchString)
+                .CountAsync();
+
+            return new PaginationResponse<SnusModel>(sSnus, sCount, aPaginationParameters.PageNumber, aPaginationParameters.PageSize);
         }
 
         public async Task<SnusModel> UpdateSnus(SnusModel aSnusModel)

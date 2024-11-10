@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using SnusPunch.Data.Repository;
+using SnusPunch.Shared.Models.Pagination;
 using SnusPunch.Shared.Models.ResultModel;
 using SnusPunch.Shared.Models.Snus;
 
@@ -45,6 +46,24 @@ namespace SnusPunch.Services.Snus
             catch(Exception aException)
             {
                 mLogger.LogError(aException, "Exception at GetSnus in SnusService");
+                sResultModel.Success = false;
+                sResultModel.AddExceptionError(aException);
+            }
+
+            return sResultModel;
+        }
+
+        public async Task<ResultModel<PaginationResponse<SnusModel>>> GetSnusPaginated(PaginationParameters aPaginationParameters)
+        {
+            ResultModel<PaginationResponse<SnusModel>> sResultModel = new ResultModel<PaginationResponse<SnusModel>>();
+
+            try
+            {
+                sResultModel.ResultObject = await mSnusPunchRepository.GetSnusPaginated(aPaginationParameters);
+            }
+            catch (Exception aException)
+            {
+                mLogger.LogError(aException, "Exception at GetSnusPaginated in SnusService");
                 sResultModel.Success = false;
                 sResultModel.AddExceptionError(aException);
             }

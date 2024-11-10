@@ -2,7 +2,7 @@
 {
     public class TableProperties
     {
-        public DateTime? CreateDate { get; set; } = DateTime.Now;
+        public DateTime? CreateDate { get; set; }
         public DateTime? UpdateDate { get; set; }
     }
 }

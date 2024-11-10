@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using SnusPunch.Data.Repository;
 using SnusPunch.Services.Snus;
+using SnusPunch.Shared.Models.Pagination;
 using SnusPunch.Shared.Models.ResultModel;
 using SnusPunch.Shared.Models.Snus;
 
@@ -29,6 +30,12 @@ namespace SnusPunch.API.Controllers
         public async Task<ResultModel<List<SnusModel>>> GetSnus()
         {
             return await mSnusService.GetSnus();
+        }
+
+        [HttpPost("GetSnusPaginated")]
+        public async Task<ResultModel<PaginationResponse<SnusModel>>> GetSnusPaginated(PaginationParameters aPaginationParameters)
+        {
+            return await mSnusService.GetSnusPaginated(aPaginationParameters);
         }
 
         [HttpPut("UpdateSnus")]

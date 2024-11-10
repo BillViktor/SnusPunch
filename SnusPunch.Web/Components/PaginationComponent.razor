@@ -1,0 +1,114 @@
+﻿@using SnusPunch.Shared.Models.Pagination
+
+<div class="row justify-content-between">
+    <p class="pagination-text">
+        @GetResultString()
+    </p>
+
+    <div class="row align-items-center">
+        <p class="pagination-text">
+            Rader per sida:
+            <select @onchange="async (e) => await OnRowsPerPageChange(e)">
+                @foreach (var sPageSize in mPageSizes)
+                {
+                    <option value="@sPageSize">@sPageSize</option>
+                }
+            </select>
+        </p>
+
+        <ul class="pagination-buttons pl-1">
+            @foreach (var sButton in mPaginationButtons)
+            {
+                <li class="pagination-button @(sButton.Enabled ? "cursor-pointer" : "cursor-default pagination-button-disabled") @(sButton.Active ? "pagination-button-active" : "")" @onclick="async () => await OnPageClick(sButton)">
+                    <span>@sButton.Text</span>
+                </li>
+            }
+        </ul>
+    </div>
+</div>
+@code {
+    [Parameter] public PaginationParameters PaginationParameters { get; set; }
+    [Parameter] public PaginationMetaData PaginationMetaData { get; set; }
+    [Parameter] public EventCallback OnSearch { get; set; }
+
+    private const int cSpread = 3;
+    private List<PaginationPagingModel> mPaginationButtons = new List<PaginationPagingModel>();
+    private List<int> mPageSizes = new List<int> { 25, 50, 100 }; 
+
+    protected override void OnParametersSet()
+    {
+        CreatePaginationButtons();
+    }
+
+    private void CreatePaginationButtons()
+    {
+        //Skapa "first page" och "previous page"
+        mPaginationButtons = new List<PaginationPagingModel>
+        {
+            new PaginationPagingModel(1, PaginationMetaData.CurrentPage != 1, "<<"),
+            new PaginationPagingModel(PaginationMetaData.CurrentPage - 1, PaginationMetaData.CurrentPage > 1, "<"),
+        };
+
+        //Skapa alla andra sidor
+        for (int i = 1; i <= PaginationMetaData.TotalPages; i++)
+        {
+            if (i >= PaginationMetaData.CurrentPage - cSpread && i <= PaginationMetaData.CurrentPage + cSpread)
+            {
+                mPaginationButtons.Add(new PaginationPagingModel(i, true, i.ToString()) { Active = PaginationMetaData.CurrentPage == i });
+            }
+        }
+
+        //Skapa "next page" och "last page"
+        mPaginationButtons.AddRange(new List<PaginationPagingModel>
+        {
+            new PaginationPagingModel(PaginationMetaData.CurrentPage + 1, PaginationMetaData.CurrentPage < PaginationMetaData.TotalPages, ">"),
+            new PaginationPagingModel(PaginationMetaData.TotalPages, PaginationMetaData.CurrentPage != PaginationMetaData.TotalPages, ">>"),
+        });
+    }
+
+    private async Task OnRowsPerPageChange(ChangeEventArgs aChangeEventArgs)
+    {
+        PaginationParameters.PageSize = Convert.ToInt32(aChangeEventArgs.Value);
+
+        await OnPageClick(1);
+    }
+
+    private async Task OnPageClick(PaginationPagingModel aPaginationPagingModel)
+    {
+        if (!aPaginationPagingModel.Enabled) return;
+
+        await OnPageClick(aPaginationPagingModel.Page);
+    }
+
+    private async Task OnPageClick(int aPage)
+    {
+        PaginationParameters.PageNumber = aPage;
+
+        await OnSearch.InvokeAsync();
+    }
+
+    private string GetResultString()
+    {
+        string sString = "";
+
+        sString = $"Visar resultat {PaginationMetaData.PageSize * (PaginationMetaData.CurrentPage - 1) + 1}";
+
+        @if(PaginationMetaData.HasNext)
+        {
+            sString += $"-{PaginationMetaData.PageSize * (PaginationMetaData.CurrentPage)}";
+        }
+        else
+        {
+            int sResultsForPage = PaginationMetaData.TotalCount - (PaginationMetaData.TotalPages - 1) * PaginationMetaData.PageSize;
+
+            if(sResultsForPage > 1)
+            {
+                sString += $"-{PaginationMetaData.TotalCount}";
+            }
+        }
+
+        sString += $" av {PaginationMetaData.TotalCount}";
+
+        return sString;
+    }
+}

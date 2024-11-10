@@ -1,0 +1,77 @@
+﻿@using SnusPunch.Shared.Models.Pagination
+
+<div class="row justify-content-between">
+    <input @bind:event="oninput" @bind="PaginationParameters.SearchString" @onkeydown="async (x) => await OnKeyDown(x)" class="flex-grow-1" placeholder="Sök.." />
+    <button @onclick="async () => await OnPageClick(1)">Sök</button> 
+
+    @if(SortProperties?.Count > 0)
+    {
+        <p class="pl-1 pagination-text align-items-center">
+            Sortera efter:
+            <select @onchange="async (e) => await OnSortPropertyChanged(e)">
+                @foreach (var sProperty in SortProperties)
+                {
+                    <option value="@sProperty.Key">@sProperty.Value</option>
+                }
+            </select>
+            <span @onclick="async () => await ToggleSortOrder()" class="cursor-pointer @(PaginationParameters.SortOrder == SortOrderEnum.Ascending ? "mdi--sort-ascending" : "mdi--sort-descending")" />
+        </p>
+    }
+    
+</div>
+
+
+
+@code {
+    [Parameter] public PaginationParameters PaginationParameters { get; set; }
+    [Parameter] public PaginationMetaData PaginationMetaData { get; set; }
+    [Parameter] public Dictionary<string, string> SortProperties { get; set; }
+    [Parameter] public string SearchPropertyName { get; set; }
+    [Parameter] public EventCallback OnSearch { get; set; }
+
+    private const int cSpread = 3;
+
+    protected override void OnInitialized()
+    {
+        if (SortProperties?.Count > 0)
+        {
+            PaginationParameters.SortPropertyName = SortProperties.First().Key;
+        }
+    }
+
+    private async Task ToggleSortOrder()
+    {
+        if(PaginationParameters.SortOrder == SortOrderEnum.Ascending)
+        {
+            PaginationParameters.SortOrder = SortOrderEnum.Descending;
+        }
+        else
+        {
+            PaginationParameters.SortOrder = SortOrderEnum.Ascending;
+        }
+
+        await OnPageClick(PaginationMetaData.CurrentPage);
+    }
+
+    private async Task OnKeyDown(KeyboardEventArgs aKeyboardEventArgs)
+    {
+        if(aKeyboardEventArgs.Key == "Enter")
+        {
+            await OnPageClick(1);
+        }
+    }
+
+    private async Task OnSortPropertyChanged(ChangeEventArgs ChangeEventArgs)
+    {
+        PaginationParameters.SortPropertyName = ChangeEventArgs.Value.ToString();
+
+        await OnPageClick(1);
+    }
+
+    private async Task OnPageClick(int aPage)
+    {
+        PaginationParameters.PageNumber = aPage;
+
+        await OnSearch.InvokeAsync();
+    }
+}

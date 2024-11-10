@@ -1,4 +1,5 @@
-﻿using SnusPunch.Shared.Models.Snus;
+﻿using SnusPunch.Shared.Models.Pagination;
+using SnusPunch.Shared.Models.Snus;
 using SnusPunch.Web.Clients.Snus;
 
 namespace SnusPunch.Web.ViewModels.Snus
@@ -37,6 +38,27 @@ namespace SnusPunch.Web.ViewModels.Snus
             }
 
             IsBusy = false;
+        }
+
+        public async Task<PaginationResponse<SnusModel>> GetSnusPaginated(PaginationParameters aPaginationParameters)
+        {
+            PaginationResponse<SnusModel> sPaginationResponse = new PaginationResponse<SnusModel>();
+            IsBusy = true;
+
+
+            var sResult = await mSnusClient.GetSnusPaginated(aPaginationParameters);
+
+            if (!sResult.Success)
+            {
+                Errors.AddRange(sResult.Errors);
+            }
+            else
+            {
+                sPaginationResponse = sResult.ResultObject;
+            }
+
+            IsBusy = false;
+            return sPaginationResponse;
         }
     }
 }
