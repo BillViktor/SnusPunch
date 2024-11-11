@@ -4,6 +4,10 @@
     --background-color: #18191A;
     --foreground-color: #242526;
     --font-color: #ffffff;
+    --primary-color: #006EE5;
+    --success-color: #4CAF50;
+    --danger-color: #F44336;
+    --warning-color: #FFC107;
 }
 
 /* Generella regler */
@@ -63,6 +67,11 @@ h1 {
     font-size: 3rem;
 }
 
+h2 {
+    font-size: 2.5rem;
+}
+
+/* Main */
 main {
     padding: 1rem;
     margin: 1rem auto;
@@ -70,15 +79,24 @@ main {
     background-color: var(--foreground-color);
 }
 
+p {
+    font-size: 1.25rem;
+}
+
 /* Inputs */
 input {
-    height: 1.5rem;
-    font-size: 1.5rem;
+    height: 2.11rem;
+    font-size: 1.25rem;
 }
 
 select {
+    height: 2.5rem;
+    font-size: 1.25rem;
+}
+
+.select-sm {
     height: 2rem;
-    font-size: 1.5rem;
+    font-size: 1.25rem;
 }
 
 /* Paginering */
@@ -87,8 +105,12 @@ select {
 }
 
 .pagination-button {
+    text-align: center;
     padding: 0.5rem;
-    border: 0.1rem solid white;
+    color: #fff;
+    font-weight: bold;
+    width: 1rem;
+    height: 1rem;
 }
 
 .pagination-button-disabled {
@@ -96,11 +118,12 @@ select {
 }
 
 .pagination-button-active {
-    background-color: lightblue;
+    background-color: var(--primary-color);
+    border-radius: 1rem;
 }
 
 .pagination-text {
-    font-size: 1.5rem;
+    font-size: 1rem;
 }
 
 /* Margins */
@@ -117,7 +140,13 @@ select {
     margin-bottom: 1rem;
 }
 
-/* Paddings */
+.mt-1 {
+    margin-top: 1rem;
+}
+
+.my-1 {
+    margin: 1rem 0;
+}
 
 /* Misc */
 .row {
@@ -136,12 +165,20 @@ select {
     justify-content: space-between;
 }
 
+.justify-content-end {
+    justify-content: end;
+}
+
 .align-items-center {
     align-items: center;
 }
 
 .align-items-bottom {
     align-items: baseline;
+}
+
+.gap-1 {
+    gap: 1rem;
 }
 
 /* Cursor */
@@ -175,8 +212,95 @@ table th, table td {
     padding: 0.5rem;
 }
 
+table td {
+    vertical-align: middle;
+}
+
 table tr:nth-child(even) {
     background-color: #3c3c3c;
+}
+
+/* Modal */
+.custom-modal-class {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: var(--background-color);
+    color: var(--font-color);
+    border: 0.125rem solid #fff;
+    width: 50rem;
+    padding: 1rem;
+    border-radius: 1rem;
+}
+
+.custom-modal-class h3 {
+    font-size: 2rem;
+}
+
+.custom-modal-class span {
+    color: white !important;
+}
+
+/* Buttons */
+.button-icon {
+    background-color: transparent;
+    border: none;
+    margin: 0;
+    padding: 0 0rem;
+    cursor: pointer;
+}
+
+button {
+    display: inline-block;
+    text-align: center;
+    text-decoration: none;
+    vertical-align: middle;
+    white-space: nowrap;
+    height: 2.5rem;
+    border-radius: 0.25rem;
+    font-weight: bold;
+    font-size: 1rem;
+    padding: 0 1rem;
+    background-color: var(--primary-color);
+    color: #fff;
+    outline: none;
+    border: 1px solid transparent;
+    border-color: #ccc;
+}
+
+button#text {
+    vertical-align: middle;
+}
+
+button:disabled, button:disabled:hover {
+    cursor: not-allowed;
+    opacity: 0.65;
+}
+
+button:active {
+    border-style: none;
+}
+
+button:hover {
+    opacity: 0.9;
+    text-decoration: none;
+}
+
+.button-success {
+    background-color: var(--success-color);
+    color: #fff;
+    border-color: #ccc;
+}
+
+.button-warning {
+    background-color: var(--warning-color);
+    color: #000;
+}
+
+.button-danger {
+    background-color: var(--danger-color);
+    color: #fff;
 }
 
 /* Loading  */
@@ -189,8 +313,6 @@ table tr:nth-child(even) {
 }
 
 .spinner-image {
-    width: 20rem;
-    height: 20rem;
     animation: spinner 2s linear infinite;
 }
 
@@ -198,6 +320,15 @@ table tr:nth-child(even) {
     to {
         transform: rotate(360deg);
     }
+}
+
+.loading-text {
+    font-size: 2rem;
+    text-align: center;
+    margin-top: 1rem;
+    background-color: #000;
+    color: #fff;
+    padding: 0.25rem
 }
 
 

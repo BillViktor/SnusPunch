@@ -1,14 +1,18 @@
-﻿using Microsoft.AspNetCore.Components;
+﻿using Blazored.Modal;
+using Blazored.Modal.Services;
+using Microsoft.AspNetCore.Components;
 using SnusPunch.Shared.Models.Pagination;
 using SnusPunch.Shared.Models.Snus;
+using SnusPunch.Web.Components;
+using SnusPunch.Web.Pages.Snus.Components;
 using SnusPunch.Web.ViewModels.Snus;
 
 namespace SnusPunch.Web.Pages.Snus
 {
     public partial class SnusPage
     {
-        [Inject]
-        SnusViewModel SnusViewModel { get; set; }
+        [CascadingParameter] public IModalService Modal { get; set; } = default!;
+        [Inject] SnusViewModel SnusViewModel { get; set; }
 
         private PaginationMetaData mPaginationMetaData = null;
         private List<SnusModel> mSnusList = new List<SnusModel>();
@@ -39,5 +43,67 @@ namespace SnusPunch.Web.Pages.Snus
             mPaginationMetaData = sResult.PaginationMetaData;
             mSnusList = sResult.Items;
         }
+
+        #region Actions
+        private async Task DeleteSnus(SnusModel aSnusModel)
+        {
+            var sParameters = new ModalParameters { { "Message", $"Är du säker på att du vill radera {aSnusModel.Name}? Detta går inte att ångra!" } };
+            var sModal = Modal.Show<ConfirmationComponent>("Bekräfta borttagning", sParameters);
+            var sResult = await sModal.Result;
+
+            if (!sResult.Cancelled)
+            {
+                if(await SnusViewModel.RemoveSnus(aSnusModel))
+                {
+                    await GetSnus();
+                }
+            }
+        }
+
+        private async Task EditSnus(SnusModel aSnusModel)
+        {
+            var sParameters = new ModalParameters { { "SnusModel", aSnusModel } };
+            var sModal = Modal.Show<EditSnusComponent>($"Redigera {aSnusModel.Name}", sParameters);
+            var sResult = await sModal.Result;
+
+            if (!sResult.Cancelled)
+            {
+                if (await SnusViewModel.UpdateSnus(aSnusModel))
+                {
+                    await GetSnus();
+                }
+            }
+        }
+
+        private async Task AddSnus()
+        {
+            var sModal = Modal.Show<AddSnusComponent>($"Lägg till nytt Snus");
+            var sResult = await sModal.Result;
+
+            if (!sResult.Cancelled)
+            {
+                var sSnus = sResult.Data as SnusModel;
+
+                if (await SnusViewModel.AddSnus(sSnus))
+                {
+                    await ShowAddedSnus(sSnus);
+                }
+            }
+        }
+
+        private async Task ShowAddedSnus(SnusModel aSnusModel)
+        {
+            var sParameters = new ModalParameters { { "Message", $"Snus \"{aSnusModel.Name}\" skapat! Vill du se den?" } };
+            var sModal = Modal.Show<ConfirmationComponent>("Snus skapat!", sParameters);
+            var sResult = await sModal.Result;
+
+            if (!sResult.Cancelled)
+            {
+                mPaginationParameters.SearchString = aSnusModel.Name;
+                mPaginationParameters.PageNumber = 1;
+                await GetSnus();
+            }
+        }
+        #endregion
     }
 }

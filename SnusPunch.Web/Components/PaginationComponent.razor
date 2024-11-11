@@ -1,14 +1,14 @@
 ﻿@using SnusPunch.Shared.Models.Pagination
 
-<div class="row justify-content-between">
+<div class="row mt-1 justify-content-between align-items-center">
     <p class="pagination-text">
         @GetResultString()
     </p>
 
     <div class="row align-items-center">
         <p class="pagination-text">
-            Rader per sida:
-            <select @onchange="async (e) => await OnRowsPerPageChange(e)">
+            Sidstorlek:
+            <select class="select-sm" @onchange="async (e) => await OnRowsPerPageChange(e)">
                 @foreach (var sPageSize in mPageSizes)
                 {
                     <option value="@sPageSize">@sPageSize</option>

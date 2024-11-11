@@ -1,12 +1,14 @@
-﻿<Router AppAssembly="@typeof(App).Assembly">
-    <Found Context="routeData">
-        <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
-        <FocusOnNavigate RouteData="@routeData" Selector="h1" />
-    </Found>
-    <NotFound>
-        <PageTitle>Sidan hittades ej</PageTitle>
-        <LayoutView Layout="@typeof(MainLayout)">
-            <p role="alert">Nu har du nog hamnat lite vilse, sidan hittades ej!</p>
-        </LayoutView>
-    </NotFound>
-</Router>
+﻿<CascadingBlazoredModal Class="custom-modal-class">
+    <Router AppAssembly="@typeof(App).Assembly">
+        <Found Context="routeData">
+            <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
+            <FocusOnNavigate RouteData="@routeData" Selector="h1" />
+        </Found>
+        <NotFound>
+            <PageTitle>Sidan hittades ej</PageTitle>
+            <LayoutView Layout="@typeof(MainLayout)">
+                <p role="alert">Nu har du nog hamnat lite vilse, sidan hittades ej!</p>
+            </LayoutView>
+        </NotFound>
+    </Router>
+</CascadingBlazoredModal>

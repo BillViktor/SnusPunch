@@ -1,0 +1,18 @@
+﻿<div>
+    <p>@Message</p>
+
+    <div class="row gap-1 mt-1 justify-content-end">
+        <button class="button button-warning" @onclick="async () => await Close()">Avbryt</button>
+        <button class="button button-danger" @onclick="async () => await Confirm()">Bekräfta</button>
+    </div>
+</div>
+
+@code {
+    [CascadingParameter] BlazoredModalInstance BlazoredModal { get; set; } = default!;
+
+    [Parameter] public string? Message { get; set; }
+
+    private async Task Confirm() => await BlazoredModal.CloseAsync();
+
+    private async Task Close() => await BlazoredModal.CancelAsync();
+}

@@ -42,9 +42,8 @@ namespace SnusPunch.Web.ViewModels.Snus
 
         public async Task<PaginationResponse<SnusModel>> GetSnusPaginated(PaginationParameters aPaginationParameters)
         {
-            PaginationResponse<SnusModel> sPaginationResponse = new PaginationResponse<SnusModel>();
             IsBusy = true;
-
+            PaginationResponse<SnusModel> sPaginationResponse = new PaginationResponse<SnusModel>();
 
             var sResult = await mSnusClient.GetSnusPaginated(aPaginationParameters);
 
@@ -59,6 +58,72 @@ namespace SnusPunch.Web.ViewModels.Snus
 
             IsBusy = false;
             return sPaginationResponse;
+        }
+
+        public async Task<bool> RemoveSnus(SnusModel aSnusModel)
+        {
+            IsBusy = true;
+            bool sSuccess = true;
+
+            var sResult = await mSnusClient.RemoveSnus(aSnusModel.Id);
+
+            if (!sResult.Success)
+            {
+                Errors.AddRange(sResult.Errors);
+                sSuccess = false;
+            }
+            else
+            {
+                SuccessMessages.Add($"Raderade {aSnusModel.Name}!");
+            }
+
+            IsBusy = false;
+
+            return sSuccess;
+        }
+
+        public async Task<bool> UpdateSnus(SnusModel aSnusModel)
+        {
+            IsBusy = true;
+            bool sSuccess = true;
+
+            var sResult = await mSnusClient.UpdateSnus(aSnusModel);
+
+            if (!sResult.Success)
+            {
+                Errors.AddRange(sResult.Errors);
+                sSuccess = false;
+            }
+            else
+            {
+                SuccessMessages.Add($"Uppdaterade {aSnusModel.Name}!");
+            }
+
+            IsBusy = false;
+
+            return sSuccess;
+        }
+
+        public async Task<bool> AddSnus(SnusModel aSnusModel)
+        {
+            IsBusy = true;
+            bool sSuccess = true;
+
+            var sResult = await mSnusClient.AddSnus(aSnusModel);
+
+            if (!sResult.Success)
+            {
+                Errors.AddRange(sResult.Errors);
+                sSuccess = false;
+            }
+            else
+            {
+                SuccessMessages.Add($"Lade till {aSnusModel.Name}!");
+            }
+
+            IsBusy = false;
+
+            return sSuccess;
         }
     }
 }
