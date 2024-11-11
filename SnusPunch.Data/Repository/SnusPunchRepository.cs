@@ -47,10 +47,10 @@ namespace SnusPunch.Data.Repository
 
         public async Task<SnusModel> UpdateSnus(SnusModel aSnusModel)
         {
-            SnusModel sSnusModel = await mSnusPunchDbContext.Snus.AsNoTracking().FirstOrDefaultAsync(s => s.Id == aSnusModel.Id);
+            SnusModel sSnusModel = await mSnusPunchDbContext.Snus.FirstOrDefaultAsync(s => s.Id == aSnusModel.Id);
             mSnusPunchDbContext.Entry(sSnusModel).CurrentValues.SetValues(aSnusModel);
             await mSnusPunchDbContext.SaveChangesAsync();
-            return sSnusModel;
+            return await mSnusPunchDbContext.Snus.AsNoTracking().FirstOrDefaultAsync(s => s.Id == aSnusModel.Id);
         }
 
         public async Task RemoveSnus(int aSnusModelId)

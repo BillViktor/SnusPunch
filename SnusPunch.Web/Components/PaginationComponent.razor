@@ -1,6 +1,6 @@
 ﻿@using SnusPunch.Shared.Models.Pagination
 
-<div class="row mt-1 justify-content-between align-items-center">
+<div class="row justify-content-between align-items-center">
     <p class="pagination-text">
         @GetResultString()
     </p>
@@ -16,20 +16,24 @@
             </select>
         </p>
 
-        <ul class="pagination-buttons pl-1">
-            @foreach (var sButton in mPaginationButtons)
-            {
-                <li class="pagination-button @(sButton.Enabled ? "cursor-pointer" : "cursor-default pagination-button-disabled") @(sButton.Active ? "pagination-button-active" : "")" @onclick="async () => await OnPageClick(sButton)">
-                    <span>@sButton.Text</span>
-                </li>
-            }
-        </ul>
+        <p>
+            <ul class="pagination-buttons pl-1">
+                @foreach (var sButton in mPaginationButtons)
+                {
+                    <li class="pagination-button @(sButton.Enabled ? "cursor-pointer" : "cursor-default pagination-button-disabled") @(sButton.Active ? "pagination-button-active" : "")" @onclick="async () => await OnPageClick(sButton)">
+                        <span>@sButton.Text</span>
+                    </li>
+                }
+            </ul>
+        </p>
     </div>
 </div>
 @code {
     [Parameter] public PaginationParameters PaginationParameters { get; set; }
     [Parameter] public PaginationMetaData PaginationMetaData { get; set; }
     [Parameter] public EventCallback OnSearch { get; set; }
+
+    [Inject] IJSRuntime JSRuntime { get; set; }
 
     private const int cSpread = 3;
     private List<PaginationPagingModel> mPaginationButtons = new List<PaginationPagingModel>();
@@ -75,7 +79,7 @@
 
     private async Task OnPageClick(PaginationPagingModel aPaginationPagingModel)
     {
-        if (!aPaginationPagingModel.Enabled) return;
+        if (!aPaginationPagingModel.Enabled || aPaginationPagingModel.Page == PaginationParameters.PageNumber) return;
 
         await OnPageClick(aPaginationPagingModel.Page);
     }
@@ -85,6 +89,8 @@
         PaginationParameters.PageNumber = aPage;
 
         await OnSearch.InvokeAsync();
+
+        await JSRuntime.InvokeVoidAsync("backToTop");
     }
 
     private string GetResultString()

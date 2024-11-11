@@ -62,13 +62,21 @@ namespace SnusPunch.Web.Pages.Snus
 
         private async Task EditSnus(SnusModel aSnusModel)
         {
+            var sOptions = new ModalOptions
+            {
+                DisableBackgroundCancel = true,
+                SizeCustomClass = "custom-modal-medium"
+            };
+
             var sParameters = new ModalParameters { { "SnusModel", aSnusModel } };
-            var sModal = Modal.Show<EditSnusComponent>($"Redigera {aSnusModel.Name}", sParameters);
+            var sModal = Modal.Show<AddEditSnusComponent>($"Redigera {aSnusModel.Name}", sParameters, sOptions);
             var sResult = await sModal.Result;
 
             if (!sResult.Cancelled)
             {
-                if (await SnusViewModel.UpdateSnus(aSnusModel))
+                var sSnus = sResult.Data as SnusModel;
+
+                if (await SnusViewModel.UpdateSnus(sSnus))
                 {
                     await GetSnus();
                 }
@@ -77,7 +85,14 @@ namespace SnusPunch.Web.Pages.Snus
 
         private async Task AddSnus()
         {
-            var sModal = Modal.Show<AddSnusComponent>($"Lägg till nytt Snus");
+            var sOptions = new ModalOptions
+            {
+                DisableBackgroundCancel = true,
+                SizeCustomClass = "custom-modal-medium"
+            };
+
+            var sModal = Modal.Show<AddEditSnusComponent>($"Lägg till nytt Snus", sOptions);
+
             var sResult = await sModal.Result;
 
             if (!sResult.Cancelled)
@@ -94,13 +109,19 @@ namespace SnusPunch.Web.Pages.Snus
         private async Task ShowAddedSnus(SnusModel aSnusModel)
         {
             var sParameters = new ModalParameters { { "Message", $"Snus \"{aSnusModel.Name}\" skapat! Vill du se den?" } };
+
             var sModal = Modal.Show<ConfirmationComponent>("Snus skapat!", sParameters);
+
             var sResult = await sModal.Result;
 
             if (!sResult.Cancelled)
             {
                 mPaginationParameters.SearchString = aSnusModel.Name;
                 mPaginationParameters.PageNumber = 1;
+                await GetSnus();
+            }
+            else
+            {
                 await GetSnus();
             }
         }

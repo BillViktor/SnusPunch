@@ -81,6 +81,7 @@ main {
 
 p {
     font-size: 1.25rem;
+    margin: 1rem 0;
 }
 
 /* Inputs */
@@ -209,7 +210,7 @@ table th {
 }
 
 table th, table td {
-    padding: 0.5rem;
+    padding: 0.25rem;
 }
 
 table td {
@@ -218,6 +219,16 @@ table td {
 
 table tr:nth-child(even) {
     background-color: #3c3c3c;
+}
+
+/* Formulär */
+label {
+    display: block;
+}
+
+.validation-errors {
+    list-style-type: square;
+    list-style-position: inside;
 }
 
 /* Modal */
@@ -229,7 +240,6 @@ table tr:nth-child(even) {
     background-color: var(--background-color);
     color: var(--font-color);
     border: 0.125rem solid #fff;
-    width: 50rem;
     padding: 1rem;
     border-radius: 1rem;
 }
