@@ -1,0 +1,39 @@
+﻿@page "/login"
+@layout EmptyLayout
+
+<PageTitle>SnusPunch - Login</PageTitle>
+
+<MessageComponent Errors="AuthViewModel.Errors" SuccessMessages="AuthViewModel.SuccessMessages" IsBusy="AuthViewModel.IsBusy" />
+
+<div class="center box">
+    <h2>Logga in</h2>
+
+    <EditForm Model="mLoginModel" OnValidSubmit="Login">
+        <p>
+            <label for="userName">Användarnamn</label>
+            <input @bind="mLoginModel.UserName" id="userName" class="full-width" />
+        </p>
+
+        <p>
+            <label for="password">Lösenord</label>
+            <input type="password" @bind="mLoginModel.Password" id="password" class="full-width" />
+        </p>
+
+        <p class="row justify-content-between align-items-center">
+            <div>
+                <input class="checkbox" @bind="mLoginModel.RememberMe" id="rememberMe" type="checkbox" />
+                <label style="display: inline" for="rememberMe">Kom ihåg mig</label>
+            </div>
+
+            <a href="login">Glömt ditt lösenord?</a>
+        </p>
+
+
+
+        <button class="full-width" type="submit">Logga in</button>
+    </EditForm>
+
+    <p class="text-center">
+        Inte medlem? <a href="register">Registrera dig nu!</a>
+    </p>
+</div>

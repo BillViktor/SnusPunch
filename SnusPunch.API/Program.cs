@@ -1,9 +1,11 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.OpenApi.Models;
 using SnusPunch.Data.DbContexts;
 using SnusPunch.Data.Repository;
 using SnusPunch.Services.Snus;
 using SnusPunch.Shared.Models.Identity;
+using Swashbuckle.AspNetCore.Filters;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,7 +18,6 @@ builder.Services.AddSwaggerGen();
 
 #region Auth
 builder.Services.AddAuthorization();
-builder.Services.AddAuthentication().AddCookie(IdentityConstants.ApplicationScheme).AddBearerToken(IdentityConstants.BearerScheme);
 builder.Services.AddIdentityCore<SnusPunchUserModel>().AddEntityFrameworkStores<SnusPunchDbContext>();
 #endregion
 
@@ -28,6 +29,7 @@ builder.Services.AddScoped<SnusPunchRepository>();
 #endregion
 
 #region Services
+builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<SnusService>();
 #endregion
 

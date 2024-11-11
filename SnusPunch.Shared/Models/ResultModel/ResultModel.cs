@@ -34,6 +34,19 @@ namespace SnusPunch.Shared.Models.ResultModel
         {
             Errors.AddRange(aErrorModelList);
         }
+
+        public void AppendErrors(List<string> aErrorStringList)
+        {
+            foreach(var sError in aErrorStringList)
+            {
+                ErrorModel sErrorModel = new ErrorModel
+                {
+                    ErrorText = sError
+                };
+
+                Errors.Add(sErrorModel);
+            }
+        }
         #endregion
     }
 

@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using SnusPunch.Data.Repository;
 using SnusPunch.Services.Snus;
 using SnusPunch.Shared.Models.Pagination;
 using SnusPunch.Shared.Models.ResultModel;
@@ -9,6 +8,7 @@ using SnusPunch.Shared.Models.Snus;
 namespace SnusPunch.API.Controllers
 {
     [ApiController]
+    [Authorize]
     [Route("[controller]")]
     public class SnusController : ControllerBase
     {

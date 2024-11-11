@@ -21,11 +21,15 @@ builder.Services.AddBlazoredToast();
 #region Clients
 string sBaseUrl = builder.Configuration.GetValue<string>("BaseUrl");
 
+builder.Services.AddHttpClient(HttpClientEnum.Auth.ToString(), config => config.BaseAddress = new Uri(sBaseUrl + "Auth/"));
+builder.Services.AddScoped<AuthClient>();
+
 builder.Services.AddHttpClient(HttpClientEnum.Snus.ToString(), config => config.BaseAddress = new Uri(sBaseUrl + "Snus/"));
 builder.Services.AddScoped<SnusClient>();
 #endregion
 
 #region ViewModels
+builder.Services.AddScoped<AuthViewModel>();
 builder.Services.AddScoped<SnusViewModel>();
 #endregion
 

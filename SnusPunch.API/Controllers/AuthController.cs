@@ -1,8 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using SnusPunch.Services.Snus;
-using SnusPunch.Shared.Models.Pagination;
+using SnusPunch.Shared.Models.Auth;
 using SnusPunch.Shared.Models.ResultModel;
-using SnusPunch.Shared.Models.Snus;
 
 namespace SnusPunch.API.Controllers
 {
@@ -20,9 +19,9 @@ namespace SnusPunch.API.Controllers
         }
 
         [HttpPost("Register")]
-        public async Task<ResultModel> Register()
+        public async Task<ResultModel> Register(RegisterModel aRegisterModel)
         {
-            return new ResultModel();
+            return await mAuthService.Register(aRegisterModel);
         }
     }
 }

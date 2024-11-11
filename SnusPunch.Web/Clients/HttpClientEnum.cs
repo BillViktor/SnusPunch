@@ -2,6 +2,7 @@
 {
     public enum HttpClientEnum
     {
+        Auth,
         Snus
     }
 }

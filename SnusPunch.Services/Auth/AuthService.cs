@@ -1,10 +1,8 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
-using SnusPunch.Data.Repository;
+using SnusPunch.Shared.Models.Auth;
 using SnusPunch.Shared.Models.Identity;
-using SnusPunch.Shared.Models.Pagination;
 using SnusPunch.Shared.Models.ResultModel;
-using SnusPunch.Shared.Models.Snus;
 
 namespace SnusPunch.Services.Snus
 {
@@ -19,13 +17,27 @@ namespace SnusPunch.Services.Snus
             mUserManager = aUserManager;
         }
 
-        public async Task<ResultModel> Register()
+        public async Task<ResultModel> Register(RegisterModel aRegisterModel)
         {
             ResultModel sResultModel = new ResultModel();
 
             try
             {
-                await Task.Delay(0);
+                SnusPunchUserModel sSnusPunchUserModel = new SnusPunchUserModel
+                {
+                    UserName = aRegisterModel.UserName,
+                    Email = aRegisterModel.Email,
+                    LockoutEnabled = false
+                };
+
+                var sCreateUserResult = await mUserManager.CreateAsync(sSnusPunchUserModel, aRegisterModel.Password);
+
+                if(!sCreateUserResult.Succeeded)
+                {
+                    sResultModel.AppendErrors(sCreateUserResult.Errors.Select(x => x.Description).ToList());
+                    sResultModel.Success = false;
+                    return sResultModel;
+                }
             }
             catch(Exception ex)
             {
