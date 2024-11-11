@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SnusPunch.Data.Repository;
 using SnusPunch.Services.Snus;

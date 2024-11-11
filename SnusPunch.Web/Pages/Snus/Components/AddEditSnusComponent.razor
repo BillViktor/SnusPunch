@@ -3,40 +3,42 @@
 
 <MessageComponent Errors="SnusViewModel.Errors" SuccessMessages="SnusViewModel.SuccessMessages" IsBusy="SnusViewModel.IsBusy"/>
 
-<EditForm OnValidSubmit="async () => await Confirm()" Model="mSnusModel">
-    <DataAnnotationsValidator/>
-    <ValidationSummary />
+<div>
+    <EditForm OnValidSubmit="async () => await Confirm()" Model="mSnusModel">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+        <p>
+            <label for="snusName">Namn</label>
+            <input id="snusName" class="full-width" @bind="mSnusModel.Name" />
+        </p>
 
-    <p>
-        <label for="snusName">Namn</label>
-        <input id="snusName" class="full-width" @bind="mSnusModel.Name"/>
-    </p>
+        <p>
+            <label for="snusPriceInSek">Pris (SEK)</label>
+            <input id="snusPriceInSek" class="full-width" @bind="mSnusModel.PriceInSek" />
+        </p>
 
-    <p>
-        <label for="snusPriceInSek">Pris (SEK)</label>
-        <input id="snusPriceInSek" class="full-width" @bind="mSnusModel.PriceInSek" />
-    </p>
+        <p>
+            <label for="snusPortionCount">Portioner per dosa</label>
+            <input id="snusPortionCount" class="full-width" @bind="mSnusModel.PortionCount" />
+        </p>
 
-    <p>
-        <label for="snusPortionCount">Portioner per dosa</label>
-        <input id="snusPortionCount" class="full-width" @bind="mSnusModel.PortionCount" />
-    </p>
+        <p>
+            <label for="snusWeightInGrams">Vikt (g)</label>
+            <input id="snusWeightInGrams" class="full-width" @bind="mSnusModel.WeightInGrams" />
+        </p>
 
-    <p>
-        <label for="snusWeightInGrams">Vikt (g)</label>
-        <input id="snusWeightInGrams" class="full-width" @bind="mSnusModel.WeightInGrams" />
-    </p>
+        <p>
+            <label for="snusNicotineInMgPerGram">Nikotinhalt (mg/g)</label>
+            <input id="snusNicotineInMgPerGram" class="full-width" @bind="mSnusModel.NicotineInMgPerGram" />
+        </p>
 
-    <p>
-        <label for="snusNicotineInMgPerGram">Nikotinhalt (mg/g)</label>
-        <input id="snusNicotineInMgPerGram" class="full-width" @bind="mSnusModel.NicotineInMgPerGram" />
-    </p>
+        <div class="row gap-1 mt-1 justify-content-end">
+            <button disabled="@SnusViewModel.IsBusy" class="button button-warning" type="button" @onclick="async () => await Close()">Avbryt</button>
+            <button disabled="@SnusViewModel.IsBusy" class="button button-success" type="submit">@(SnusModel == null ? "Lägg till snus" : "Spara ändringar")</button>
+        </div>
+    </EditForm>
+</div>
 
-    <div class="row gap-1 mt-1 justify-content-end">
-        <button disabled="@SnusViewModel.IsBusy" class="button button-warning" type="button" @onclick="async () => await Close()">Avbryt</button>
-        <button disabled="@SnusViewModel.IsBusy" class="button button-success" type="submit">@(SnusModel == null ? "Lägg till snus" : "Spara ändringar")</button>
-    </div>
-</EditForm>
 
 @code {
     [CascadingParameter] BlazoredModalInstance BlazoredModal { get; set; } = default!;

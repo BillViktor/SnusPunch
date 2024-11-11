@@ -65,7 +65,9 @@ namespace SnusPunch.Web.Pages.Snus
             var sOptions = new ModalOptions
             {
                 DisableBackgroundCancel = true,
-                SizeCustomClass = "custom-modal-medium"
+                Size = ModalSize.Custom,
+                SizeCustomClass = "modal-large",
+                Position = ModalPosition.Middle
             };
 
             var sParameters = new ModalParameters { { "SnusModel", aSnusModel } };
@@ -88,7 +90,9 @@ namespace SnusPunch.Web.Pages.Snus
             var sOptions = new ModalOptions
             {
                 DisableBackgroundCancel = true,
-                SizeCustomClass = "custom-modal-medium"
+                Size = ModalSize.Custom,
+                SizeCustomClass = "modal-large",
+                Position = ModalPosition.Middle
             };
 
             var sModal = Modal.Show<AddEditSnusComponent>($"Lägg till nytt Snus", sOptions);

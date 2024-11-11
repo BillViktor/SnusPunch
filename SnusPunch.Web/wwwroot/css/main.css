@@ -231,25 +231,13 @@ label {
     list-style-position: inside;
 }
 
-/* Modal */
-.custom-modal-class {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background-color: var(--background-color);
-    color: var(--font-color);
-    border: 0.125rem solid #fff;
-    padding: 1rem;
-    border-radius: 1rem;
+/* Overridea blazored modal lite grann :) */
+.blazored-modal {
+    background-color: var(--background-color) !important;
 }
 
-.custom-modal-class h3 {
-    font-size: 2rem;
-}
-
-.custom-modal-class span {
-    color: white !important;
+.modal-large {
+    width: 50rem;
 }
 
 /* Buttons */

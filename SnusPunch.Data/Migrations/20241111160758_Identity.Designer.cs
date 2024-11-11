@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SnusPunch.Data.DbContexts;
 
@@ -11,9 +12,11 @@ using SnusPunch.Data.DbContexts;
 namespace SnusPunch.Data.Migrations
 {
     [DbContext(typeof(SnusPunchDbContext))]
-    partial class SnusPunchDbContextModelSnapshot : ModelSnapshot
+    [Migration("20241111160758_Identity")]
+    partial class Identity
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

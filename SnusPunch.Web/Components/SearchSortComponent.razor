@@ -2,7 +2,7 @@
 
 <div class="row justify-content-between">
     <p class="flex-grow-1">
-        <input @bind:event="oninput" @bind="PaginationParameters.SearchString" @onkeydown="async (x) => await OnKeyDown(x)" placeholder="Sök.." />
+        <input class="flex-grow-1" @bind:event="oninput" @bind="PaginationParameters.SearchString" @onkeydown="async (x) => await OnKeyDown(x)" placeholder="Sök.." />
         <button @onclick="async () => await OnPageClick(1)"><span class="icon material-symbols--search" /> Sök</button>
     </p>
 
@@ -21,7 +21,6 @@
             </button>
         </p>
     }
-    
 </div>
 
 
