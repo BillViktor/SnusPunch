@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using SnusPunch.Services.Email;
 using SnusPunch.Services.Snus;
 using SnusPunch.Shared.Models.Auth;
 using SnusPunch.Shared.Models.ResultModel;
@@ -12,10 +13,13 @@ namespace SnusPunch.API.Controllers
         private readonly ILogger<AuthController> mLogger;
         private readonly AuthService mAuthService;
 
-        public AuthController(ILogger<AuthController> aLogger, AuthService aAuthService)
+        private readonly EmailService mEmailService;
+
+        public AuthController(ILogger<AuthController> aLogger, AuthService aAuthService, EmailService aEmailService)
         {
             mLogger = aLogger;
             mAuthService = aAuthService;
+            mEmailService = aEmailService;
         }
 
         [HttpPost("Register")]

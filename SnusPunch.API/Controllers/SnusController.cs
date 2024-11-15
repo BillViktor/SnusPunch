@@ -8,7 +8,6 @@ using SnusPunch.Shared.Models.Snus;
 namespace SnusPunch.API.Controllers
 {
     [ApiController]
-    [Authorize]
     [Route("[controller]")]
     public class SnusController : ControllerBase
     {

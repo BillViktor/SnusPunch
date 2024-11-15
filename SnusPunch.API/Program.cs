@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using SnusPunch.Data.DbContexts;
 using SnusPunch.Data.Repository;
+using SnusPunch.Services.Email;
 using SnusPunch.Services.Snus;
 using SnusPunch.Shared.Models.Identity;
 using Swashbuckle.AspNetCore.Filters;
@@ -14,11 +15,21 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(options =>
+{
+    options.AddSecurityDefinition("oauth2", new OpenApiSecurityScheme
+    {
+        In = ParameterLocation.Header,
+        Name = "Authorization",
+        Type = SecuritySchemeType.ApiKey
+    });
+
+    options.OperationFilter<SecurityRequirementsOperationFilter>();
+});
 
 #region Auth
 builder.Services.AddAuthorization();
-builder.Services.AddIdentityCore<SnusPunchUserModel>().AddEntityFrameworkStores<SnusPunchDbContext>();
+builder.Services.AddIdentityApiEndpoints<SnusPunchUserModel>().AddEntityFrameworkStores<SnusPunchDbContext>();
 #endregion
 
 #region Database
@@ -30,8 +41,12 @@ builder.Services.AddScoped<SnusPunchRepository>();
 
 #region Services
 builder.Services.AddScoped<AuthService>();
+builder.Services.AddScoped<EmailService>();
 builder.Services.AddScoped<SnusService>();
 #endregion
+
+//Load Smtp Credentials
+builder.Configuration.AddJsonFile("smtpsettings.json", false);
 
 var app = builder.Build();
 
