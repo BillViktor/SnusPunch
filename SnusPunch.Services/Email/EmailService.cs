@@ -32,7 +32,6 @@ namespace SnusPunch.Services.Email
                     Host = mConfiguration["SmtpSettings:Host"],
                     EnableSsl = true,
                     DeliveryMethod = SmtpDeliveryMethod.Network,
-                    UseDefaultCredentials = false,
                     Credentials = new NetworkCredential(mConfiguration["SmtpSettings:Username"], mConfiguration["SmtpSettings:Password"])
                 };
 
