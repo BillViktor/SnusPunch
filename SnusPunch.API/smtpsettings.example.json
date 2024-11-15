@@ -1,3 +1,4 @@
+/* Replace the settings & rename file to smtpsettings.json */ 
 {
   "SmtpSettings": {
     "Host": "",
