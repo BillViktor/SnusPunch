@@ -1,10 +1,11 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using SnusPunch.Data.Models.Identity;
 using SnusPunch.Services.Email;
 using SnusPunch.Shared.Models.Auth;
-using SnusPunch.Shared.Models.Identity;
 using SnusPunch.Shared.Models.ResultModel;
 using System.Security.Claims;
 
@@ -52,6 +53,74 @@ namespace SnusPunch.Services.Snus
                 }
 
                 await SendVerificationEmail(sSnusPunchUserModel);
+            }
+            catch (Exception ex)
+            {
+                sResultModel.Success = false;
+                sResultModel.AddExceptionError(ex);
+            }
+
+            return sResultModel;
+        }
+
+        public async Task<ResultModel> Delete(ClaimsPrincipal aClaimsPrincipal)
+        {
+            ResultModel sResultModel = new ResultModel();
+
+            try
+            {
+                var sUser = await mUserManager.GetUserAsync(aClaimsPrincipal);
+
+                if(sUser == null)
+                {
+                    sResultModel.Success = false;
+                    sResultModel.AddError("Användaren hittades ej");
+                    return sResultModel;
+                }
+
+                var sResult = await mUserManager.DeleteAsync(sUser);
+
+                if(!sResult.Succeeded)
+                {
+                    sResultModel.Success = false;
+                    sResultModel.AppendErrors(sResult.Errors.Select(x => x.Description).ToList());
+                    return sResultModel;
+                }
+
+                await Logout();
+            }
+            catch (Exception ex)
+            {
+                sResultModel.Success = false;
+                sResultModel.AddExceptionError(ex);
+            }
+
+            return sResultModel;
+        }
+
+        public async Task<ResultModel> DeleteUser(string aUserName)
+        {
+            ResultModel sResultModel = new ResultModel();
+
+            try
+            {
+                var sUser = await mUserManager.Users.FirstOrDefaultAsync(x => x.UserName == aUserName);
+
+                if (sUser == null)
+                {
+                    sResultModel.Success = false;
+                    sResultModel.AddError("Användaren hittades ej");
+                    return sResultModel;
+                }
+
+                var sResult = await mUserManager.DeleteAsync(sUser);
+
+                if (!sResult.Succeeded)
+                {
+                    sResultModel.Success = false;
+                    sResultModel.AppendErrors(sResult.Errors.Select(x => x.Description).ToList());
+                    return sResultModel;
+                }
             }
             catch (Exception ex)
             {

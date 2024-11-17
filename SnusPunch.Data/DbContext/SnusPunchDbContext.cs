@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using SnusPunch.Shared.Models.Identity;
+using SnusPunch.Data.Models.Identity;
 using SnusPunch.Shared.Models.Snus;
 
 namespace SnusPunch.Data.DbContexts

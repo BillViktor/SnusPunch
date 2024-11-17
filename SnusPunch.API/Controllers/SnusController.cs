@@ -21,13 +21,13 @@ namespace SnusPunch.API.Controllers
             mSnusService = aSnusService;
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpPost("AddSnus")]
         public async Task<ResultModel<SnusModel>> AddSnus(SnusModel aSnusModel)
         {
             return await mSnusService.AddSnus(aSnusModel);
         }
 
-        [Authorize]
         [HttpGet("GetSnus")]
         public async Task<ResultModel<List<SnusModel>>> GetSnus()
         {
@@ -40,12 +40,14 @@ namespace SnusPunch.API.Controllers
             return await mSnusService.GetSnusPaginated(aPaginationParameters);
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpPut("UpdateSnus")]
         public async Task<ResultModel<SnusModel>> UpdateSnus(SnusModel aSnusModel)
         {
             return await mSnusService.UpdateSnus(aSnusModel);
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpDelete("RemoveSnus/{aSnusModelId}")]
         public async Task<ResultModel> RemoveSnus(int aSnusModelId)
         {

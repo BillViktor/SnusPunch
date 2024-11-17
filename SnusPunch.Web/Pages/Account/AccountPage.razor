@@ -6,3 +6,21 @@
 <PageTitle>SnusPunch - Konto</PageTitle>
 
 <h2>Under konstruktion</h2>
+
+<AuthorizeView>
+    <p>
+        <b>UserName: </b> @context.User.Identity.Name
+    </p>
+    <p>
+        <b>AuthenticationType: </b> @context.User.Identity.AuthenticationType
+    </p>
+    <p>
+        <b>Identities: </b> @string.Join(", ", context.User.Identities.Select(x => x.Name))
+    </p>
+    <p>
+        <b>Claims: </b> @string.Join(", ", context.User.Claims.Select(x => x.Value))
+    </p>
+    <p>
+        <b>Claims: </b> @string.Join(", ", context.User.Claims.Select(x => x.Value))
+    </p>
+</AuthorizeView>

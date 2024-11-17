@@ -51,6 +51,20 @@ namespace SnusPunch.API.Controllers
             return await mAuthService.Info(User);
         }
 
+        [Authorize]
+        [HttpDelete("Delete")]
+        public async Task<ResultModel> Delete()
+        {
+            return await mAuthService.Delete(User);
+        }
+
+        [Authorize(Roles = "Admin")]
+        [HttpDelete("DeletUser/{aUserName}")]
+        public async Task<ResultModel> DeleteUser(string aUserName)
+        {
+            return await mAuthService.DeleteUser(aUserName);
+        }
+
         #region Email
         [HttpPost("VerifyEmail")]
         public async Task<ResultModel> VerifyEmail(VerifyEmailRequest aVerifyEmailRequest)
