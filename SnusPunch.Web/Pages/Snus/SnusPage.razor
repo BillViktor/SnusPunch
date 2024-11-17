@@ -1,9 +1,23 @@
 ﻿@page "/Snus"
+@using Microsoft.AspNetCore.Components.Authorization
 @using SnusPunch.Shared.Models.Snus
+@attribute [Authorize]
 
 <PageTitle>SnusPunch - Snus</PageTitle>
 
 <MessageComponent Errors="SnusViewModel.Errors" SuccessMessages="SnusViewModel.SuccessMessages" IsBusy="SnusViewModel.IsBusy"/>
+
+<AuthorizeView>
+    <Authorized>
+        <p>Hello @context.User.Identity.Name</p>
+    </Authorized>
+    <Authorizing>
+        <p>You can only see this content while authentication is in progress.</p>
+    </Authorizing>
+    <NotAuthorized>
+        <p>Not authorized</p>
+    </NotAuthorized>
+</AuthorizeView>
 
 <div class="row align-items-center justify-content-between">
     <h2>Snus</h2>

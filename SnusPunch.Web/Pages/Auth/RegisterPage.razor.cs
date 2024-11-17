@@ -9,7 +9,7 @@ namespace SnusPunch.Web.Pages.Auth
         [Inject] AuthViewModel AuthViewModel { get; set; }
         [Inject] NavigationManager NavigationManager { get; set; }
 
-        private RegisterModel mRegisterModel = new RegisterModel();
+        private RegisterRequestModel mRegisterModel = new RegisterRequestModel();
 
         private async Task Register()
         {

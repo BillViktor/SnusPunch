@@ -1,8 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
-using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using SnusPunch.Shared.Models.Auth;
-using SnusPunch.Shared.Models.Identity;
 using SnusPunch.Shared.Models.ResultModel;
 using System.Net;
 using System.Net.Mail;
@@ -40,6 +37,7 @@ namespace SnusPunch.Services.Email
                     From = new MailAddress(mConfiguration["SmtpSettings:Username"], "SnusPunch"),
                     Subject = aHeader,
                     Body = aBody,
+                    IsBodyHtml = true
                 };
 
                 sMailMessage.To.Add(aRecipient);

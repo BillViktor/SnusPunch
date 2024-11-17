@@ -8,6 +8,7 @@ using SnusPunch.Shared.Models.Snus;
 namespace SnusPunch.API.Controllers
 {
     [ApiController]
+    [Authorize]
     [Route("[controller]")]
     public class SnusController : ControllerBase
     {
@@ -26,6 +27,7 @@ namespace SnusPunch.API.Controllers
             return await mSnusService.AddSnus(aSnusModel);
         }
 
+        [Authorize]
         [HttpGet("GetSnus")]
         public async Task<ResultModel<List<SnusModel>>> GetSnus()
         {

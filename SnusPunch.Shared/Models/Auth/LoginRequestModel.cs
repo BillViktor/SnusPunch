@@ -2,7 +2,7 @@
 
 namespace SnusPunch.Shared.Models.Auth
 {
-    public class LoginModel
+    public class LoginRequestModel
     {
         [Required(ErrorMessage = "Du måste fylla i användarnamn!")]
         public string UserName { get; set; }

@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Components;
 using SnusPunch.Shared.Models.Auth;
+using SnusPunch.Web.Identity;
 using SnusPunch.Web.ViewModels.Snus;
 
 namespace SnusPunch.Web.Pages.Auth
@@ -9,11 +10,14 @@ namespace SnusPunch.Web.Pages.Auth
         [Inject] AuthViewModel AuthViewModel { get; set; }
         [Inject] NavigationManager NavigationManager { get; set; }
 
-        private LoginModel mLoginModel = new LoginModel();
+        private LoginRequestModel mLoginModel = new LoginRequestModel();
 
         private async Task Login() 
         {
-            await Task.Delay(0);
+            if(await AuthViewModel.Login(mLoginModel))
+            {
+                NavigationManager.NavigateTo("");
+            }
         }
     }
 }

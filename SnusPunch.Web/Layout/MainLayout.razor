@@ -3,6 +3,8 @@
 
 @inherits LayoutComponentBase
 
+@inject NavigationManager NavigationManager
+
 <BlazoredToasts Position="ToastPosition.BottomRight" RemoveToastsOnNavigation="true" />
 
 <NavMenu />
@@ -12,3 +14,11 @@
         @Body
     </article>
 </main>
+
+<AuthorizeView>
+    <NotAuthorized>
+        @{
+            NavigationManager.NavigateTo("/login");
+        }
+    </NotAuthorized>
+</AuthorizeView>

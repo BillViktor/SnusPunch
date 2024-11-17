@@ -2,7 +2,7 @@
 
 namespace SnusPunch.Shared.Models.Auth
 {
-    public class RegisterModel
+    public class RegisterRequestModel
     {
         [Required(ErrorMessage = "Användarnamn är obligatoriskt!")]
         [MinLength(5)]
