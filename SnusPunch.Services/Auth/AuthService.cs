@@ -147,11 +147,21 @@ namespace SnusPunch.Services.Snus
                     return sResultModel;
                 }
 
-                var sResult = await mSignInManager.PasswordSignInAsync(sUser, aLoginRequest.Password, aLoginRequest.RememberMe, false);
+                var sResult = await mSignInManager.PasswordSignInAsync(sUser, aLoginRequest.Password, aLoginRequest.RememberMe, true);
 
                 if(!sResult.Succeeded)
                 {
-                    sResultModel.AddError("Inloggningen misslyckades.");
+                    if (sResult.IsLockedOut)
+                    {
+                        sUser = await mUserManager.Users.FirstOrDefaultAsync(x => x.UserName == aLoginRequest.UserName);
+                        sResultModel.AddError($"Kontot är låst, prova logga in igen om {(sUser.LockoutEnd - DateTime.Now).Value.Minutes} minuter.");
+                    }
+                    else
+                    {
+                        sResultModel.AddError("Inloggningen misslyckades.");
+                        sResultModel.Success = false;
+                    }
+                    
                     sResultModel.Success = false;
                     return sResultModel;
                 }
@@ -300,6 +310,13 @@ namespace SnusPunch.Services.Snus
                 {
                     sResultModel.Success = false;
                     sResultModel.AddError("Användaren hittades ej.");
+                    return sResultModel;
+                }
+
+                if(sUser.EmailConfirmed)
+                {
+                    sResultModel.Success = false;
+                    sResultModel.AddError("Användaren har redan bekräftat sin e-psot.");
                     return sResultModel;
                 }
 

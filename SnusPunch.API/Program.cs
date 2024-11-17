@@ -30,9 +30,20 @@ builder.Services.AddSwaggerGen(options =>
 #region Auth
 builder.Services.AddAuthorization();
 builder.Services.AddIdentityApiEndpoints<SnusPunchUserModel>
-    (opt => opt.User.RequireUniqueEmail = true)
+    (opt =>
+    {
+        opt.User.RequireUniqueEmail = true;
+        opt.Lockout = new LockoutOptions
+        {
+            DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5),
+            AllowedForNewUsers = true,
+            MaxFailedAccessAttempts = 5
+        };
+    })
     .AddRoles<IdentityRole>()
     .AddEntityFrameworkStores<SnusPunchDbContext>();
+
+builder.Services.Configure<DataProtectionTokenProviderOptions>(opt => opt.TokenLifespan = TimeSpan.FromHours(1));
 #endregion
 
 #region Database

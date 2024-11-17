@@ -5,7 +5,11 @@
 
 <PageTitle>SnusPunch - Konto</PageTitle>
 
-<h2>Under konstruktion</h2>
+<h2>Ditt konto</h2>
+
+<p>
+    Hemsidan är just nu under konstruktion.
+</p>
 
 <AuthorizeView>
     <p>
@@ -16,9 +20,6 @@
     </p>
     <p>
         <b>Identities: </b> @string.Join(", ", context.User.Identities.Select(x => x.Name))
-    </p>
-    <p>
-        <b>Claims: </b> @string.Join(", ", context.User.Claims.Select(x => x.Value))
     </p>
     <p>
         <b>Claims: </b> @string.Join(", ", context.User.Claims.Select(x => x.Value))

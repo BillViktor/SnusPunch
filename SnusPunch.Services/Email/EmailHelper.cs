@@ -61,6 +61,9 @@
                             Verifiera din e-postadress genom att klicka på länken nedanför
                         </p>
                         <a href=""{aConfirmationLink}"" class=""button"">Verifiera E-post</a>
+                        <p>
+                            Länken är giltig i en timme.
+                        </p>
                         <p class=""footer"">
                             Med vänliga hälsningar,<br>
                             <strong>SnusPunch</strong>
@@ -130,6 +133,9 @@
                             Återställ ditt lösenord genom att klicka på knappen nedanför.
                         </p>
                         <a href=""{aResetPasswordLink}"" class=""button"">Återställ lösenord</a>
+                        <p>
+                            Länken är giltig i en timme.
+                        </p>
                         <p class=""footer"">
                             Med vänliga hälsningar,<br>
                             <strong>SnusPunch</strong>
