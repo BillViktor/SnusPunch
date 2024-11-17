@@ -73,7 +73,7 @@ namespace SnusPunch.Web.Clients.Snus
             try
             {
                 var sHttpClient = mHttpClientFactory.CreateClient(HttpClientEnum.Auth.ToString());
-                var sResponse = await sHttpClient.PostAsync("login", null);
+                var sResponse = await sHttpClient.PostAsync("logout", null);
 
                 if (!sResponse.IsSuccessStatusCode)
                 {
@@ -91,9 +91,9 @@ namespace SnusPunch.Web.Clients.Snus
             return sResultModel;
         }
 
-        public async Task<ResultModel<string>> Info()
+        public async Task<ResultModel<UserInfoModel>> Info()
         {
-            ResultModel<string> sResultModel = new ResultModel<string>();
+            ResultModel<UserInfoModel> sResultModel = new ResultModel<UserInfoModel>();
 
             try
             {
@@ -103,6 +103,33 @@ namespace SnusPunch.Web.Clients.Snus
                 if (!sResponse.IsSuccessStatusCode)
                 {
                     throw new Exception("Non-success status code at Info in AuthClient");
+                }
+
+                sResultModel = await sResponse.Content.ReadFromJsonAsync<ResultModel<UserInfoModel>>();
+            }
+            catch (Exception aException)
+            {
+                sResultModel.Success = false;
+                sResultModel.AddExceptionError(aException);
+            }
+
+            return sResultModel;
+        }
+        #endregion
+
+        #region Email
+        public async Task<ResultModel<string>> ResendConfirmationEmail()
+        {
+            ResultModel<string> sResultModel = new ResultModel<string>();
+
+            try
+            {
+                var sHttpClient = mHttpClientFactory.CreateClient(HttpClientEnum.Auth.ToString());
+                var sResponse = await sHttpClient.PostAsync("ResendConfirmationEmail", null);
+
+                if (!sResponse.IsSuccessStatusCode)
+                {
+                    throw new Exception("Non-success status code at ResendConfirmationEmail in AuthClient");
                 }
 
                 sResultModel = await sResponse.Content.ReadFromJsonAsync<ResultModel<string>>();
@@ -116,21 +143,21 @@ namespace SnusPunch.Web.Clients.Snus
             return sResultModel;
         }
 
-        public async Task<ResultModel<List<RoleClaimModel>>> Roles()
+        public async Task<ResultModel> VerifyEmail(VerifyEmailRequest aVerifyEmailRequest)
         {
-            ResultModel<List<RoleClaimModel>> sResultModel = new ResultModel<List<RoleClaimModel>>();
+            ResultModel sResultModel = new ResultModel();
 
             try
             {
                 var sHttpClient = mHttpClientFactory.CreateClient(HttpClientEnum.Auth.ToString());
-                var sResponse = await sHttpClient.GetAsync("Roles");
+                var sResponse = await sHttpClient.PostAsJsonAsync("VerifyEmail", aVerifyEmailRequest);
 
                 if (!sResponse.IsSuccessStatusCode)
                 {
-                    throw new Exception("Non-success status code at Roles in AuthClient");
+                    throw new Exception("Non-success status code at VerifyEmail in AuthClient");
                 }
 
-                sResultModel = await sResponse.Content.ReadFromJsonAsync<ResultModel<List<RoleClaimModel>>>();
+                sResultModel = await sResponse.Content.ReadFromJsonAsync<ResultModel>();
             }
             catch (Exception aException)
             {
@@ -142,13 +169,56 @@ namespace SnusPunch.Web.Clients.Snus
         }
         #endregion
 
-        #region Email
-
-        #endregion
-
         #region Password
+        public async Task<ResultModel> ForgotPassword(ForgotPasswordRequestModel aForgotPasswordRequestModel)
+        {
+            ResultModel sResultModel = new ResultModel();
 
+            try
+            {
+                var sHttpClient = mHttpClientFactory.CreateClient(HttpClientEnum.Auth.ToString());
+                var sResponse = await sHttpClient.PostAsJsonAsync("ForgotPassword", aForgotPasswordRequestModel);
+
+                if (!sResponse.IsSuccessStatusCode)
+                {
+                    throw new Exception("Non-success status code at ForgotPassword in AuthClient");
+                }
+
+                sResultModel = await sResponse.Content.ReadFromJsonAsync<ResultModel>();
+            }
+            catch (Exception aException)
+            {
+                sResultModel.Success = false;
+                sResultModel.AddExceptionError(aException);
+            }
+
+            return sResultModel;
+        }
+
+        public async Task<ResultModel> ResetPassword(ResetPasswordRequestModel aResetPasswordRequestModel)
+        {
+            ResultModel sResultModel = new ResultModel();
+
+            try
+            {
+                var sHttpClient = mHttpClientFactory.CreateClient(HttpClientEnum.Auth.ToString());
+                var sResponse = await sHttpClient.PostAsJsonAsync("ResetPassword", aResetPasswordRequestModel);
+
+                if (!sResponse.IsSuccessStatusCode)
+                {
+                    throw new Exception("Non-success status code at ResetPassword in AuthClient");
+                }
+
+                sResultModel = await sResponse.Content.ReadFromJsonAsync<ResultModel>();
+            }
+            catch (Exception aException)
+            {
+                sResultModel.Success = false;
+                sResultModel.AddExceptionError(aException);
+            }
+
+            return sResultModel;
+        }
         #endregion
-
     }
 }

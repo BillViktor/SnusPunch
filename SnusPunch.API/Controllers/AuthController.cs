@@ -46,30 +46,26 @@ namespace SnusPunch.API.Controllers
 
         [Authorize]
         [HttpGet("Info")]
-        public async Task<ResultModel<string>> Info()
+        public async Task<ResultModel<UserInfoModel>> Info()
         {
             return await mAuthService.Info(User);
         }
 
-        [Authorize]
-        [HttpGet("Roles")]
-        public async Task<ResultModel<List<RoleClaimModel>>> Roles()
-        {
-            return await mAuthService.Roles(User);
-        }
-
+        #region Email
         [HttpPost("VerifyEmail")]
-        public async Task<ResultModel> VerifyEmail(VerifyEmailRequest VerifyEmailRequest)
+        public async Task<ResultModel> VerifyEmail(VerifyEmailRequest aVerifyEmailRequest)
         {
-            return await mAuthService.VerifyEmail(VerifyEmailRequest.UserId, VerifyEmailRequest.Token);
+            return await mAuthService.VerifyEmail(aVerifyEmailRequest);
         }
 
         [HttpPost("ResendConfirmationEmail")]
-        public async Task<ResultModel> ResendConfirmationEmail(ResendVerificationRequestModel aResendVerificationRequest)
+        public async Task<ResultModel> ResendConfirmationEmail()
         {
-            return await mAuthService.ResendVerificationEmail(aResendVerificationRequest.UserId);
+            return await mAuthService.ResendVerificationEmail(User);
         }
+        #endregion
 
+        #region Password
         [HttpPost("ForgotPassword")]
         public async Task<ResultModel> ForgotPassword(ForgotPasswordRequestModel aForgotPasswordRequest)
         {
@@ -81,5 +77,22 @@ namespace SnusPunch.API.Controllers
         {
             return await mAuthService.ResetPassword(aResetPasswordRequest);
         }
+        #endregion
+
+        #region Roles
+        [Authorize(Roles = "Admin")]
+        [HttpPost("AddUserToRole")]
+        public async Task<ResultModel> AddUserToRole(UserRoleRequestModel aUserRoleRequestModel)
+        {
+            return await mAuthService.AddUserToRole(aUserRoleRequestModel);
+        }
+
+        [Authorize(Roles = "Admin")]
+        [HttpPost("RemoveUserFromRole")]
+        public async Task<ResultModel> RemoveUserFromRole(UserRoleRequestModel aUserRoleRequestModel)
+        {
+            return await mAuthService.RemoveUserFromRole(aUserRoleRequestModel);
+        }
+        #endregion
     }
 }

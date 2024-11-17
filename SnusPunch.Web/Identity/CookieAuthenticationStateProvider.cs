@@ -34,25 +34,21 @@ namespace SnusPunch.Web.Identity
                 {
                     var sClaims = new List<Claim>
                     {
-                        new Claim(ClaimTypes.Name, sUserResponse.ResultObject)
+                        new Claim(ClaimTypes.Name, sUserResponse.ResultObject.UserName),
+                        new Claim(ClaimTypes.Email, sUserResponse.ResultObject.Email)
                     };
 
-                    var sRolesResult = await mAuthClient.Roles();
-
-                    if(sRolesResult.Success)
+                    foreach (var sRole in sUserResponse.ResultObject.RoleClaims)
                     {
-                        foreach (var sRole in sRolesResult.ResultObject)
+                        if (!string.IsNullOrEmpty(sRole.Type) && !string.IsNullOrEmpty(sRole.Value))
                         {
-                            if (!string.IsNullOrEmpty(sRole.Type) && !string.IsNullOrEmpty(sRole.Value))
-                            {
-                                sClaims.Add(new Claim(sRole.Type, sRole.Value, sRole.ValueType, sRole.Issuer, sRole.OriginalIssuer));
-                            }
+                            sClaims.Add(new Claim(sRole.Type, sRole.Value, sRole.ValueType, sRole.Issuer, sRole.OriginalIssuer));
                         }
-
-                        var sId = new ClaimsIdentity(sClaims, nameof(CookieAuthenticationStateProvider));
-                        sUser = new ClaimsPrincipal(sId);
-                        mAuthenticated = true;
                     }
+
+                    var sId = new ClaimsIdentity(sClaims, nameof(CookieAuthenticationStateProvider));
+                    sUser = new ClaimsPrincipal(sId);
+                    mAuthenticated = true;
                 }
             }
             catch { }

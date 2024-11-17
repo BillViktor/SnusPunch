@@ -35,6 +35,7 @@ header a {
 header nav ul {
     list-style-type: none;
     display: flex;
+    align-items: center;
 }
 
 header nav ul li a {
@@ -346,6 +347,44 @@ button:hover {
 .button-danger {
     background-color: var(--danger-color);
     color: #fff;
+}
+
+/* Drop Down Knapp */
+.dropdown-text {
+    font-size: 2rem !important;
+    font-weight: bold;
+    margin: 0 1rem;
+}
+
+.button-drop-down {
+    background-color: transparent;
+    font-size: 2rem !important;
+    color: var(--font-color);
+    border: none;
+    cursor: pointer;
+}
+
+.dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: var(--foreground-color);
+    min-width: 160px;
+    box-shadow: 0 0 1rem 0.125rem #000;
+    z-index: 1;
+    padding: 1rem 0;
+}
+
+.dropdown-content a, .dropdown-content button {
+    margin-top: 1rem;
+}
+
+.show {
+    display: block;
 }
 
 /* Loading  */

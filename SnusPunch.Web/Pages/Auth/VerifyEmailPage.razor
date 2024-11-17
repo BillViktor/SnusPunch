@@ -1,0 +1,25 @@
+﻿@page "/Verify"
+@layout EmptyLayout
+
+<PageTitle>SnusPunch - Verifiera E-post</PageTitle>
+
+<MessageComponent Errors="AuthViewModel.Errors" SuccessMessages="AuthViewModel.SuccessMessages" IsBusy="AuthViewModel.IsBusy" />
+
+<div class="center box">
+    <h2>Verifiera E-post</h2>
+
+    <EditForm Model="mVerifyEmailRequest" OnValidSubmit="VerifyEmail">
+        <DataAnnotationsValidator />
+
+        <p>
+            <ValidationSummary />
+        </p>
+
+        <p>
+            <label for="email">E-post</label>
+            <input @bind="mVerifyEmailRequest.Email" id="email" class="full-width" />
+        </p>
+
+        <button class="full-width" type="submit">Verifiera E-post</button>
+    </EditForm>
+</div>

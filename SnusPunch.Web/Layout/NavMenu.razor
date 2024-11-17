@@ -1,6 +1,9 @@
-﻿<header>
+﻿@using SnusPunch.Web.ViewModels.Snus
+@inject AuthViewModel AuthViewModel
+
+<header>
      <div class="header-wrapper">
-        <a class="row gap-1 align-items-center" href="">
+        <a class="row gap-1 align-items-bottom" href="">
             <img height="42" src="icon-192.png"/>
             <h1>SnusPunch</h1>
         </a>
@@ -17,7 +20,51 @@
                         Snus
                     </NavLink>
                 </li>
+                <li>
+                    <NavLink class="nav-link" href="Users" Match="NavLinkMatch.All">
+                        Användare
+                    </NavLink>
+                </li>
+                <li>
+                    <div class="dropdown">
+                        <button onclick="toggleDropDown()" class="button-drop-down">Konto</button>
+                        <div id="accountDropDown" class="dropdown-content">
+                            <AuthorizeView>
+                                <p class="dropdown-text">
+                                    @context.User.Identity.Name
+                                </p>
+                            </AuthorizeView>
+
+                            <hr/>
+
+                            <NavLink class="nav-link" href="Account">
+                                Konto
+                            </NavLink>
+                            <button class="button-drop-down" @onclick="async () => await AuthViewModel.Logout()">Logga ut</button>
+                        </div>
+                    </div>
+                </li>
             </ul>
         </nav>
      </div>
  </header>
+
+ <script>
+    function toggleDropDown() {
+        document.getElementById("accountDropDown").classList.toggle("show");
+    }
+
+    //Stäng om man klickar utanför
+    window.onclick = function (event) {
+        if (!event.target.matches('.button-drop-down')) {
+            var dropdowns = document.getElementsByClassName("dropdown-content");
+            var i;
+            for (i = 0; i < dropdowns.length; i++) {
+                var openDropdown = dropdowns[i];
+                if (openDropdown.classList.contains('show')) {
+                    openDropdown.classList.remove('show');
+                }
+            }
+        }
+    }
+ </script>

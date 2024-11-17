@@ -29,7 +29,10 @@ builder.Services.AddSwaggerGen(options =>
 
 #region Auth
 builder.Services.AddAuthorization();
-builder.Services.AddIdentityApiEndpoints<SnusPunchUserModel>().AddEntityFrameworkStores<SnusPunchDbContext>();
+builder.Services.AddIdentityApiEndpoints<SnusPunchUserModel>
+    (opt => opt.User.RequireUniqueEmail = true)
+    .AddRoles<IdentityRole>()
+    .AddEntityFrameworkStores<SnusPunchDbContext>();
 #endregion
 
 #region Database
@@ -57,8 +60,6 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
     app.UseCors(options => options.WithOrigins(builder.Configuration["BackendUrl"], builder.Configuration["FrontendUrl"]).AllowAnyHeader().AllowAnyMethod().AllowCredentials());
 }
-
-app.MapIdentityApi<SnusPunchUserModel>();
 
 app.UseHttpsRedirection();
 

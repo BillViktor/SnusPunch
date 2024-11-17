@@ -73,11 +73,99 @@ namespace SnusPunch.Web.ViewModels.Snus
             else
             {
                 mCookieAuthenticationStateProvider.NotifyAuthenticationStateChanged();
-                SuccessMessages.Add("Utloggningen lyckades!");
+                SuccessMessages.Add("Du är nu utloggad!");
             }
 
             IsBusy = false;
             return sSuccess;
         }
+
+        #region Email
+        public async Task<bool> VerifyEmail(VerifyEmailRequest aVerifyEmailRequest)
+        {
+            bool sSuccess = true;
+            IsBusy = true;
+
+            var sResult = await mAuthClient.VerifyEmail(aVerifyEmailRequest);
+
+            if (!sResult.Success)
+            {
+                Errors.AddRange(sResult.Errors);
+                sSuccess = false;
+            }
+            else
+            {
+                SuccessMessages.Add("E-postadressen är nu verifierad!");
+            }
+
+            IsBusy = false;
+            return sSuccess;
+        }
+
+        public async Task<bool> ResendConfirmationEmail()
+        {
+            bool sSuccess = true;
+            IsBusy = true;
+
+            var sResult = await mAuthClient.ResendConfirmationEmail();
+
+            if (!sResult.Success)
+            {
+                Errors.AddRange(sResult.Errors);
+                sSuccess = false;
+            }
+            else
+            {
+                SuccessMessages.Add($"Ett nytt mejl har skickats till {sResult.ResultObject}");
+            }
+
+            IsBusy = false;
+            return sSuccess;
+        }
+        #endregion
+
+        #region Password
+        public async Task<bool> ForgotPassword(ForgotPasswordRequestModel aForgotPasswordRequestModel)
+        {
+            bool sSuccess = true;
+            IsBusy = true;
+
+            var sResult = await mAuthClient.ForgotPassword(aForgotPasswordRequestModel);
+
+            if (!sResult.Success)
+            {
+                Errors.AddRange(sResult.Errors);
+                sSuccess = false;
+            }
+            else
+            {
+                SuccessMessages.Add("Ett e-postmeddelande för att återställa e-postadressen har skickats om det fanns någon användare med given e-post.");
+            }
+
+            IsBusy = false;
+            return sSuccess;
+        }
+
+        public async Task<bool> ResetPassword(ResetPasswordRequestModel aResetPasswordRequestModel)
+        {
+            bool sSuccess = true;
+            IsBusy = true;
+
+            var sResult = await mAuthClient.ResetPassword(aResetPasswordRequestModel);
+
+            if (!sResult.Success)
+            {
+                Errors.AddRange(sResult.Errors);
+                sSuccess = false;
+            }
+            else
+            {
+                SuccessMessages.Add("Lösenordet bytt! Du kan nu logga in.");
+            }
+
+            IsBusy = false;
+            return sSuccess;
+        }
+        #endregion
     }
 }

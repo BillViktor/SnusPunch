@@ -7,21 +7,11 @@
 
 <MessageComponent Errors="SnusViewModel.Errors" SuccessMessages="SnusViewModel.SuccessMessages" IsBusy="SnusViewModel.IsBusy"/>
 
-<AuthorizeView>
-    <Authorized>
-        <p>Hello @context.User.Identity.Name</p>
-    </Authorized>
-    <Authorizing>
-        <p>You can only see this content while authentication is in progress.</p>
-    </Authorizing>
-    <NotAuthorized>
-        <p>Not authorized</p>
-    </NotAuthorized>
-</AuthorizeView>
-
 <div class="row align-items-center justify-content-between">
     <h2>Snus</h2>
-    <button disabled="@SnusViewModel.IsBusy" @onclick="async () => await AddSnus()"><span class="icon material-symbols--add" /> Lägg till Snus</button>
+    <AuthorizeView Roles="Admin">
+        <button disabled="@SnusViewModel.IsBusy" @onclick="async () => await AddSnus()"><span class="icon material-symbols--add" /> Lägg till Snus</button>
+    </AuthorizeView>
 </div>
 
 <div class="my-1">
@@ -39,7 +29,9 @@
             <th>Nikotinhalt (mg/g)</th>
             <th>Pris (SEK/portion)</th>
             <th>Nikotin (mg/portion)</th>
-            <th></th>
+            <AuthorizeView Roles="Admin">
+                <th></th>
+            </AuthorizeView>
         </tr>
     </thead>
     <tbody>
@@ -53,15 +45,14 @@
                 <td>@sSnus.NicotineInMgPerGram</td>
                 <td>@sSnus.PricePerPortion</td>
                 <td>@sSnus.NicotinePerPortion</td>
-                <td>
+                <AuthorizeView Roles="Admin">
                     <button title="Redigera" disabled="@SnusViewModel.IsBusy" @onclick="async () => await EditSnus(sSnus)" class="button-icon">
                         <span class="icon-button material-symbols--edit" />
                     </button>
                     <button title="Radera" disabled="@SnusViewModel.IsBusy" @onclick="async () => await DeleteSnus(sSnus)" class="button-icon">
                         <span class="icon-button material-symbols--delete" />
                     </button>
-                    
-                </td>
+                </AuthorizeView>
             </tr>
         }
     </tbody>

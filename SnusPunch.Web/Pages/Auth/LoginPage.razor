@@ -1,4 +1,4 @@
-﻿@page "/login"
+﻿@page "/Login"
 @layout EmptyLayout
 
 <PageTitle>SnusPunch - Login</PageTitle>
@@ -9,6 +9,12 @@
     <h2>Logga in</h2>
 
     <EditForm Model="mLoginModel" OnValidSubmit="Login">
+        <DataAnnotationsValidator />
+
+        <p>
+            <ValidationSummary />
+        </p>
+
         <p>
             <label for="userName">Användarnamn</label>
             <input @bind="mLoginModel.UserName" id="userName" class="full-width" />
@@ -25,7 +31,7 @@
                 <label style="display: inline" for="rememberMe">Kom ihåg mig</label>
             </div>
 
-            <a href="login">Glömt ditt lösenord?</a>
+            <a href="forgotpassword">Glömt ditt lösenord?</a>
         </p>
 
 
