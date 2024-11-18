@@ -16,6 +16,7 @@ namespace SnusPunch.Web.Pages.Auth
         {
             if(await AuthViewModel.Login(mLoginModel))
             {
+                await Task.Delay(1000);
                 NavigationManager.NavigateTo("");
             }
         }

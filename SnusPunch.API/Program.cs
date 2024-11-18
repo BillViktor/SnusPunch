@@ -57,6 +57,7 @@ builder.Services.AddScoped<SnusPunchRepository>();
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<EmailService>();
 builder.Services.AddScoped<SnusService>();
+builder.Services.AddScoped<UserService>();
 #endregion
 
 //Load Smtp Credentials

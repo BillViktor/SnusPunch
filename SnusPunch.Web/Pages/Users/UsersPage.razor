@@ -5,8 +5,46 @@
 
 <PageTitle>SnusPunch - Användare</PageTitle>
 
-<h2>Användare</h2>
+<MessageComponent Errors="UserViewModel.Errors" SuccessMessages="UserViewModel.SuccessMessages" IsBusy="UserViewModel.IsBusy" />
 
-<p>
-    Hemsidan är just nu under konstruktion.
-</p>
+<div class="row align-items-center justify-content-between">
+    <h2>Användare</h2>
+</div>
+
+<SearchSortComponent OnSearch="async () => await GetUsers()" PaginationMetaData="mPaginationMetaData" PaginationParameters="mPaginationParameters" SortProperties="mSortProperties" />
+
+
+<table>
+    <thead>
+        <tr>
+            <th>Användarnamn</th>
+            <th>Favoritsnus</th>
+            <th>Snusningar</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var sSnus in mUserList)
+        {
+            <tr>
+                <td>@sSnus.UserName</td>
+                <td>@sSnus.FavouriteSnus</td>
+                <td>@sSnus.SnusPunches</td>
+                <td>
+                    <AuthorizeView Roles="Admin">
+                        <button title="Radera" disabled="@UserViewModel.IsBusy" class="button-icon">
+                            <span class="icon-button material-symbols--delete" />
+                        </button>
+                    </AuthorizeView>
+                </td>
+
+            </tr>
+        }
+    </tbody>
+</table>
+<div style="margin-top: 10px">
+    @if (mPaginationMetaData != null)
+    {
+        <PaginationComponent OnSearch="async () => await GetUsers()" PaginationMetaData="mPaginationMetaData" PaginationParameters="mPaginationParameters" />
+    }
+</div>

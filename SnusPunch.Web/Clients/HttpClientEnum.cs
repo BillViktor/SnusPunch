@@ -4,6 +4,7 @@
     {
         Auth,
         Base,
-        Snus
+        Snus,
+        User
     }
 }

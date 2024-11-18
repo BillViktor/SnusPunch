@@ -10,7 +10,10 @@
 <div class="row align-items-center justify-content-between">
     <h2>Snus</h2>
     <AuthorizeView Roles="Admin">
-        <button disabled="@SnusViewModel.IsBusy" @onclick="async () => await AddSnus()"><span class="icon material-symbols--add" /> Lägg till Snus</button>
+        <button disabled="@SnusViewModel.IsBusy" @onclick="async () => await AddSnus()">
+            <span class="align-middle material-symbols--add"/>
+            <span class="align-middle"> Lägg till Snus</span>
+        </button>
     </AuthorizeView>
 </div>
 
@@ -27,9 +30,7 @@
             <th>Nikotinhalt (mg/g)</th>
             <th>Pris (SEK/portion)</th>
             <th>Nikotin (mg/portion)</th>
-            <AuthorizeView Roles="Admin">
-                <th></th>
-            </AuthorizeView>
+            <th></th>
         </tr>
     </thead>
     <tbody>
@@ -43,14 +44,20 @@
                 <td>@sSnus.NicotineInMgPerGram</td>
                 <td>@sSnus.PricePerPortion</td>
                 <td>@sSnus.NicotinePerPortion</td>
-                <AuthorizeView Roles="Admin">
-                    <button title="Redigera" disabled="@SnusViewModel.IsBusy" @onclick="async () => await EditSnus(sSnus)" class="button-icon">
-                        <span class="icon-button material-symbols--edit" />
+                <td class="icon-row">
+                    <button title="@(sSnus.Id == mFavouriteSnusId ? "Detta är ditt favoritsnus!" : "Sätt som favorit")" disabled="@SnusViewModel.IsBusy" @onclick="async () => await SetFavouriteSnus(sSnus)" class="button-icon">
+                        <span style="@(sSnus.Id == mFavouriteSnusId ? "color: yellow" : "")" class="ic--baseline-star" />
                     </button>
-                    <button title="Radera" disabled="@SnusViewModel.IsBusy" @onclick="async () => await DeleteSnus(sSnus)" class="button-icon">
-                        <span class="icon-button material-symbols--delete" />
-                    </button>
-                </AuthorizeView>
+                    <AuthorizeView Roles="Admin">
+                        <button title="Redigera" disabled="@SnusViewModel.IsBusy" @onclick="async () => await EditSnus(sSnus)" class="button-icon">
+                            <span class="material-symbols--edit" />
+                        </button>
+                        <button title="Radera" disabled="@SnusViewModel.IsBusy" @onclick="async () => await DeleteSnus(sSnus)" class="button-icon">
+                            <span class="material-symbols--delete" />
+                        </button>
+                    </AuthorizeView>
+                </td>
+                
             </tr>
         }
     </tbody>

@@ -38,11 +38,15 @@ builder.Services.AddScoped<AuthClient>();
 
 builder.Services.AddHttpClient(HttpClientEnum.Snus.ToString(), config => config.BaseAddress = new Uri(sBaseUrl + "Snus/")).AddHttpMessageHandler<CookieHandler>();
 builder.Services.AddScoped<SnusClient>();
+
+builder.Services.AddHttpClient(HttpClientEnum.User.ToString(), config => config.BaseAddress = new Uri(sBaseUrl + "User/")).AddHttpMessageHandler<CookieHandler>();
+builder.Services.AddScoped<UserClient>();
 #endregion
 
 #region ViewModels
 builder.Services.AddScoped<AuthViewModel>();
 builder.Services.AddScoped<SnusViewModel>();
+builder.Services.AddScoped<UserViewModel>();
 #endregion
 
 await builder.Build().RunAsync();

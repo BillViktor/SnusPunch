@@ -59,7 +59,7 @@ namespace SnusPunch.API.Controllers
         }
 
         [Authorize(Roles = "Admin")]
-        [HttpDelete("DeletUser/{aUserName}")]
+        [HttpDelete("DeleteUser/{aUserName}")]
         public async Task<ResultModel> DeleteUser(string aUserName)
         {
             return await mAuthService.DeleteUser(aUserName);
@@ -90,6 +90,13 @@ namespace SnusPunch.API.Controllers
         public async Task<ResultModel> ResetPassword(ResetPasswordRequestModel aResetPasswordRequest)
         {
             return await mAuthService.ResetPassword(aResetPasswordRequest);
+        }
+
+        [Authorize]
+        [HttpPost("ChangePassword")]
+        public async Task<ResultModel> ChangePassword(ChangePasswordRequestModel aChangePasswordRequestModel)
+        {
+            return await mAuthService.ChangePassword(aChangePasswordRequestModel, User);
         }
         #endregion
 

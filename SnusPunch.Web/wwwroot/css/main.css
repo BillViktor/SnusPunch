@@ -86,7 +86,7 @@ h1 {
 }
 
 h2 {
-    font-size: 2rem;
+    font-size: 2.25rem;
 }
 
 
@@ -98,7 +98,7 @@ p {
 
 /* Inputs */
 input {
-    height: 2.11rem;
+    height: 2.5rem;
     font-size: 1.25rem;
     box-sizing: border-box;
     -webkit-box-sizing: border-box;
@@ -171,6 +171,10 @@ select {
 }
 
 /* Misc */
+.align-middle {
+    vertical-align: middle;
+}
+
 .row {
     display: flex;
 }
@@ -295,18 +299,18 @@ a {
     margin: 0;
     padding: 0 0rem;
     cursor: pointer;
+    height: 2rem;
 }
 
 button {
     display: inline-block;
-    text-align: center;
     text-decoration: none;
     vertical-align: middle;
     white-space: nowrap;
     height: 2.5rem;
     border-radius: 0.25rem;
     font-weight: bold;
-    font-size: 1rem;
+    font-size: 1.25rem;
     padding: 0 1rem;
     background-color: var(--primary-color);
     color: #fff;
@@ -316,7 +320,7 @@ button {
 }
 
 button#text {
-    vertical-align: middle;
+    line-height: 2.5rem;
 }
 
 button:disabled, button:disabled:hover {

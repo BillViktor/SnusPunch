@@ -1,9 +1,11 @@
 ﻿using Blazored.Modal;
 using Blazored.Modal.Services;
 using Microsoft.AspNetCore.Components;
+using SnusPunch.Shared.Models.Errors;
 using SnusPunch.Shared.Models.Pagination;
 using SnusPunch.Shared.Models.Snus;
 using SnusPunch.Web.Components;
+using SnusPunch.Web.Identity;
 using SnusPunch.Web.Pages.Snus.Components;
 using SnusPunch.Web.ViewModels.Snus;
 
@@ -12,8 +14,10 @@ namespace SnusPunch.Web.Pages.Snus
     public partial class SnusPage
     {
         [CascadingParameter] public IModalService Modal { get; set; } = default!;
+        [Inject] CookieAuthenticationStateProvider CookieAuthenticationStateProvider { get; set; }
         [Inject] SnusViewModel SnusViewModel { get; set; }
 
+        private int? mFavouriteSnusId = null;
         private PaginationMetaData mPaginationMetaData = null;
         private List<SnusModel> mSnusList = new List<SnusModel>();
         private PaginationParameters mPaginationParameters = new PaginationParameters
@@ -35,6 +39,8 @@ namespace SnusPunch.Web.Pages.Snus
         protected override async Task OnInitializedAsync()
         {
             await GetSnus();
+
+            await GetFavouriteSnus();
         }
 
         private async Task GetSnus()
@@ -44,11 +50,64 @@ namespace SnusPunch.Web.Pages.Snus
             mSnusList = sResult.Items;
         }
 
+        private async Task GetFavouriteSnus()
+        {
+            var sAuthState = await CookieAuthenticationStateProvider.GetAuthenticationStateAsync();
+            var sUser = sAuthState.User;
+            var sSnusClaim = sUser.Claims.FirstOrDefault(x => x.Type == "FavouriteSnusId");
+
+            if(sSnusClaim != null && !string.IsNullOrEmpty(sSnusClaim.Value))
+            {
+                int sFavouriteSnusId;
+                if(int.TryParse(sSnusClaim.Value, out sFavouriteSnusId))
+                {
+                    mFavouriteSnusId = sFavouriteSnusId;
+                }
+            }
+        }
+
         #region Actions
+        private async Task SetFavouriteSnus(SnusModel aSnusModel)
+        {
+            if(aSnusModel.Id == mFavouriteSnusId)
+            {
+                SnusViewModel.Errors.Add(new ErrorModel { ErrorText = $"{aSnusModel.Name} är redan ditt favoritsnus!" });
+                return;
+            }
+            var sOptions = new ModalOptions
+            {
+                DisableBackgroundCancel = true,
+                Size = ModalSize.Custom,
+                SizeCustomClass = "modal-large",
+                Position = ModalPosition.Middle
+            };
+            var sParameters = new ModalParameters { { "Message", $"Vill du sätta {aSnusModel.Name} som favoritsnus?" } };
+            var sModal = Modal.Show<ConfirmationComponent>("Bekräfta nytt favoritsnus", sParameters, sOptions);
+            var sResult = await sModal.Result;
+
+            if (!sResult.Cancelled)
+            {
+                if(await SnusViewModel.SetFavouriteSnus(aSnusModel))
+                {
+                    mFavouriteSnusId = aSnusModel.Id;
+
+                    //Refresha auth state
+                    await CookieAuthenticationStateProvider.GetAuthenticationStateAsync();
+                }
+            }
+        }
+
         private async Task DeleteSnus(SnusModel aSnusModel)
         {
+            var sOptions = new ModalOptions
+            {
+                DisableBackgroundCancel = true,
+                Size = ModalSize.Custom,
+                SizeCustomClass = "modal-large",
+                Position = ModalPosition.Middle
+            };
             var sParameters = new ModalParameters { { "Message", $"Är du säker på att du vill radera {aSnusModel.Name}? Detta går inte att ångra!" } };
-            var sModal = Modal.Show<ConfirmationComponent>("Bekräfta borttagning", sParameters);
+            var sModal = Modal.Show<ConfirmationComponent>("Bekräfta borttagning", sParameters, sOptions);
             var sResult = await sModal.Result;
 
             if (!sResult.Cancelled)

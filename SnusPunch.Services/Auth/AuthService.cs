@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using SnusPunch.Data.Models.Identity;
+using SnusPunch.Data.Repository;
 using SnusPunch.Services.Email;
 using SnusPunch.Shared.Models.Auth;
 using SnusPunch.Shared.Models.ResultModel;
@@ -14,15 +15,17 @@ namespace SnusPunch.Services.Snus
     public class AuthService
     {
         private readonly ILogger<AuthService> mLogger;
+        private readonly SnusPunchRepository mSnusPunchRepository;
         private readonly UserManager<SnusPunchUserModel> mUserManager;
         private readonly SignInManager<SnusPunchUserModel> mSignInManager;
         private readonly RoleManager<IdentityRole> mRoleManager;
         private readonly EmailService mEmailService;
         private readonly IConfiguration mConfiguration;
 
-        public AuthService(ILogger<AuthService> aLogger, UserManager<SnusPunchUserModel> aUserManager, SignInManager<SnusPunchUserModel> aSignInManager, RoleManager<IdentityRole> aRoleManager, EmailService aEmailService, IConfiguration aConfiguration)
+        public AuthService(ILogger<AuthService> aLogger, SnusPunchRepository aSnusPunchRepository, UserManager<SnusPunchUserModel> aUserManager, SignInManager<SnusPunchUserModel> aSignInManager, RoleManager<IdentityRole> aRoleManager, EmailService aEmailService, IConfiguration aConfiguration)
         {
             mLogger = aLogger;
+            mSnusPunchRepository = aSnusPunchRepository;
             mUserManager = aUserManager;
             mSignInManager = aSignInManager;
             mRoleManager = aRoleManager;
@@ -214,8 +217,19 @@ namespace SnusPunch.Services.Snus
                     Email = sUser.Email,
                     IsEmailConfirmed = sUser.EmailConfirmed,
                     UserName = sUser.UserName,
-                    RoleClaims = sRoles
+                    RoleClaims = sRoles,
+                    FavouriteSnusId = sUser.FavoriteSnusId
                 };
+
+                if(sResultModel.ResultObject.FavouriteSnusId != null)
+                {
+                    var sSnus = await mSnusPunchRepository.GetSnusById((int)sResultModel.ResultObject.FavouriteSnusId);
+
+                    if(sSnus != null)
+                    {
+                        sResultModel.ResultObject.FavouriteSnusName = sSnus.Name;
+                    }
+                }
             }
             catch (Exception ex)
             {
@@ -395,7 +409,6 @@ namespace SnusPunch.Services.Snus
                 {
                     sResultModel.Success = false;
                     sResultModel.AppendErrors(sResult.Errors.Select(x => x.Description).ToList());
-                    return sResultModel;
                 }
             }
             catch (Exception ex)
@@ -406,6 +419,40 @@ namespace SnusPunch.Services.Snus
 
             return sResultModel;
         }
+
+        public async Task<ResultModel> ChangePassword(ChangePasswordRequestModel aChangePasswordRequestModel, ClaimsPrincipal aClaimsPrincipal)
+        {
+            ResultModel sResultModel = new ResultModel();
+
+            try
+            {
+                var sUser = await mUserManager.GetUserAsync(aClaimsPrincipal);
+
+                if (sUser == null)
+                {
+                    sResultModel.Success = false;
+                    sResultModel.AddError("Användaren hittades ej.");
+                    return sResultModel;
+                }
+
+                var sResult = await mUserManager.ChangePasswordAsync(sUser, aChangePasswordRequestModel.CurrentPassword, aChangePasswordRequestModel.NewPassword);
+
+                if(!sResult.Succeeded)
+                {
+                    sResultModel.Success = false;
+                    sResultModel.AppendErrors(sResult.Errors.Select(x => x.Description).ToList());
+                }
+            }
+            catch (Exception ex)
+            {
+                sResultModel.Success = false;
+                sResultModel.AddExceptionError(ex);
+            }
+
+            return sResultModel;
+        }
+
+
         #endregion
 
 

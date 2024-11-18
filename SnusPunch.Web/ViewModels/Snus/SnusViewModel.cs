@@ -125,5 +125,27 @@ namespace SnusPunch.Web.ViewModels.Snus
 
             return sSuccess;
         }
+
+        public async Task<bool> SetFavouriteSnus(SnusModel aSnusModel)
+        {
+            IsBusy = true;
+            bool sSuccess = true;
+
+            var sResult = await mSnusClient.SetFavouriteSnus(aSnusModel.Id);
+
+            if (!sResult.Success)
+            {
+                Errors.AddRange(sResult.Errors);
+                sSuccess = false;
+            }
+            else
+            {
+                SuccessMessages.Add($"Satte {aSnusModel.Name} som nytt favoritsnus!");
+            }
+
+            IsBusy = false;
+
+            return sSuccess;
+        }
     }
 }

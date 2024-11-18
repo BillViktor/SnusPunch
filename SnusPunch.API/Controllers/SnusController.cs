@@ -4,6 +4,7 @@ using SnusPunch.Services.Snus;
 using SnusPunch.Shared.Models.Pagination;
 using SnusPunch.Shared.Models.ResultModel;
 using SnusPunch.Shared.Models.Snus;
+using System.Security.Claims;
 
 namespace SnusPunch.API.Controllers
 {
@@ -34,6 +35,12 @@ namespace SnusPunch.API.Controllers
             return await mSnusService.GetSnus();
         }
 
+        [HttpGet("GetSnusById/{aSnusModelId}")]
+        public async Task<ResultModel<SnusModel>> GetSnusById(int aSnusModelId)
+        {
+            return await mSnusService.GetSnusById(aSnusModelId);
+        }
+
         [HttpPost("GetSnusPaginated")]
         public async Task<ResultModel<PaginationResponse<SnusModel>>> GetSnusPaginated(PaginationParameters aPaginationParameters)
         {
@@ -52,6 +59,12 @@ namespace SnusPunch.API.Controllers
         public async Task<ResultModel> RemoveSnus(int aSnusModelId)
         {
             return await mSnusService.RemoveSnus(aSnusModelId);
+        }
+
+        [HttpPut("SetFavouriteSnus/{aSnusModelId}")]
+        public async Task<ResultModel> SetFavouriteSnus(int aSnusModelId)
+        {
+            return await mSnusService.SetFavouriteSnus(aSnusModelId, User);
         }
     }
 }

@@ -15,7 +15,7 @@ namespace SnusPunch.Web.Pages.Auth
         private async Task ResetPassword() 
         {
             //Hämta ut token från url
-            mResetPasswordRequestModel.Token = NavigationManager.ToBaseRelativePath(NavigationManager.Uri).ToString().Replace("resetpassword?Token=", "");
+            mResetPasswordRequestModel.Token = NavigationManager.ToBaseRelativePath(NavigationManager.Uri).ToString().Replace("ResetPassword?Token=", "");
 
             if (await AuthViewModel.ResetPassword(mResetPasswordRequestModel))
             {

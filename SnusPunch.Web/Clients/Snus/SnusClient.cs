@@ -138,5 +138,30 @@ namespace SnusPunch.Web.Clients.Snus
 
             return sResultModel;
         }
+
+        public async Task<ResultModel> SetFavouriteSnus(int aSnusModelId)
+        {
+            ResultModel sResultModel = new ResultModel();
+
+            try
+            {
+                var sHttpClient = mHttpClientFactory.CreateClient(HttpClientEnum.Snus.ToString());
+                var sResponse = await sHttpClient.PutAsync($"SetFavouriteSnus/{aSnusModelId}", null);
+
+                if (!sResponse.IsSuccessStatusCode)
+                {
+                    throw new Exception("Non-success status code at SetFavouriteSnus in SnusClient");
+                }
+
+                sResultModel = await sResponse.Content.ReadFromJsonAsync<ResultModel>();
+            }
+            catch (Exception aException)
+            {
+                sResultModel.Success = false;
+                sResultModel.AddExceptionError(aException);
+            }
+
+            return sResultModel;
+        }
     }
 }

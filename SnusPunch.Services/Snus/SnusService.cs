@@ -1,8 +1,12 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Logging;
+using SnusPunch.Data.Models.Identity;
 using SnusPunch.Data.Repository;
+using SnusPunch.Shared.Models.Auth;
 using SnusPunch.Shared.Models.Pagination;
 using SnusPunch.Shared.Models.ResultModel;
 using SnusPunch.Shared.Models.Snus;
+using System.Security.Claims;
 
 namespace SnusPunch.Services.Snus
 {
@@ -10,11 +14,13 @@ namespace SnusPunch.Services.Snus
     {
         private readonly ILogger<SnusService> mLogger;
         private readonly SnusPunchRepository mSnusPunchRepository;
+        private readonly UserManager<SnusPunchUserModel> mUserManager;
 
-        public SnusService(ILogger<SnusService> aLogger, SnusPunchRepository aSnusPunchRepository)
+        public SnusService(ILogger<SnusService> aLogger, SnusPunchRepository aSnusPunchRepository, UserManager<SnusPunchUserModel> aUserManager)
         {
             mLogger = aLogger;
             mSnusPunchRepository = aSnusPunchRepository;
+            mUserManager = aUserManager;
         }
 
         public async Task<ResultModel<SnusModel>> AddSnus(SnusModel aSnusModel)
@@ -46,6 +52,24 @@ namespace SnusPunch.Services.Snus
             catch(Exception aException)
             {
                 mLogger.LogError(aException, "Exception at GetSnus in SnusService");
+                sResultModel.Success = false;
+                sResultModel.AddExceptionError(aException);
+            }
+
+            return sResultModel;
+        }
+
+        public async Task<ResultModel<SnusModel>> GetSnusById(int aSnusModelId)
+        {
+            ResultModel<SnusModel> sResultModel = new ResultModel<SnusModel>();
+
+            try
+            {
+                sResultModel.ResultObject = await mSnusPunchRepository.GetSnusById(aSnusModelId);
+            }
+            catch (Exception aException)
+            {
+                mLogger.LogError(aException, "Exception at GetSnusById in SnusService");
                 sResultModel.Success = false;
                 sResultModel.AddExceptionError(aException);
             }
@@ -96,6 +120,36 @@ namespace SnusPunch.Services.Snus
             try
             {
                 await mSnusPunchRepository.RemoveSnus(aSnusModelId);
+            }
+            catch (Exception aException)
+            {
+                mLogger.LogError(aException, "Exception at RemoveSnus in SnusService");
+                sResultModel.Success = false;
+                sResultModel.AddExceptionError(aException);
+            }
+
+            return sResultModel;
+        }
+
+        public async Task<ResultModel> SetFavouriteSnus(int aSnusId, ClaimsPrincipal aClaimsPrincipal)
+        {
+            ResultModel sResultModel = new ResultModel();
+
+            try
+            {
+                var sUser = await mUserManager.GetUserAsync(aClaimsPrincipal);
+
+                if(sUser == null)
+                {
+                    sResultModel.Success = false;
+                    sResultModel.AddError("Användaren hittades ej");
+                }
+                else
+                {
+                    await mSnusPunchRepository.SetFavouriteSnus(sUser.Id, aSnusId);
+                }
+
+                
             }
             catch (Exception aException)
             {
