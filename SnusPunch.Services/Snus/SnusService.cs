@@ -41,13 +41,13 @@ namespace SnusPunch.Services.Snus
             return sResultModel;
         }
 
-        public async Task<ResultModel<List<SnusModel>>> GetSnus()
+        public async Task<ResultModel<List<SnusDto>>> GetSnusDto()
         {
-            ResultModel<List<SnusModel>> sResultModel = new ResultModel<List<SnusModel>>();
+            ResultModel<List<SnusDto>> sResultModel = new ResultModel<List<SnusDto>>();
 
             try
             {
-                sResultModel.ResultObject = await mSnusPunchRepository.GetSnus();
+                sResultModel.ResultObject = await mSnusPunchRepository.GetSnusDto();
             }
             catch(Exception aException)
             {

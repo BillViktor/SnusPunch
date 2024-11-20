@@ -1,4 +1,6 @@
-﻿using SnusPunch.Shared.Models.Auth;
+﻿using Microsoft.AspNetCore.Http;
+using SnusPunch.Shared.Models.Auth;
+using SnusPunch.Shared.Models.ResultModel;
 using SnusPunch.Web.Clients.Snus;
 using SnusPunch.Web.Identity;
 
@@ -161,6 +163,35 @@ namespace SnusPunch.Web.ViewModels.Snus
             else
             {
                 SuccessMessages.Add("Lösenordet bytt! Du kan nu logga in.");
+            }
+
+            IsBusy = false;
+            return sSuccess;
+        }
+        #endregion
+
+
+        #region Profile Picture
+        public async Task<string?> AddOrUpdateProfilePicture(IFormFile aFormFile)
+        {
+            return "";
+        }
+
+        public async Task<bool> DeleteProfilePicture()
+        {
+            bool sSuccess = true;
+            IsBusy = true;
+
+            var sResult = await mAuthClient.DeleteProfilePicture();
+
+            if (!sResult.Success)
+            {
+                Errors.AddRange(sResult.Errors);
+                sSuccess = false;
+            }
+            else
+            {
+                SuccessMessages.Add($"Din profilbild har nu raderats.");
             }
 
             IsBusy = false;

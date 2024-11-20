@@ -1,12 +1,16 @@
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.OpenApi.Models;
 using SnusPunch.Data.DbContexts;
 using SnusPunch.Data.Models.Identity;
 using SnusPunch.Data.Repository;
 using SnusPunch.Services.Email;
+using SnusPunch.Services.Entry;
 using SnusPunch.Services.Snus;
 using Swashbuckle.AspNetCore.Filters;
+using Swashbuckle.AspNetCore.SwaggerUI;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -25,6 +29,21 @@ builder.Services.AddSwaggerGen(options =>
     });
 
     options.OperationFilter<SecurityRequirementsOperationFilter>();
+
+    options.OrderActionsBy((sApiDesc) =>
+    {
+        var sMethodOrder = new Dictionary<string, int> 
+        {
+            { "GET", 1 },
+            { "POST", 2 },
+            { "PUT", 3 },
+            { "DELETE", 4 }
+        };
+
+        var sMethodRank = sMethodOrder.ContainsKey(sApiDesc.HttpMethod) ? sMethodOrder[sApiDesc.HttpMethod] : int.MaxValue;
+
+        return $"{sApiDesc.ActionDescriptor.RouteValues["controller"]}_{sMethodRank}_{sApiDesc.ActionDescriptor.RouteValues["action"] ?? string.Empty}";
+    });
 });
 
 #region Auth
@@ -56,6 +75,7 @@ builder.Services.AddScoped<SnusPunchRepository>();
 #region Services
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<EmailService>();
+builder.Services.AddScoped<EntryService>();
 builder.Services.AddScoped<SnusService>();
 builder.Services.AddScoped<UserService>();
 #endregion
@@ -69,11 +89,20 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseSwaggerUI(x => x.DocExpansion(DocExpansion.None));
     app.UseCors(options => options.WithOrigins(builder.Configuration["BackendUrl"], builder.Configuration["FrontendUrl"]).AllowAnyHeader().AllowAnyMethod().AllowCredentials());
 }
 
 app.UseHttpsRedirection();
+
+#region Images
+app.UseFileServer(new FileServerOptions
+{
+    FileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory
+    (), "images")),
+    RequestPath = "/images"
+});
+#endregion
 
 app.UseAuthorization();
 

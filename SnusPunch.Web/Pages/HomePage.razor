@@ -1,10 +1,103 @@
 ﻿@page "/"
+@layout FeedLayout
 @attribute [Authorize]
 
 <PageTitle>SnusPunch</PageTitle>
 
-<h2>Välkommen till SnusPunch!</h2>
+<MessageComponent Errors="EntryViewModel.Errors" SuccessMessages="EntryViewModel.SuccessMessages" IsBusy="EntryViewModel.IsBusy" />
 
-<p>
-    Hemsidan är just nu under konstruktion.
-</p>
+<div class="content">
+    <h2>
+        Puncha här
+    </h2>
+
+    <div class="row gap-1">
+        @if(mFavouriteSnus != null)
+        {
+            <input class="flex-grow-1" disabled @bind="mFavouriteSnus.Name" />
+        }
+        else
+        {
+            <input class="flex-grow-1" />
+        }
+        <button>Ändra Snus</button>
+    </div>
+    
+
+    <textarea placeholder="Skriv något roligt om du vill!" class="full-width" @bind="mDescription" rows="2"></textarea>
+
+    <button class="full-width" @onclick="async () => await AddEntry()">Stämpla</button>
+</div>
+
+<div class="content mt-1">
+    <h2>Senaste Stämplingara</h2>
+
+    <SearchSortComponent OnSearch="async () => await GetEntries()" PaginationMetaData="mPaginationMetaData" PaginationParameters="mPaginationParameters" SortProperties="mSortProperties" />
+
+    @foreach (var sEntry in mEntryList)
+    {
+        <div class="entry-card @(sEntry != mEntryList.First() ? "mt-1" : "")">
+            <div class="row justify-content-between align-items-start">
+                <div class="row align-items-center gap-1">
+                    <button @onclick="() => ShowProfilePicture(sEntry)" class="profile-picture-button">
+                        <img class="profile-picture-round" src="@sEntry.UserProfilePictureUrl" />
+                    </button>
+
+                    <div>
+                        <p class="mn">
+                            @sEntry.UserName tog en @sEntry.SnusName
+                        </p>
+                        <span title="@sEntry.CreateDate">
+                            @sEntry.GetTimeAgo()
+                        </span>
+                    </div>
+                </div>
+                
+
+                <AuthorizeView>
+                    @if(context.User.IsInRole("Admin"))
+                    {
+                        <button title="Radera inlägg" class="button-icon">
+                            <span @onclick="async () => await RemoveEntry(sEntry)" class="material-symbols--delete" />
+                        </button>
+                    }
+                    else
+                    {
+                        if(context.User.Identity.Name == sEntry.UserName)
+                        {
+                            <button title="Radera inlägg" class="button-icon">
+                                <span @onclick="async () => await RemoveEntry(sEntry)" class="material-symbols--delete" />
+                            </button>
+                        }
+                    }
+                </AuthorizeView>
+            </div>
+
+            @if (!string.IsNullOrEmpty(sEntry.Description))
+            {
+                <p>
+                    @sEntry.Description
+                </p>
+            }
+
+            <div class="row mt-1 justify-content-between">
+                <span>0 likes</span>
+                <span>0 kommentarer</span>
+            </div>
+
+            <hr />
+
+            <div class="row gap-1">
+                <button @onclick="async () => await ToggleLike(sEntry)" class="full-width">Gilla</button>
+                <button @onclick="async () => await Comment(sEntry)" class="full-width">Kommentera</button>
+            </div>
+        </div>
+    }
+
+    <div class="mt-1">
+        @if (mPaginationMetaData != null)
+        {
+            <PaginationComponent OnSearch="async () => await GetEntries()" PaginationMetaData="mPaginationMetaData" PaginationParameters="mPaginationParameters" />
+        }
+    </div>
+</div>

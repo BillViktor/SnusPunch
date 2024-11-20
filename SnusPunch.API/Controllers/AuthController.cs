@@ -65,6 +65,29 @@ namespace SnusPunch.API.Controllers
             return await mAuthService.DeleteUser(aUserName);
         }
 
+        #region Profile Picture
+        [Authorize]
+        [HttpPut("AddOrUpdateProfilePicture")]
+        public async Task<ResultModel<string>> AddOrUpdateProfilePicture(IFormFile aFormFile)
+        {
+            return await mAuthService.AddOrUpdateProfilePicture(aFormFile, User);
+        }
+
+        [Authorize]
+        [HttpDelete("DeleteProfilePicture")]
+        public async Task<ResultModel> DeleteProfilePicture()
+        {
+            return await mAuthService.DeleteProfilePicture(User);
+        }
+
+        [Authorize(Roles = "Admin")]
+        [HttpDelete("DeleteProfilePicture/{aUserName}")]
+        public async Task<ResultModel> DeleteProfilePicture(string aUserName)
+        {
+            return new ResultModel();
+        }
+        #endregion
+
         #region Email
         [HttpPost("VerifyEmail")]
         public async Task<ResultModel> VerifyEmail(VerifyEmailRequest aVerifyEmailRequest)

@@ -24,7 +24,7 @@
         public SortOrderEnum SortOrder { get; set; } = SortOrderEnum.Ascending;
 
         //Search
-        public string SearchPropertyName { get; set; } = "";
+        public List<string> SearchPropertyNames { get; set; } = new List<string>();
         public string SearchString { get; set; } = "";
     }
 }

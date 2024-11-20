@@ -1,14 +1,18 @@
-﻿using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.Data;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using SnusPunch.Data.Models.Identity;
 using SnusPunch.Data.Repository;
 using SnusPunch.Services.Email;
+using SnusPunch.Services.Helpers;
 using SnusPunch.Shared.Models.Auth;
 using SnusPunch.Shared.Models.ResultModel;
 using System.Security.Claims;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace SnusPunch.Services.Snus
 {
@@ -73,6 +77,8 @@ namespace SnusPunch.Services.Snus
             try
             {
                 var sUser = await mUserManager.GetUserAsync(aClaimsPrincipal);
+                string sUserName = sUser.UserName;
+                string sEmail = sUser.Email;
 
                 if(sUser == null)
                 {
@@ -89,6 +95,9 @@ namespace SnusPunch.Services.Snus
                     sResultModel.AppendErrors(sResult.Errors.Select(x => x.Description).ToList());
                     return sResultModel;
                 }
+
+                await DeleteProfilePicture(sUserName);
+                await mEmailService.SendEmail(sEmail, "Bekräftelse på raderat konto", EmailHelper.GetAccountDeletedConfirmation());
 
                 await Logout();
             }
@@ -108,6 +117,7 @@ namespace SnusPunch.Services.Snus
             try
             {
                 var sUser = await mUserManager.Users.FirstOrDefaultAsync(x => x.UserName == aUserName);
+                string sEmail = sUser.Email;
 
                 if (sUser == null)
                 {
@@ -124,6 +134,9 @@ namespace SnusPunch.Services.Snus
                     sResultModel.AppendErrors(sResult.Errors.Select(x => x.Description).ToList());
                     return sResultModel;
                 }
+
+                await DeleteProfilePicture(aUserName);
+                await mEmailService.SendEmail(sEmail, "Ditt konto har blivit raderat", EmailHelper.GetAccountDeletedByAdminEmail());
             }
             catch (Exception ex)
             {
@@ -218,7 +231,8 @@ namespace SnusPunch.Services.Snus
                     IsEmailConfirmed = sUser.EmailConfirmed,
                     UserName = sUser.UserName,
                     RoleClaims = sRoles,
-                    FavouriteSnusId = sUser.FavoriteSnusId
+                    FavouriteSnusId = sUser.FavoriteSnusId,
+                    ProfilePictureUrl = $"{mConfiguration["ProfilePicturePath"]}{sUser.ProfilePicturePath ?? "default.jpg"}"
                 };
 
                 if(sResultModel.ResultObject.FavouriteSnusId != null)
@@ -520,6 +534,177 @@ namespace SnusPunch.Services.Snus
                 }
 
                 await mUserManager.RemoveFromRoleAsync(sUser, aUserRoleRequestModel.RoleName);
+            }
+            catch (Exception ex)
+            {
+                sResultModel.Success = false;
+                sResultModel.AddExceptionError(ex);
+            }
+
+            return sResultModel;
+        }
+        #endregion
+
+
+        #region ProfilePicture
+        public async Task<ResultModel<string>> AddOrUpdateProfilePicture(IFormFile aFormFile, ClaimsPrincipal aClaimsPrincipal)
+        {
+            ResultModel<string> sResultModel = new ResultModel<string>();
+
+            try
+            {
+                //Hämta ut användare
+                var sUser = await mUserManager.GetUserAsync(aClaimsPrincipal);
+
+                if(sUser == null)
+                {
+                    sResultModel.AddError("Användaren hittades ej");
+                    sResultModel.Success = false;
+                    return sResultModel;
+                }
+
+                var sCurrentProfilePicture = sUser.ProfilePicturePath;
+
+                //Verifiera filen
+                var sVerifyFileResult = ImageFileVerification.IsValidImage(aFormFile);
+                if(!sVerifyFileResult.Success)
+                {
+                    sResultModel.Errors = sVerifyFileResult.Errors;
+                    return sResultModel;
+                }
+
+                //Fil OK, generera en Guid för filnamnet (för att undvika att användare gissar sig till en annans profilbild)
+                Guid sFileName = Guid.NewGuid();
+
+                string sFilePath = mConfiguration["ProfilePicturePath"] +  $"{sFileName}.jpg";
+
+                //Konvertera filen till jpg & spara på disk
+                using(var sStream = new MemoryStream())
+                {
+                    await aFormFile.CopyToAsync(sStream);
+
+                    using(var sImage = System.Drawing.Image.FromStream(sStream))
+                    {
+                        sImage.Save(sFilePath, System.Drawing.Imaging.ImageFormat.Jpeg);
+                    }
+                }
+
+                //Sätt path på user
+                sUser.ProfilePicturePath = sFileName + ".jpg";
+
+                var sResult = await mUserManager.UpdateAsync(sUser);
+
+                if(!sResult.Succeeded)
+                {
+                    sResultModel.AppendErrors(sResult.Errors.Select(x => x.Description).ToList());
+                    sResultModel.Success = false;
+                    return sResultModel;
+                }
+
+                //Om användaren hade en profilbild sedan innan, radera den gamla.
+                if(sCurrentProfilePicture != null)
+                {
+                    string sFile = mConfiguration["ProfilePicturePath"] + $"/{sCurrentProfilePicture}";
+
+                    if(File.Exists(sFile))
+                    {
+                        File.Delete(sFile);
+                    }
+                }
+
+                sResultModel.ResultObject = sUser.ProfilePicturePath;
+            }
+            catch (Exception ex)
+            {
+                sResultModel.Success = false;
+                sResultModel.AddExceptionError(ex);
+            }
+
+            return sResultModel;
+        }
+
+        public async Task<ResultModel> DeleteProfilePicture(ClaimsPrincipal aClaimsPrincipal)
+        {
+            ResultModel sResultModel = new ResultModel();
+
+            try
+            {
+                //Hämta ut användare
+                var sUser = await mUserManager.GetUserAsync(aClaimsPrincipal);
+
+                if (sUser == null)
+                {
+                    sResultModel.AddError("Användaren hittades ej");
+                    sResultModel.Success = false;
+                    return sResultModel;
+                }
+
+                return await DeleteProfilePicture(sUser);
+            }
+            catch (Exception ex)
+            {
+                sResultModel.Success = false;
+                sResultModel.AddExceptionError(ex);
+            }
+
+            return sResultModel;
+        }
+
+        public async Task<ResultModel> DeleteProfilePicture(string aUserName)
+        {
+            ResultModel sResultModel = new ResultModel();
+
+            try
+            {
+                //Hämta ut användare
+                var sUser = await mUserManager.Users.FirstOrDefaultAsync(x => x.UserName == aUserName);
+
+                if (sUser == null)
+                {
+                    sResultModel.AddError("Användaren hittades ej");
+                    sResultModel.Success = false;
+                    return sResultModel;
+                }
+
+                return await DeleteProfilePicture(sUser);
+            }
+            catch (Exception ex)
+            {
+                sResultModel.Success = false;
+                sResultModel.AddExceptionError(ex);
+            }
+
+            return sResultModel;
+        }
+
+        private async Task<ResultModel> DeleteProfilePicture(SnusPunchUserModel aSnusPunchUserModel)
+        {
+            ResultModel sResultModel = new ResultModel();
+
+            try
+            {
+                if (aSnusPunchUserModel.ProfilePicturePath == null)
+                {
+                    sResultModel.AddError("Användaren har ingen profilbild");
+                    sResultModel.Success = false;
+                    return sResultModel;
+                }
+
+                aSnusPunchUserModel.ProfilePicturePath = null;
+                var sUpdateResult = await mUserManager.UpdateAsync(aSnusPunchUserModel);
+
+                if(!sUpdateResult.Succeeded)
+                {
+                    sResultModel.AppendErrors(sUpdateResult.Errors.Select(x => x.Description).ToList());
+                    sResultModel.Success = false;
+                    return sResultModel;
+                }
+
+                var sFilePath = mConfiguration["ProfilePicturePath"] + aSnusPunchUserModel.ProfilePicturePath;
+                if (File.Exists(sFilePath))
+                {
+                    File.Delete(sFilePath);
+                }
             }
             catch (Exception ex)
             {

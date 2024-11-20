@@ -155,7 +155,49 @@ namespace SnusPunch.Data.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("SnusPunch.Shared.Models.Identity.SnusPunchUserModel", b =>
+            modelBuilder.Entity("SnusPunch.Data.Models.Entry.EntryModel", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreateDate")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("getdate()");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PhotoUrl")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("SnusId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("SnusPunchUserModelId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime?>("UpdateDate")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SnusId");
+
+                    b.HasIndex("SnusPunchUserModelId");
+
+                    b.ToTable("tblEntry", null, t =>
+                        {
+                            t.HasTrigger("TR_tblEntry_Update");
+                        });
+
+                    b.HasAnnotation("SqlServer:UseSqlOutputClause", false);
+                });
+
+            modelBuilder.Entity("SnusPunch.Data.Models.Identity.SnusPunchUserModel", b =>
                 {
                     b.Property<string>("Id")
                         .HasColumnType("nvarchar(450)");
@@ -200,6 +242,9 @@ namespace SnusPunch.Data.Migrations
                     b.Property<bool>("PhoneNumberConfirmed")
                         .HasColumnType("bit");
 
+                    b.Property<string>("ProfilePicturePath")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("nvarchar(max)");
 
@@ -233,10 +278,10 @@ namespace SnusPunch.Data.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<DateTime?>("CreateDate")
+                    b.Property<DateTime>("CreateDate")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValue(new DateTime(2024, 11, 11, 17, 7, 58, 92, DateTimeKind.Local).AddTicks(2286));
+                        .HasDefaultValueSql("getdate()");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -269,11 +314,9 @@ namespace SnusPunch.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Snus", null, t =>
+                    b.ToTable("tblSnus", null, t =>
                         {
-                            t.HasTrigger("TR_Snus_Insert");
-
-                            t.HasTrigger("TR_Snus_Update");
+                            t.HasTrigger("TR_tblSnus_Update");
                         });
 
                     b.HasAnnotation("SqlServer:UseSqlOutputClause", false);
@@ -290,7 +333,7 @@ namespace SnusPunch.Data.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
                 {
-                    b.HasOne("SnusPunch.Shared.Models.Identity.SnusPunchUserModel", null)
+                    b.HasOne("SnusPunch.Data.Models.Identity.SnusPunchUserModel", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -299,7 +342,7 @@ namespace SnusPunch.Data.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
                 {
-                    b.HasOne("SnusPunch.Shared.Models.Identity.SnusPunchUserModel", null)
+                    b.HasOne("SnusPunch.Data.Models.Identity.SnusPunchUserModel", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -314,7 +357,7 @@ namespace SnusPunch.Data.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("SnusPunch.Shared.Models.Identity.SnusPunchUserModel", null)
+                    b.HasOne("SnusPunch.Data.Models.Identity.SnusPunchUserModel", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -323,14 +366,31 @@ namespace SnusPunch.Data.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
                 {
-                    b.HasOne("SnusPunch.Shared.Models.Identity.SnusPunchUserModel", null)
+                    b.HasOne("SnusPunch.Data.Models.Identity.SnusPunchUserModel", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("SnusPunch.Shared.Models.Identity.SnusPunchUserModel", b =>
+            modelBuilder.Entity("SnusPunch.Data.Models.Entry.EntryModel", b =>
+                {
+                    b.HasOne("SnusPunch.Shared.Models.Snus.SnusModel", "Snus")
+                        .WithMany()
+                        .HasForeignKey("SnusId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("SnusPunch.Data.Models.Identity.SnusPunchUserModel", "SnusPunchUserModel")
+                        .WithMany("Entries")
+                        .HasForeignKey("SnusPunchUserModelId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.Navigation("Snus");
+
+                    b.Navigation("SnusPunchUserModel");
+                });
+
+            modelBuilder.Entity("SnusPunch.Data.Models.Identity.SnusPunchUserModel", b =>
                 {
                     b.HasOne("SnusPunch.Shared.Models.Snus.SnusModel", "FavoriteSnus")
                         .WithMany()
@@ -338,6 +398,11 @@ namespace SnusPunch.Data.Migrations
                         .OnDelete(DeleteBehavior.SetNull);
 
                     b.Navigation("FavoriteSnus");
+                });
+
+            modelBuilder.Entity("SnusPunch.Data.Models.Identity.SnusPunchUserModel", b =>
+                {
+                    b.Navigation("Entries");
                 });
 #pragma warning restore 612, 618
         }

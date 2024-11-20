@@ -17,6 +17,7 @@
 <table>
     <thead>
         <tr>
+            <th class="profile-picture-cell"></th>
             <th>Användarnamn</th>
             <th>Favoritsnus</th>
             <th>Snusningar</th>
@@ -24,17 +25,24 @@
         </tr>
     </thead>
     <tbody>
-        @foreach (var sSnus in mUserList)
+        @foreach (var sUser in mUserList)
         {
             <tr>
-                <td>@sSnus.UserName</td>
-                <td>@sSnus.FavouriteSnus</td>
-                <td>@sSnus.SnusPunches</td>
+                <td class="row justify-content-start profile-picture-cell">
+                    <button @onclick="() => ShowProfilePicture(sUser)" class="profile-picture-button">
+                        <img class="profile-picture-round" src="@sUser.ProfilePictureUrl" />
+                    </button>
+                </td>
+                <td>@sUser.UserName</td>
+                <td>@sUser.FavouriteSnus</td>
+                <td>@sUser.SnusPunches</td>
                 <td>
                     <AuthorizeView Roles="Admin">
-                        <button title="Radera" disabled="@UserViewModel.IsBusy" class="button-icon">
-                            <span class="icon-button material-symbols--delete" />
-                        </button>
+                        <div class="icon-row">
+                            <button @onclick="async () => await DeleteUser(sUser)" title="Radera" disabled="@UserViewModel.IsBusy" class="button-icon">
+                                <span class="icon-button material-symbols--delete" />
+                            </button>
+                        </div>
                     </AuthorizeView>
                 </td>
 
@@ -42,7 +50,7 @@
         }
     </tbody>
 </table>
-<div style="margin-top: 10px">
+<div class="mt-1">
     @if (mPaginationMetaData != null)
     {
         <PaginationComponent OnSearch="async () => await GetUsers()" PaginationMetaData="mPaginationMetaData" PaginationParameters="mPaginationParameters" />

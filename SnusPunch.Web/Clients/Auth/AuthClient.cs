@@ -1,4 +1,5 @@
-﻿using SnusPunch.Shared.Models.Auth;
+﻿using Microsoft.AspNetCore.Http;
+using SnusPunch.Shared.Models.Auth;
 using SnusPunch.Shared.Models.Pagination;
 using SnusPunch.Shared.Models.ResultModel;
 using SnusPunch.Shared.Models.Snus;
@@ -207,6 +208,84 @@ namespace SnusPunch.Web.Clients.Snus
                 if (!sResponse.IsSuccessStatusCode)
                 {
                     throw new Exception("Non-success status code at ResetPassword in AuthClient");
+                }
+
+                sResultModel = await sResponse.Content.ReadFromJsonAsync<ResultModel>();
+            }
+            catch (Exception aException)
+            {
+                sResultModel.Success = false;
+                sResultModel.AddExceptionError(aException);
+            }
+
+            return sResultModel;
+        }
+        #endregion
+
+
+        #region Profile Picture
+        public async Task<ResultModel<string>> AddOrUpdateProfilePicture(IFormFile aFormFile)
+        {
+            ResultModel<string> sResultModel = new ResultModel<string>();
+
+            try
+            {
+                var sHttpClient = mHttpClientFactory.CreateClient(HttpClientEnum.Auth.ToString());
+                var sResponse = await sHttpClient.PutAsJsonAsync("AddOrUpdateProfilePicture", aFormFile);
+
+                if (!sResponse.IsSuccessStatusCode)
+                {
+                    throw new Exception("Non-success status code at AddOrUpdateProfilePicture in AuthClient");
+                }
+
+                sResultModel = await sResponse.Content.ReadFromJsonAsync<ResultModel<string>>();
+            }
+            catch (Exception aException)
+            {
+                sResultModel.Success = false;
+                sResultModel.AddExceptionError(aException);
+            }
+
+            return sResultModel;
+        }
+
+        public async Task<ResultModel> DeleteProfilePicture()
+        {
+            ResultModel sResultModel = new ResultModel();
+
+            try
+            {
+                var sHttpClient = mHttpClientFactory.CreateClient(HttpClientEnum.Auth.ToString());
+                var sResponse = await sHttpClient.DeleteAsync("DeleteProfilePicture");
+
+                if (!sResponse.IsSuccessStatusCode)
+                {
+                    throw new Exception("Non-success status code at DeleteProfilePicture in AuthClient");
+                }
+
+                sResultModel = await sResponse.Content.ReadFromJsonAsync<ResultModel>();
+            }
+            catch (Exception aException)
+            {
+                sResultModel.Success = false;
+                sResultModel.AddExceptionError(aException);
+            }
+
+            return sResultModel;
+        }
+
+        public async Task<ResultModel> DeleteUserProfilePicture(string aUserName)
+        {
+            ResultModel sResultModel = new ResultModel();
+
+            try
+            {
+                var sHttpClient = mHttpClientFactory.CreateClient(HttpClientEnum.Auth.ToString());
+                var sResponse = await sHttpClient.DeleteAsync($"DeleteProfilePicture/{aUserName}");
+
+                if (!sResponse.IsSuccessStatusCode)
+                {
+                    throw new Exception("Non-success status code at DeleteUserProfilePicture in AuthClient");
                 }
 
                 sResultModel = await sResponse.Content.ReadFromJsonAsync<ResultModel>();

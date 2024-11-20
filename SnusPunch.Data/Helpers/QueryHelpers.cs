@@ -17,7 +17,11 @@ namespace SnusPunch.Data.Helpers
             }
 
             var sParameter = Expression.Parameter(typeof(T), "x");
-            var sProperty = Expression.Property(sParameter, aSortProperty);
+            Expression sProperty = sParameter;
+            foreach (var sPropertyName in aSortProperty.Split('.'))
+            {
+                sProperty = Expression.PropertyOrField(sProperty, sPropertyName);
+            }
 
             var sOrderByExpression = Expression.Lambda<Func<T, object>>(Expression.Convert(sProperty, typeof(object)), sParameter);
 
@@ -29,26 +33,47 @@ namespace SnusPunch.Data.Helpers
             return sOrderedQuery;
         }
 
-        public static IQueryable<T> SearchByProperty<T>(this IQueryable<T> aQuery, string? aSearchProperty, string? aSearchString)
+        public static IQueryable<T> SearchByProperty<T>(this IQueryable<T> aQuery, List<string> aSearchPropertyList, string? aSearchString)
         {
-            if (string.IsNullOrEmpty(aSearchProperty) || string.IsNullOrEmpty(aSearchString))
+            if (aSearchPropertyList.Count == 0 || string.IsNullOrEmpty(aSearchString))
             {
                 return aQuery;
             }
 
-            var sParameter = Expression.Parameter(typeof(T), "x");
-            var sProperty = Expression.Property(sParameter, aSearchProperty);
-
-            if (sProperty.Type != typeof(string))
-            {
-                throw new ArgumentException("Sökegenskapen måste vara en sträng!");
-            }
-
             var sSearchValue = Expression.Constant(aSearchString);
             var sContains = typeof(string).GetMethod("Contains", new[] { typeof(string) });
-            var sContainsExpression = Expression.Call(sProperty, sContains, sSearchValue);
+            var sParameter = Expression.Parameter(typeof(T), "x");
+            Expression? sCombinedExpression = null;
 
-            var sLambda = Expression.Lambda<Func<T, bool>>(sContainsExpression, sParameter);
+            foreach(var sSearchProperty in aSearchPropertyList)
+            {
+                Expression sProperty = sParameter;
+
+                foreach (var sPropertyName in sSearchProperty.Split('.'))
+                {
+                    sProperty = Expression.PropertyOrField(sProperty, sPropertyName);
+                }
+
+                if (sProperty.Type != typeof(string))
+                {
+                    throw new ArgumentException("Sökegenskapen måste vara en sträng!");
+                }
+
+                var sContainsExpression = Expression.Call(sProperty, sContains, sSearchValue);
+
+                // Combine the expressions using OrElse
+                sCombinedExpression = sCombinedExpression == null
+                    ? sContainsExpression
+                    : Expression.OrElse(sCombinedExpression, sContainsExpression);
+            }
+            
+
+            if(sCombinedExpression == null)
+            {
+                throw new Exception("Nu gick något fel i sökningen!");
+            }
+
+            var sLambda = Expression.Lambda<Func<T, bool>>(sCombinedExpression, sParameter);
 
             return aQuery.Where(sLambda);
         }

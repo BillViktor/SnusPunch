@@ -67,6 +67,11 @@ main {
     background-color: var(--foreground-color);
 }
 
+.no-background {
+    background-color: transparent !important;
+    padding: 0;
+}
+
 .empty-layout {
     padding: 0;
     margin: 0rem auto;
@@ -74,6 +79,11 @@ main {
     position: relative;
     max-width: var(--website-width);
     background-color: transparent;
+}
+
+.content {
+    background-color: var(--foreground-color);
+    padding: 1rem;
 }
 
 /* Rubriker */
@@ -88,8 +98,6 @@ h1 {
 h2 {
     font-size: 2.25rem;
 }
-
-
 
 p {
     font-size: 1.25rem;
@@ -119,6 +127,22 @@ select {
 .select-sm {
     height: 2rem;
     font-size: 1.25rem;
+}
+
+textarea {
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    font-size: 1.25rem;
+    box-sizing: border-box;
+    outline: none;
+    resize: none;
+    margin: 1rem 0;
+}
+
+/* Snus Entry */
+.entry-card {
+    background-color: var(--background-color);
+    padding: 1rem;
 }
 
 /* Paginering */
@@ -170,7 +194,15 @@ select {
     margin: 1rem 0;
 }
 
+.mn {
+    margin: 0;
+}
+
 /* Misc */
+hr {
+    margin: 1rem 0;
+}
+
 .align-middle {
     vertical-align: middle;
 }
@@ -191,6 +223,10 @@ select {
     justify-content: space-between;
 }
 
+.justify-content-start {
+    justify-content: start;
+}
+
 .justify-content-end {
     justify-content: end;
 }
@@ -201,6 +237,10 @@ select {
 
 .align-items-bottom {
     align-items: baseline;
+}
+
+.align-items-start {
+    align-items: start;
 }
 
 .gap-1 {
@@ -244,6 +284,10 @@ table th, table td {
 
 table td {
     vertical-align: middle;
+}
+
+.profile-picture-cell {
+    width: 3rem;
 }
 
 table tr:nth-child(even) {
@@ -300,6 +344,15 @@ a {
     padding: 0 0rem;
     cursor: pointer;
     height: 2rem;
+}
+
+.profile-picture-button {
+    background-color: transparent;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    border-radius: 1.25rem;
+    width: auto;
 }
 
 button {
@@ -419,7 +472,18 @@ button:hover {
     padding: 0.25rem
 }
 
+/* Images */
+.profile-picture-round {
+    height: 2.5rem;
+    width: 2.5rem;
+    border-radius: 50%;
+    object-fit: cover;
+}
 
+.profile-picture-full-size {
+    max-height: 40vh;
+    max-width: 40vw;
+}
 /* Från app.css */
 .btn-primary {
     color: #fff;

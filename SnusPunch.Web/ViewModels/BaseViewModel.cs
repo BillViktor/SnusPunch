@@ -69,5 +69,12 @@ namespace SnusPunch.Web.ViewModels
             OnPropertyChanged(aPropertyName);
         }
         #endregion
+
+        #region Methods
+        public void AddError(string aErrorText)
+        {
+            Errors.Add(new ErrorModel {  ErrorText = aErrorText });
+        }
+        #endregion
     }
 }

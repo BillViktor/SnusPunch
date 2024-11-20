@@ -9,15 +9,6 @@ namespace SnusPunch.Web.ViewModels.Snus
     {
         private readonly UserClient mUserClient;
 
-        #region Fields
-        private List<SnusPunchUserDto> mUsers = new List<SnusPunchUserDto>();
-        #endregion
-
-
-        #region Properties
-        public List<SnusPunchUserDto> Snus { get { return mUsers; } set { SetValue(ref mUsers, value); } }
-        #endregion
-
         public UserViewModel(UserClient aUserClient)
         {
             mUserClient = aUserClient;
@@ -41,6 +32,50 @@ namespace SnusPunch.Web.ViewModels.Snus
 
             IsBusy = false;
             return sPaginationResponse;
+        }
+
+        public async Task<bool> DeleteUser(SnusPunchUserDto aSnusPunchUserDto)
+        {
+            IsBusy = true;
+            bool sSuccess = true;
+
+            var sResult = await mUserClient.DeleteUser(aSnusPunchUserDto.UserName);
+
+            if (!sResult.Success)
+            {
+                Errors.AddRange(sResult.Errors);
+                sSuccess = false;
+            }
+            else
+            {
+                SuccessMessages.Add($"Raderade användaren: {aSnusPunchUserDto.UserName}!");
+            }
+
+            IsBusy = false;
+
+            return sSuccess;
+        }
+
+        public async Task<bool> Delete()
+        {
+            IsBusy = true;
+            bool sSuccess = true;
+
+            var sResult = await mUserClient.Delete();
+
+            if (!sResult.Success)
+            {
+                Errors.AddRange(sResult.Errors);
+                sSuccess = false;
+            }
+            else
+            {
+                SuccessMessages.Add($"Ditt konto är nu borttaget.");
+            }
+
+            IsBusy = false;
+
+            return sSuccess;
         }
     }
 }

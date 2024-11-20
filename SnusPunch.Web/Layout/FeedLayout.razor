@@ -1,0 +1,24 @@
+﻿@using Blazored.Toast
+@using Blazored.Toast.Configuration
+
+@inherits LayoutComponentBase
+
+@inject NavigationManager NavigationManager
+
+<BlazoredToasts Position="ToastPosition.BottomRight" RemoveToastsOnNavigation="true" />
+
+<NavMenu />
+
+<main class="no-background">
+    <article>
+        @Body
+    </article>
+</main>
+
+<AuthorizeView>
+    <NotAuthorized>
+        @{
+            NavigationManager.NavigateTo($"/login");
+        }
+    </NotAuthorized>
+</AuthorizeView>

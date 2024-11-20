@@ -22,8 +22,8 @@ namespace SnusPunch.Web.Pages.Snus
         private List<SnusModel> mSnusList = new List<SnusModel>();
         private PaginationParameters mPaginationParameters = new PaginationParameters
         {
-            SearchPropertyName = "name",
-            SortPropertyName = "name"
+            SearchPropertyNames = new List<string> { "Name" },
+            SortPropertyName = "Name"
         };
         private Dictionary<string, string> mSortProperties = new Dictionary<string, string>
         {

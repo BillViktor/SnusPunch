@@ -18,8 +18,4 @@
     <ProjectReference Include="..\SnusPunch.Shared\SnusPunch.Shared.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Models\Snus\" />
-  </ItemGroup>
-
 </Project>

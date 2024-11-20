@@ -29,10 +29,10 @@ namespace SnusPunch.API.Controllers
             return await mSnusService.AddSnus(aSnusModel);
         }
 
-        [HttpGet("GetSnus")]
-        public async Task<ResultModel<List<SnusModel>>> GetSnus()
+        [HttpGet("GetSnusDto")]
+        public async Task<ResultModel<List<SnusDto>>> GetSnusDto()
         {
-            return await mSnusService.GetSnus();
+            return await mSnusService.GetSnusDto();
         }
 
         [HttpGet("GetSnusById/{aSnusModelId}")]

@@ -2,7 +2,6 @@
 using Blazored.Toast.Services;
 using Microsoft.AspNetCore.Components;
 using SnusPunch.Shared.Models.Errors;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace SnusPunch.Web.Components
 {

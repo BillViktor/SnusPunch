@@ -22,4 +22,8 @@
     <ProjectReference Include="..\SnusPunch.Shared\SnusPunch.Shared.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Images\Posts\" />
+  </ItemGroup>
+
 </Project>

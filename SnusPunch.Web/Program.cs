@@ -31,10 +31,12 @@ builder.Services.AddBlazoredToast();
 
 #region Clients
 string sBaseUrl = builder.Configuration.GetValue<string>("BaseUrl");
-builder.Services.AddHttpClient(HttpClientEnum.Base.ToString(), config => config.BaseAddress = new Uri(sBaseUrl)).AddHttpMessageHandler<CookieHandler>();
 
 builder.Services.AddHttpClient(HttpClientEnum.Auth.ToString(), config => config.BaseAddress = new Uri(sBaseUrl + "Auth/")).AddHttpMessageHandler<CookieHandler>();
 builder.Services.AddScoped<AuthClient>();
+
+builder.Services.AddHttpClient(HttpClientEnum.Entry.ToString(), config => config.BaseAddress = new Uri(sBaseUrl + "Entry/")).AddHttpMessageHandler<CookieHandler>();
+builder.Services.AddScoped<EntryClient>();
 
 builder.Services.AddHttpClient(HttpClientEnum.Snus.ToString(), config => config.BaseAddress = new Uri(sBaseUrl + "Snus/")).AddHttpMessageHandler<CookieHandler>();
 builder.Services.AddScoped<SnusClient>();
@@ -45,6 +47,7 @@ builder.Services.AddScoped<UserClient>();
 
 #region ViewModels
 builder.Services.AddScoped<AuthViewModel>();
+builder.Services.AddScoped<EntryViewModel>();
 builder.Services.AddScoped<SnusViewModel>();
 builder.Services.AddScoped<UserViewModel>();
 #endregion

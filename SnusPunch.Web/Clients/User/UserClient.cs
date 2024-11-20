@@ -38,5 +38,55 @@ namespace SnusPunch.Web.Clients.Snus
 
             return sResultModel;
         }
+
+        public async Task<ResultModel> Delete()
+        {
+            ResultModel sResultModel = new ResultModel();
+
+            try
+            {
+                var sHttpClient = mHttpClientFactory.CreateClient(HttpClientEnum.Auth.ToString());
+                var sResponse = await sHttpClient.DeleteAsync("Delete");
+
+                if (!sResponse.IsSuccessStatusCode)
+                {
+                    throw new Exception("Non-success status code at Delete in UserClient");
+                }
+
+                sResultModel = await sResponse.Content.ReadFromJsonAsync<ResultModel>();
+            }
+            catch (Exception aException)
+            {
+                sResultModel.Success = false;
+                sResultModel.AddExceptionError(aException);
+            }
+
+            return sResultModel;
+        }
+
+        public async Task<ResultModel> DeleteUser(string aUserName)
+        {
+            ResultModel sResultModel = new ResultModel();
+
+            try
+            {
+                var sHttpClient = mHttpClientFactory.CreateClient(HttpClientEnum.Auth.ToString());
+                var sResponse = await sHttpClient.DeleteAsync($"DeleteUser/{aUserName}");
+
+                if (!sResponse.IsSuccessStatusCode)
+                {
+                    throw new Exception("Non-success status code at DeleteUser in UserClient");
+                }
+
+                sResultModel = await sResponse.Content.ReadFromJsonAsync<ResultModel>();
+            }
+            catch (Exception aException)
+            {
+                sResultModel.Success = false;
+                sResultModel.AddExceptionError(aException);
+            }
+
+            return sResultModel;
+        }
     }
 }

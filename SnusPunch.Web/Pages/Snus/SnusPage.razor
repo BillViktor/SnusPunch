@@ -19,7 +19,6 @@
 
 <SearchSortComponent OnSearch="async () => await GetSnus()" PaginationMetaData="mPaginationMetaData" PaginationParameters="mPaginationParameters" SortProperties="mSortProperties" />
 
-
 <table>
     <thead>
         <tr>
@@ -44,25 +43,28 @@
                 <td>@sSnus.NicotineInMgPerGram</td>
                 <td>@sSnus.PricePerPortion</td>
                 <td>@sSnus.NicotinePerPortion</td>
-                <td class="icon-row">
-                    <button title="@(sSnus.Id == mFavouriteSnusId ? "Detta är ditt favoritsnus!" : "Sätt som favorit")" disabled="@SnusViewModel.IsBusy" @onclick="async () => await SetFavouriteSnus(sSnus)" class="button-icon">
-                        <span style="@(sSnus.Id == mFavouriteSnusId ? "color: yellow" : "")" class="ic--baseline-star" />
-                    </button>
-                    <AuthorizeView Roles="Admin">
-                        <button title="Redigera" disabled="@SnusViewModel.IsBusy" @onclick="async () => await EditSnus(sSnus)" class="button-icon">
-                            <span class="material-symbols--edit" />
+                <td>
+                    <div class="icon-row">
+                        <button title="@(sSnus.Id == mFavouriteSnusId ? "Detta är ditt favoritsnus!" : "Sätt som favorit")" disabled="@SnusViewModel.IsBusy" @onclick="async () => await SetFavouriteSnus(sSnus)" class="button-icon">
+                            <span style="@(sSnus.Id == mFavouriteSnusId ? "color: yellow" : "")" class="ic--baseline-star" />
                         </button>
-                        <button title="Radera" disabled="@SnusViewModel.IsBusy" @onclick="async () => await DeleteSnus(sSnus)" class="button-icon">
-                            <span class="material-symbols--delete" />
-                        </button>
-                    </AuthorizeView>
+                        <AuthorizeView Roles="Admin">
+                            <button title="Redigera" disabled="@SnusViewModel.IsBusy" @onclick="async () => await EditSnus(sSnus)" class="button-icon">
+                                <span class="material-symbols--edit" />
+                            </button>
+                            <button title="Radera" disabled="@SnusViewModel.IsBusy" @onclick="async () => await DeleteSnus(sSnus)" class="button-icon">
+                                <span class="material-symbols--delete" />
+                            </button>
+                        </AuthorizeView>
+                    </div>
                 </td>
                 
             </tr>
         }
     </tbody>
 </table>
-<div style="margin-top: 10px">
+
+<div class="mt-1">
     @if (mPaginationMetaData != null)
     {
         <PaginationComponent OnSearch="async () => await GetSnus()" PaginationMetaData="mPaginationMetaData" PaginationParameters="mPaginationParameters" />

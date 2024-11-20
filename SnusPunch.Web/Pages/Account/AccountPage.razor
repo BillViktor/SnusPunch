@@ -7,10 +7,6 @@
 
 <h2>Ditt konto</h2>
 
-<p>
-    Hemsidan är just nu under konstruktion.
-</p>
-
 <AuthorizeView>
     <p>
         <b>UserName: </b> @context.User.Identity.Name
@@ -24,4 +20,8 @@
     <p>
         <b>Claims: </b> @string.Join(", ", context.User.Claims.Select(x => x.Value))
     </p>
+
+    <hr/>
+
+    <button class="button-danger" @onclick="async () => await DeleteAccount()">Radera Konto</button>
 </AuthorizeView>
