@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Components.Authorization;
+using SnusPunch.Shared.Models.Auth;
 using SnusPunch.Web.Clients.Snus;
 using System.Security.Claims;
 
@@ -8,8 +9,11 @@ namespace SnusPunch.Web.Identity
     {
         private readonly AuthClient mAuthClient;
 
+        private UserInfoModel mUserInfoModel;
         private bool mAuthenticated = false;
         private readonly ClaimsPrincipal mUnauthenticated = new(new ClaimsIdentity());
+
+        public UserInfoModel UserInfoModel { get { return mUserInfoModel; } }
 
         public CookieAuthenticationStateProvider(AuthClient aAuthClient)
         {
@@ -32,6 +36,8 @@ namespace SnusPunch.Web.Identity
 
                 if(sUserResponse.Success)
                 {
+                    mUserInfoModel = sUserResponse.ResultObject;
+
                     var sClaims = new List<Claim>
                     {
                         new Claim(ClaimTypes.Name, sUserResponse.ResultObject.UserName),

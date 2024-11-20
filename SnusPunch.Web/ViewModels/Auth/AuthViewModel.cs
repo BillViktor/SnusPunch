@@ -11,7 +11,7 @@ namespace SnusPunch.Web.ViewModels.Snus
 
         private UserInfoModel mUserInfoModel;
 
-        public UserInfoModel UserInfoModel { get { return mUserInfoModel; } }
+        public UserInfoModel UserInfoModel { get { return mCookieAuthenticationStateProvider.UserInfoModel; } }
 
         public AuthViewModel(AuthClient aAuthClient, CookieAuthenticationStateProvider aCookieAuthenticationStateProvider)
         {
@@ -86,20 +86,7 @@ namespace SnusPunch.Web.ViewModels.Snus
 
         public async Task GetUserInfo()
         {
-            IsBusy = true;
-
-            var sResult = await mAuthClient.Info();
-
-            if (!sResult.Success)
-            {
-                Errors.AddRange(sResult.Errors);
-            }
-            else
-            {
-                mUserInfoModel = sResult.ResultObject;
-            }
-
-            IsBusy = false;
+            await mCookieAuthenticationStateProvider.CheckAuthenticatedAsync();
         }
 
 
