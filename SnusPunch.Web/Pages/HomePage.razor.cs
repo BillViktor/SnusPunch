@@ -14,7 +14,7 @@ namespace SnusPunch.Web.Pages
     public partial class HomePage
     {
         [CascadingParameter] public IModalService Modal { get; set; } = default!;
-        [Inject] CookieAuthenticationStateProvider CookieAuthenticationStateProvider { get; set; }
+        [Inject] AuthViewModel AuthViewModel { get; set; }
         [Inject] EntryViewModel EntryViewModel { get; set; }
 
         private string mDescription = "";
@@ -49,22 +49,18 @@ namespace SnusPunch.Web.Pages
 
         private async Task GetFavouriteSnus()
         {
-            var sAuthState = await CookieAuthenticationStateProvider.GetAuthenticationStateAsync();
-            var sUser = sAuthState.User;
-            var sSnusIdClaim = sUser.Claims.FirstOrDefault(x => x.Type == "FavouriteSnusId");
-            var sSnusNameClaim = sUser.Claims.FirstOrDefault(x => x.Type == "FavouriteSnusName");
-
-            if (sSnusIdClaim != null && !string.IsNullOrEmpty(sSnusIdClaim.Value) && sSnusNameClaim != null && !string.IsNullOrEmpty(sSnusNameClaim.Value))
+            if(AuthViewModel.UserInfoModel == null)
             {
-                int sFavouriteSnusId;
-                if (int.TryParse(sSnusIdClaim.Value, out sFavouriteSnusId))
+                await AuthViewModel.GetUserInfo();
+            }
+
+            if(AuthViewModel.UserInfoModel?.FavouriteSnusId != null && !string.IsNullOrEmpty(AuthViewModel.UserInfoModel?.FavouriteSnusName))
+            {
+                mFavouriteSnus = new SnusDto
                 {
-                    mFavouriteSnus = new SnusDto
-                    {
-                        Id = sFavouriteSnusId,
-                        Name = sSnusNameClaim.Value,
-                    };
-                }
+                    Id = (int)AuthViewModel.UserInfoModel.FavouriteSnusId,
+                    Name = AuthViewModel.UserInfoModel.FavouriteSnusName,
+                };
             }
         }
 

@@ -1,6 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
-using SnusPunch.Shared.Models.Auth;
-using SnusPunch.Shared.Models.ResultModel;
+﻿using SnusPunch.Shared.Models.Auth;
 using SnusPunch.Web.Clients.Snus;
 using SnusPunch.Web.Identity;
 
@@ -10,6 +8,10 @@ namespace SnusPunch.Web.ViewModels.Snus
     {
         private readonly AuthClient mAuthClient;
         private readonly CookieAuthenticationStateProvider mCookieAuthenticationStateProvider;
+
+        private UserInfoModel mUserInfoModel;
+
+        public UserInfoModel UserInfoModel { get { return mUserInfoModel; } }
 
         public AuthViewModel(AuthClient aAuthClient, CookieAuthenticationStateProvider aCookieAuthenticationStateProvider)
         {
@@ -82,6 +84,25 @@ namespace SnusPunch.Web.ViewModels.Snus
             return sSuccess;
         }
 
+        public async Task GetUserInfo()
+        {
+            IsBusy = true;
+
+            var sResult = await mAuthClient.Info();
+
+            if (!sResult.Success)
+            {
+                Errors.AddRange(sResult.Errors);
+            }
+            else
+            {
+                mUserInfoModel = sResult.ResultObject;
+            }
+
+            IsBusy = false;
+        }
+
+
         #region Email
         public async Task<bool> VerifyEmail(VerifyEmailRequest aVerifyEmailRequest)
         {
@@ -125,6 +146,7 @@ namespace SnusPunch.Web.ViewModels.Snus
             return sSuccess;
         }
         #endregion
+
 
         #region Password
         public async Task<bool> ForgotPassword(ForgotPasswordRequestModel aForgotPasswordRequestModel)
@@ -172,11 +194,6 @@ namespace SnusPunch.Web.ViewModels.Snus
 
 
         #region Profile Picture
-        public async Task<string?> AddOrUpdateProfilePicture(IFormFile aFormFile)
-        {
-            return "";
-        }
-
         public async Task<bool> DeleteProfilePicture()
         {
             bool sSuccess = true;

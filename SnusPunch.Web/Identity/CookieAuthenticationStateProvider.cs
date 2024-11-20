@@ -38,12 +38,6 @@ namespace SnusPunch.Web.Identity
                         new Claim(ClaimTypes.Email, sUserResponse.ResultObject.Email)
                     };
 
-                    if(sUserResponse.ResultObject.FavouriteSnusId != null && sUserResponse.ResultObject.FavouriteSnusName != null)
-                    {
-                        sClaims.Add(new Claim("FavouriteSnusId", sUserResponse.ResultObject.FavouriteSnusId.ToString()));
-                        sClaims.Add(new Claim("FavouriteSnusName", sUserResponse.ResultObject.FavouriteSnusName.ToString()));
-                    }
-
                     foreach (var sRole in sUserResponse.ResultObject.RoleClaims)
                     {
                         if (!string.IsNullOrEmpty(sRole.Type) && !string.IsNullOrEmpty(sRole.Value))

@@ -14,7 +14,7 @@ namespace SnusPunch.Web.Pages.Snus
     public partial class SnusPage
     {
         [CascadingParameter] public IModalService Modal { get; set; } = default!;
-        [Inject] CookieAuthenticationStateProvider CookieAuthenticationStateProvider { get; set; }
+        [Inject] AuthViewModel AuthViewModel { get; set; }
         [Inject] SnusViewModel SnusViewModel { get; set; }
 
         private int? mFavouriteSnusId = null;
@@ -52,18 +52,12 @@ namespace SnusPunch.Web.Pages.Snus
 
         private async Task GetFavouriteSnus()
         {
-            var sAuthState = await CookieAuthenticationStateProvider.GetAuthenticationStateAsync();
-            var sUser = sAuthState.User;
-            var sSnusClaim = sUser.Claims.FirstOrDefault(x => x.Type == "FavouriteSnusId");
-
-            if(sSnusClaim != null && !string.IsNullOrEmpty(sSnusClaim.Value))
+            if (AuthViewModel.UserInfoModel == null)
             {
-                int sFavouriteSnusId;
-                if(int.TryParse(sSnusClaim.Value, out sFavouriteSnusId))
-                {
-                    mFavouriteSnusId = sFavouriteSnusId;
-                }
+                await AuthViewModel.GetUserInfo();
             }
+
+            mFavouriteSnusId = AuthViewModel.UserInfoModel?.FavouriteSnusId;
         }
 
         #region Actions
@@ -90,9 +84,7 @@ namespace SnusPunch.Web.Pages.Snus
                 if(await SnusViewModel.SetFavouriteSnus(aSnusModel))
                 {
                     mFavouriteSnusId = aSnusModel.Id;
-
-                    //Refresha auth state
-                    await CookieAuthenticationStateProvider.GetAuthenticationStateAsync();
+                    await AuthViewModel.GetUserInfo();
                 }
             }
         }
