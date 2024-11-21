@@ -6,7 +6,6 @@ namespace SnusPunch.Web.Pages.Auth
 {
     public partial class ResetPasswordPage
     {
-        [Parameter] public string Token { get; set; }
         [Inject] AuthViewModel AuthViewModel { get; set; }
         [Inject] NavigationManager NavigationManager { get; set; }
 
