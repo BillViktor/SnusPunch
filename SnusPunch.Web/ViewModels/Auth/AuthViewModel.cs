@@ -177,6 +177,27 @@ namespace SnusPunch.Web.ViewModels.Snus
             IsBusy = false;
             return sSuccess;
         }
+
+        public async Task<bool> ChangePassword(ChangePasswordRequestModel aChangePasswordRequestModel)
+        {
+            bool sSuccess = true;
+            IsBusy = true;
+
+            var sResult = await mAuthClient.ChangePassword(aChangePasswordRequestModel);
+
+            if (!sResult.Success)
+            {
+                Errors.AddRange(sResult.Errors);
+                sSuccess = false;
+            }
+            else
+            {
+                SuccessMessages.Add("Ditt lösenord har nu ändrats!");
+            }
+
+            IsBusy = false;
+            return sSuccess;
+        }
         #endregion
 
 

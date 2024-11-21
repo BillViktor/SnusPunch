@@ -102,6 +102,7 @@ namespace SnusPunch.API.Controllers
         }
         #endregion
 
+
         #region Password
         [HttpPost("ForgotPassword")]
         public async Task<ResultModel> ForgotPassword(ForgotPasswordRequestModel aForgotPasswordRequest)
@@ -122,6 +123,7 @@ namespace SnusPunch.API.Controllers
             return await mAuthService.ChangePassword(aChangePasswordRequestModel, User);
         }
         #endregion
+
 
         #region Roles
         [Authorize(Roles = "Admin")]

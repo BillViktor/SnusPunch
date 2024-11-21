@@ -5,6 +5,8 @@
 
 <PageTitle>SnusPunch - Konto</PageTitle>
 
+<MessageComponent Errors="AuthViewModel.Errors" SuccessMessages="AuthViewModel.SuccessMessages" IsBusy="AuthViewModel.IsBusy" />
+
 <h2>Ditt konto</h2>
 
 <AuthorizeView>
@@ -23,5 +25,9 @@
 
     <hr/>
 
-    <button class="button-danger" @onclick="async () => await DeleteAccount()">Radera Konto</button>
+    <div class="row gap-1">
+        <button class="button-warning" @onclick="async () => await ChangePassword()">Byt Lösenord</button>
+        <button class="button-danger" @onclick="async () => await DeleteAccount()">Radera Konto</button>
+    </div>
+    
 </AuthorizeView>

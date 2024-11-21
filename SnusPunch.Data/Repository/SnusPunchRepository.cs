@@ -131,6 +131,7 @@ namespace SnusPunch.Data.Repository
                 Description = sEntry.Description,
                 SnusName = sEntry.Snus.Name,
                 UserName = sEntry.SnusPunchUserModel.UserName,
+                UserProfilePictureUrl = $"{mConfiguration["ProfilePicturePathFull"]}{sEntry.SnusPunchUserModel.ProfilePicturePath ?? "default.jpg"}"
             };
         }
 

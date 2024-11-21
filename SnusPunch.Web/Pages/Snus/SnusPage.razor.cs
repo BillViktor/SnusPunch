@@ -40,7 +40,7 @@ namespace SnusPunch.Web.Pages.Snus
         {
             await GetSnus();
 
-            await GetFavouriteSnus();
+            mFavouriteSnusId = AuthViewModel.UserInfoModel?.FavouriteSnusId;
         }
 
         private async Task GetSnus()
@@ -48,16 +48,6 @@ namespace SnusPunch.Web.Pages.Snus
             var sResult = await SnusViewModel.GetSnusPaginated(mPaginationParameters);
             mPaginationMetaData = sResult.PaginationMetaData;
             mSnusList = sResult.Items;
-        }
-
-        private async Task GetFavouriteSnus()
-        {
-            if (AuthViewModel.UserInfoModel == null)
-            {
-                await AuthViewModel.GetUserInfo();
-            }
-
-            mFavouriteSnusId = AuthViewModel.UserInfoModel?.FavouriteSnusId;
         }
 
         #region Actions

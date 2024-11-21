@@ -37,7 +37,7 @@ namespace SnusPunch.Web.Pages
         {
             await GetEntries();
 
-            await GetFavouriteSnus();
+            GetFavouriteSnus();
         }
 
         private async Task GetEntries()
@@ -47,14 +47,9 @@ namespace SnusPunch.Web.Pages
             mEntryList = sResult.Items;
         }
 
-        private async Task GetFavouriteSnus()
+        private void GetFavouriteSnus()
         {
-            if(AuthViewModel.UserInfoModel == null)
-            {
-                await AuthViewModel.GetUserInfo();
-            }
-
-            if(AuthViewModel.UserInfoModel?.FavouriteSnusId != null && !string.IsNullOrEmpty(AuthViewModel.UserInfoModel?.FavouriteSnusName))
+            if (AuthViewModel.UserInfoModel?.FavouriteSnusId != null && !string.IsNullOrEmpty(AuthViewModel.UserInfoModel?.FavouriteSnusName))
             {
                 mFavouriteSnus = new SnusDto
                 {

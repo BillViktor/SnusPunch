@@ -118,6 +118,7 @@ namespace SnusPunch.Web.Clients.Snus
         }
         #endregion
 
+
         #region Email
         public async Task<ResultModel<string>> ResendConfirmationEmail()
         {
@@ -170,6 +171,7 @@ namespace SnusPunch.Web.Clients.Snus
         }
         #endregion
 
+
         #region Password
         public async Task<ResultModel> ForgotPassword(ForgotPasswordRequestModel aForgotPasswordRequestModel)
         {
@@ -183,6 +185,31 @@ namespace SnusPunch.Web.Clients.Snus
                 if (!sResponse.IsSuccessStatusCode)
                 {
                     throw new Exception("Non-success status code at ForgotPassword in AuthClient");
+                }
+
+                sResultModel = await sResponse.Content.ReadFromJsonAsync<ResultModel>();
+            }
+            catch (Exception aException)
+            {
+                sResultModel.Success = false;
+                sResultModel.AddExceptionError(aException);
+            }
+
+            return sResultModel;
+        }
+
+        public async Task<ResultModel> ChangePassword(ChangePasswordRequestModel aChangePasswordRequestModel)
+        {
+            ResultModel sResultModel = new ResultModel();
+
+            try
+            {
+                var sHttpClient = mHttpClientFactory.CreateClient(HttpClientEnum.Auth.ToString());
+                var sResponse = await sHttpClient.PostAsJsonAsync("ChangePassword", aChangePasswordRequestModel);
+
+                if (!sResponse.IsSuccessStatusCode)
+                {
+                    throw new Exception("Non-success status code at ChangePassword in AuthClient");
                 }
 
                 sResultModel = await sResponse.Content.ReadFromJsonAsync<ResultModel>();

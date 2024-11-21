@@ -11,28 +11,37 @@
 
         public string GetTimeAgo()
         {
-            var sDifference = DateTime.Now - CreateDate;
-            var sDifferenceInMinutes = sDifference.Minutes;
-            var sDifferenceInHours = sDifference.Hours;
+            var sTimeDifference = DateTime.Now - CreateDate;
 
-            if(sDifferenceInMinutes < 0)
+            if (sTimeDifference.TotalMinutes < 1)
             {
-                return "Alldeless nyss";
+                return "Alldeles nyss";
             }
-            else if(sDifferenceInMinutes < 60)
+            else if (sTimeDifference.TotalMinutes < 60)
             {
-                return $"{sDifferenceInMinutes} {(sDifferenceInMinutes == 1 ? "minut" : "minuter")} sedan";
+                var sMinutes = (int)sTimeDifference.TotalMinutes;
+                return $"{sMinutes} {(sMinutes == 1 ? "minut" : "minuter")} sedan";
             }
-            else if(sDifferenceInHours >= 1)
+            else if (sTimeDifference.TotalHours < 24)
             {
-                return $"{sDifferenceInMinutes} {(sDifferenceInHours == 1 ? "timme" : "timmar")} sedan";
+                var sHours = (int)sTimeDifference.TotalHours;
+                return $"{sHours} {(sHours == 1 ? "timme" : "timmar")} sedan";
             }
-            else if (sDifferenceInHours >= 24)
+            else if (sTimeDifference.TotalDays < 30)
             {
-                return $"{sDifferenceInMinutes} {(sDifferenceInHours == 24 ? "dag" : "dagar")} sedan";
+                var sDays = (int)sTimeDifference.TotalDays;
+                return $"{sDays} {(sDays == 1 ? "dag" : "dagar")} sedan";
             }
-
-            return "";
+            else if (sTimeDifference.TotalDays < 365)
+            {
+                var sMonths = (int)(sTimeDifference.TotalDays / 30);
+                return $"{sMonths} {(sMonths == 1 ? "månad" : "månader")} sedan";
+            }
+            else
+            {
+                var sYears = (int)(sTimeDifference.TotalDays / 365);
+                return $"{sYears} {(sYears == 1 ? "år" : "år")} sedan";
+            }
         }
     }
 }
