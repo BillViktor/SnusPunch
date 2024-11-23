@@ -7,6 +7,8 @@
         public string SnusName { get; set; }
         public string UserName { get; set; }
         public string? UserProfilePictureUrl { get; set; }
+        public int Likes { get; set; }
+        public int Comments { get; set; }
         public DateTime CreateDate { get; set; }
 
         public string GetTimeAgo()

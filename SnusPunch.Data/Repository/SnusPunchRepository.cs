@@ -107,7 +107,9 @@ namespace SnusPunch.Data.Repository
                     PhotoUrl = x.PhotoUrl,
                     SnusName = x.Snus.Name,
                     UserName = x.SnusPunchUserModel.UserName,
-                    UserProfilePictureUrl = $"{mConfiguration["ProfilePicturePathFull"]}{x.SnusPunchUserModel.ProfilePicturePath ?? "default.jpg"}"
+                    UserProfilePictureUrl = $"{mConfiguration["ProfilePicturePathFull"]}{x.SnusPunchUserModel.ProfilePicturePath ?? "default.jpg"}",
+                    Likes = x.Likes.Count,
+                    Comments = x.Comments.Count
                 }).ToListAsync();
 
             var sCount = await mSnusPunchDbContext.Entries

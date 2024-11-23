@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using SnusPunch.Data.Models.Entry;
 using SnusPunch.Data.Models.Identity;
 using SnusPunch.Shared.Models.Snus;
+using System.Reflection.Emit;
 
 namespace SnusPunch.Data.DbContexts
 {
@@ -16,6 +17,40 @@ namespace SnusPunch.Data.DbContexts
         protected override void OnModelCreating(ModelBuilder aModelBuilder)
         {
             base.OnModelCreating(aModelBuilder);
+
+            aModelBuilder.Entity<EntryCommentModel>(e =>
+            {
+                e.ToTable("tblEntryComment");
+                e.HasKey(e => e.Id);
+
+                e.Property(c => c.CreateDate).HasDefaultValueSql("getdate()");
+
+                e.HasOne(e => e.EntryModel)
+                    .WithMany(e => e.Comments)
+                        .HasForeignKey(e => e.EntryId)
+                            .OnDelete(DeleteBehavior.ClientCascade);
+            });
+
+            aModelBuilder.Entity<EntryLikeModel>(e =>
+            {
+                e.ToTable("tblEntryLike");
+
+                e.HasKey(e => e.Id);
+
+                //Composite key
+                e.HasIndex(c => new
+                {
+                    c.EntryId,
+                    c.SnusPunchUserModelId
+                }).IsUnique();
+
+                e.Property(c => c.CreateDate).HasDefaultValueSql("getdate()");
+
+                e.HasOne(e => e.EntryModel)
+                    .WithMany(e => e.Likes)
+                        .HasForeignKey(e => e.EntryId)
+                            .OnDelete(DeleteBehavior.ClientCascade);
+            });
 
             aModelBuilder.Entity<EntryModel>(e =>
             {

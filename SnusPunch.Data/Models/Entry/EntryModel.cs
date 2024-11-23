@@ -17,5 +17,11 @@ namespace SnusPunch.Data.Models.Entry
         //Snus
         public int? SnusId { get; set; }
         public SnusModel? Snus { get; set; }
+
+        //Likes
+        public List<EntryLikeModel> Likes { get; set; } = new List<EntryLikeModel>();
+
+        //Kommentarer
+        public List<EntryCommentModel> Comments { get; set; } = new List<EntryCommentModel>();
     }
 }
