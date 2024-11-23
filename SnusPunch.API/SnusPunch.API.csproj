@@ -7,6 +7,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Images\ProfilePictures\**" />
+    <Content Remove="Images\ProfilePictures\**" />
+    <EmbeddedResource Remove="Images\ProfilePictures\**" />
+    <None Remove="Images\ProfilePictures\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.10" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.10">
       <PrivateAssets>all</PrivateAssets>

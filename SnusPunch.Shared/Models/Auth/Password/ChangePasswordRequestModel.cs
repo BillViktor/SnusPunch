@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace SnusPunch.Shared.Models.Auth
+namespace SnusPunch.Shared.Models.Auth.Password
 {
     public class ChangePasswordRequestModel
     {

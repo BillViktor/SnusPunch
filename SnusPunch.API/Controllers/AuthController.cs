@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Mvc;
 using SnusPunch.Services.Email;
 using SnusPunch.Services.Snus;
 using SnusPunch.Shared.Models.Auth;
+using SnusPunch.Shared.Models.Auth.Email;
+using SnusPunch.Shared.Models.Auth.Password;
 using SnusPunch.Shared.Models.ResultModel;
 using System.Security.Claims;
 
@@ -68,7 +70,7 @@ namespace SnusPunch.API.Controllers
         #region Profile Picture
         [Authorize]
         [HttpPut("AddOrUpdateProfilePicture")]
-        public async Task<ResultModel<string>> AddOrUpdateProfilePicture(IFormFile aFormFile)
+        public async Task<ResultModel> AddOrUpdateProfilePicture(IFormFile aFormFile)
         {
             return await mAuthService.AddOrUpdateProfilePicture(aFormFile, User);
         }
@@ -84,9 +86,10 @@ namespace SnusPunch.API.Controllers
         [HttpDelete("DeleteProfilePicture/{aUserName}")]
         public async Task<ResultModel> DeleteProfilePicture(string aUserName)
         {
-            return new ResultModel();
+            return await mAuthService.DeleteProfilePicture(aUserName);
         }
         #endregion
+
 
         #region Email
         [HttpPost("VerifyEmail")]
@@ -99,6 +102,20 @@ namespace SnusPunch.API.Controllers
         public async Task<ResultModel> ResendConfirmationEmail()
         {
             return await mAuthService.ResendVerificationEmail(User);
+        }
+
+        [Authorize]
+        [HttpPost("ChangeEmail")]
+        public async Task<ResultModel> ChangeEmail(ChangeEmailRequestModel aChangeEmailRequestModel)
+        {
+            return await mAuthService.ChangeEmail(aChangeEmailRequestModel, User);
+        }
+
+        [Authorize]
+        [HttpPost("ConfirmChangeEmail")]
+        public async Task<ResultModel> ConfirmChangeEmail(ConfirmChangeEmailRequestModel aConfirmChangeEmailRequestModel)
+        {
+            return await mAuthService.ConfirmChangeEmail(aConfirmChangeEmailRequestModel, User);
         }
         #endregion
 

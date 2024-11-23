@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Components;
-using SnusPunch.Shared.Models.Auth;
+using SnusPunch.Shared.Models.Auth.Password;
 using SnusPunch.Web.ViewModels.Snus;
 
 namespace SnusPunch.Web.Pages.Auth

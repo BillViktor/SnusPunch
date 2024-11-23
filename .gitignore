@@ -362,4 +362,5 @@ MigrationBackup/
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
 /SnusPunch.API/smtpsettings.json
+/SnusPunch.API/Images
 /.gitignore

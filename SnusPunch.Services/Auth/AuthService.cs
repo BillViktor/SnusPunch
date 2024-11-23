@@ -1,7 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -10,9 +8,10 @@ using SnusPunch.Data.Repository;
 using SnusPunch.Services.Email;
 using SnusPunch.Services.Helpers;
 using SnusPunch.Shared.Models.Auth;
+using SnusPunch.Shared.Models.Auth.Email;
+using SnusPunch.Shared.Models.Auth.Password;
 using SnusPunch.Shared.Models.ResultModel;
 using System.Security.Claims;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace SnusPunch.Services.Snus
 {
@@ -232,7 +231,7 @@ namespace SnusPunch.Services.Snus
                     UserName = sUser.UserName,
                     RoleClaims = sRoles,
                     FavouriteSnusId = sUser.FavoriteSnusId,
-                    ProfilePictureUrl = $"{mConfiguration["ProfilePicturePath"]}{sUser.ProfilePicturePath ?? "default.jpg"}"
+                    ProfilePictureUrl = $"{mConfiguration["ProfilePicturePathFull"]}{sUser.ProfilePicturePath ?? "default.jpg"}"
                 };
 
                 if(sResultModel.ResultObject.FavouriteSnusId != null)
@@ -256,7 +255,7 @@ namespace SnusPunch.Services.Snus
         #endregion
 
 
-        #region Email Verification
+        #region Email
         public async Task<ResultModel> SendVerificationEmail(SnusPunchUserModel aSnusPunchUserModel)
         {
             ResultModel sResultModel = new ResultModel();
@@ -356,6 +355,84 @@ namespace SnusPunch.Services.Snus
                     sResultModel.AppendErrors(sResult.Errors.Select(x => x.Description).ToList());
                     return sResultModel;
                 }
+            }
+            catch (Exception ex)
+            {
+                sResultModel.Success = false;
+                sResultModel.AddExceptionError(ex);
+            }
+
+            return sResultModel;
+        }
+
+        public async Task<ResultModel> ChangeEmail(ChangeEmailRequestModel aChangeEmailRequestModel, ClaimsPrincipal aClaimsPrincipal)
+        {
+            ResultModel sResultModel = new ResultModel();
+
+            try
+            {
+                var sUser = await mUserManager.GetUserAsync(aClaimsPrincipal);
+
+                if (sUser == null)
+                {
+                    sResultModel.Success = false;
+                    sResultModel.AddError("Användaren hittades ej.");
+                    return sResultModel;
+                }
+
+                if(await mUserManager.Users.AnyAsync(x => x.Email == aChangeEmailRequestModel.NewEmail))
+                {
+                    sResultModel.Success = false;
+                    sResultModel.AddError("Denna e-postadress används redan.");
+                    return sResultModel;
+                }
+
+                var sToken = await mUserManager.GenerateChangeEmailTokenAsync(sUser, aChangeEmailRequestModel.NewEmail);
+
+                string sLink = mConfiguration["FrontendUrl"] + $"/ChangeEmail?Token={sToken}";
+
+                var sEmailResult = await mEmailService.SendEmail(sUser.Email, "SnusPunch - Bekräfta byte av e-postadress", EmailHelper.GetChangeEmailEmail(sLink));
+
+                if (!sEmailResult.Success)
+                {
+                    sResultModel = sEmailResult;
+                }
+            }
+            catch (Exception ex)
+            {
+                sResultModel.Success = false;
+                sResultModel.AddExceptionError(ex);
+            }
+
+            return sResultModel;
+        }
+
+        public async Task<ResultModel> ConfirmChangeEmail(ConfirmChangeEmailRequestModel aConfirmChangeEmailRequestModel, ClaimsPrincipal aClaimsPrincipal)
+        {
+            ResultModel sResultModel = new ResultModel();
+
+            try
+            {
+                var sUser = await mUserManager.GetUserAsync(aClaimsPrincipal);
+
+                if (sUser == null)
+                {
+                    sResultModel.Success = false;
+                    sResultModel.AddError("Användaren hittades ej.");
+                    return sResultModel;
+                }
+
+                var sResult = await mUserManager.ChangeEmailAsync(sUser, aConfirmChangeEmailRequestModel.NewEmail, aConfirmChangeEmailRequestModel.Token);
+
+                if(!sResult.Succeeded)
+                {
+                    sResultModel.Success = false;
+                    sResultModel.AppendErrors(sResult.Errors.Select(x => x.Description).ToList());
+                }
+
+                //Ta bort verifieringen
+                sUser.EmailConfirmed = false;
+                await mUserManager.UpdateAsync(sUser);
             }
             catch (Exception ex)
             {
@@ -547,9 +624,9 @@ namespace SnusPunch.Services.Snus
 
 
         #region ProfilePicture
-        public async Task<ResultModel<string>> AddOrUpdateProfilePicture(IFormFile aFormFile, ClaimsPrincipal aClaimsPrincipal)
+        public async Task<ResultModel> AddOrUpdateProfilePicture(IFormFile aFormFile, ClaimsPrincipal aClaimsPrincipal)
         {
-            ResultModel<string> sResultModel = new ResultModel<string>();
+            ResultModel sResultModel = new ResultModel();
 
             try
             {
@@ -569,7 +646,7 @@ namespace SnusPunch.Services.Snus
                 var sVerifyFileResult = ImageFileVerification.IsValidImage(aFormFile);
                 if(!sVerifyFileResult.Success)
                 {
-                    sResultModel.Errors = sVerifyFileResult.Errors;
+                    sResultModel = sVerifyFileResult;
                     return sResultModel;
                 }
 
@@ -611,8 +688,6 @@ namespace SnusPunch.Services.Snus
                         File.Delete(sFile);
                     }
                 }
-
-                sResultModel.ResultObject = sUser.ProfilePicturePath;
             }
             catch (Exception ex)
             {
@@ -683,6 +758,8 @@ namespace SnusPunch.Services.Snus
 
             try
             {
+                string sProfilePicturePath = aSnusPunchUserModel.ProfilePicturePath;
+
                 if (aSnusPunchUserModel.ProfilePicturePath == null)
                 {
                     sResultModel.AddError("Användaren har ingen profilbild");
@@ -700,7 +777,7 @@ namespace SnusPunch.Services.Snus
                     return sResultModel;
                 }
 
-                var sFilePath = mConfiguration["ProfilePicturePath"] + aSnusPunchUserModel.ProfilePicturePath;
+                var sFilePath = mConfiguration["ProfilePicturePath"] + sProfilePicturePath;
                 if (File.Exists(sFilePath))
                 {
                     File.Delete(sFilePath);

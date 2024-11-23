@@ -1,0 +1,19 @@
+﻿<MessageComponent Errors="AuthViewModel.Errors" SuccessMessages="AuthViewModel.SuccessMessages" IsBusy="AuthViewModel.IsBusy" />
+
+<EditForm Model="mChangeEmailRequestModel" OnValidSubmit="Confirm">
+    <DataAnnotationsValidator />
+
+    <p>
+        <ValidationSummary />
+    </p>
+
+    <p>
+        <label for="email">Ny e-postadress</label>
+        <input @bind="mChangeEmailRequestModel.NewEmail" id="email" class="full-width" />
+    </p>
+
+    <div class="row gap-1">
+        <button class="full-width button-success" type="submit">Byt E-postadress</button>
+        <button @onclick="async () => await Close()" class="full-width button-warning" type="button">Avbryt</button>
+    </div>
+</EditForm>

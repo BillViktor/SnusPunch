@@ -1,5 +1,8 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Components.Forms;
+using Microsoft.AspNetCore.Http;
 using SnusPunch.Shared.Models.Auth;
+using SnusPunch.Shared.Models.Auth.Email;
+using SnusPunch.Shared.Models.Auth.Password;
 using SnusPunch.Shared.Models.Pagination;
 using SnusPunch.Shared.Models.ResultModel;
 using SnusPunch.Shared.Models.Snus;
@@ -169,6 +172,56 @@ namespace SnusPunch.Web.Clients.Snus
 
             return sResultModel;
         }
+
+        public async Task<ResultModel> ChangeEmail(ChangeEmailRequestModel aChangeEmailRequestModel)
+        {
+            ResultModel sResultModel = new ResultModel();
+
+            try
+            {
+                var sHttpClient = mHttpClientFactory.CreateClient(HttpClientEnum.Auth.ToString());
+                var sResponse = await sHttpClient.PostAsJsonAsync("ChangeEmail", aChangeEmailRequestModel);
+
+                if (!sResponse.IsSuccessStatusCode)
+                {
+                    throw new Exception("Non-success status code at ChangeEmail in AuthClient");
+                }
+
+                sResultModel = await sResponse.Content.ReadFromJsonAsync<ResultModel>();
+            }
+            catch (Exception aException)
+            {
+                sResultModel.Success = false;
+                sResultModel.AddExceptionError(aException);
+            }
+
+            return sResultModel;
+        }
+
+        public async Task<ResultModel> ConfirmChangeEmail(ConfirmChangeEmailRequestModel aConfirmChangeEmailRequestModel)
+        {
+            ResultModel sResultModel = new ResultModel();
+
+            try
+            {
+                var sHttpClient = mHttpClientFactory.CreateClient(HttpClientEnum.Auth.ToString());
+                var sResponse = await sHttpClient.PostAsJsonAsync("ConfirmChangeEmail", aConfirmChangeEmailRequestModel);
+
+                if (!sResponse.IsSuccessStatusCode)
+                {
+                    throw new Exception("Non-success status code at ConfirmChangeEmail in AuthClient");
+                }
+
+                sResultModel = await sResponse.Content.ReadFromJsonAsync<ResultModel>();
+            }
+            catch (Exception aException)
+            {
+                sResultModel.Success = false;
+                sResultModel.AddExceptionError(aException);
+            }
+
+            return sResultModel;
+        }
         #endregion
 
 
@@ -251,21 +304,21 @@ namespace SnusPunch.Web.Clients.Snus
 
 
         #region Profile Picture
-        public async Task<ResultModel<string>> AddOrUpdateProfilePicture(IFormFile aFormFile)
+        public async Task<ResultModel> AddOrUpdateProfilePicture(MultipartFormDataContent aMultipartFormDataContent)
         {
-            ResultModel<string> sResultModel = new ResultModel<string>();
+            ResultModel sResultModel = new ResultModel();
 
             try
             {
                 var sHttpClient = mHttpClientFactory.CreateClient(HttpClientEnum.Auth.ToString());
-                var sResponse = await sHttpClient.PutAsJsonAsync("AddOrUpdateProfilePicture", aFormFile);
+                var sResponse = await sHttpClient.PutAsync("AddOrUpdateProfilePicture", aMultipartFormDataContent);
 
                 if (!sResponse.IsSuccessStatusCode)
                 {
                     throw new Exception("Non-success status code at AddOrUpdateProfilePicture in AuthClient");
                 }
 
-                sResultModel = await sResponse.Content.ReadFromJsonAsync<ResultModel<string>>();
+                sResultModel = await sResponse.Content.ReadFromJsonAsync<ResultModel>();
             }
             catch (Exception aException)
             {

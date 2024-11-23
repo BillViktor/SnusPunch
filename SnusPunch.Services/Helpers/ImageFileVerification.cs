@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Components.Forms;
+using Microsoft.AspNetCore.Http;
 using SnusPunch.Shared.Constants;
 using SnusPunch.Shared.Models.ResultModel;
 using System.Text.RegularExpressions;
@@ -7,10 +8,9 @@ namespace SnusPunch.Services.Helpers
 {
     public static class ImageFileVerification
     {
-        public static ResultModel<bool> IsValidImage(IFormFile aFormFile)
+        public static ResultModel IsValidImage(IFormFile aFormFile)
         {
-            ResultModel<bool> sResultModel = new ResultModel<bool>();
-            sResultModel.ResultObject = true;
+            ResultModel sResultModel = new ResultModel();
 
             try
             {
@@ -34,13 +34,13 @@ namespace SnusPunch.Services.Helpers
 
                 //Kolla på mime
                 var sContentType = aFormFile.ContentType;
-                if(!AllowedImageFileTypes.AllowedMimeTypes.Any(x => string.Equals(x, sContentType, StringComparison.OrdinalIgnoreCase)))
+                if (!AllowedImageFileTypes.AllowedMimeTypes.Any(x => string.Equals(x, sContentType, StringComparison.OrdinalIgnoreCase)))
                 {
                     throw new Exception("Ogiltigt filformat.");
                 }
 
                 //Kolla på bytes
-                if(!aFormFile.OpenReadStream().CanRead)
+                if (!aFormFile.OpenReadStream().CanRead)
                 {
                     throw new Exception("Kan inte läsa filen.");
                 }
@@ -55,8 +55,8 @@ namespace SnusPunch.Services.Helpers
             }
             catch(Exception ex)
             {
-                sResultModel.AddExceptionError(ex);
                 sResultModel.Success = false;
+                sResultModel.AddExceptionError(ex);
             }
 
             return sResultModel;

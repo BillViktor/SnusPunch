@@ -1,6 +1,12 @@
-﻿using SnusPunch.Shared.Models.Auth;
+﻿using Microsoft.AspNetCore.Components.Forms;
+using SnusPunch.Shared.Constants;
+using SnusPunch.Shared.Models.Auth;
+using SnusPunch.Shared.Models.Auth.Email;
+using SnusPunch.Shared.Models.Auth.Password;
 using SnusPunch.Web.Clients.Snus;
 using SnusPunch.Web.Identity;
+using System.Net.Http.Headers;
+using System.Net.Mime;
 
 namespace SnusPunch.Web.ViewModels.Snus
 {
@@ -132,6 +138,48 @@ namespace SnusPunch.Web.ViewModels.Snus
             IsBusy = false;
             return sSuccess;
         }
+
+        public async Task<bool> ChangeEmail(ChangeEmailRequestModel aChangeEmailRequestModel)
+        {
+            bool sSuccess = true;
+            IsBusy = true;
+
+            var sResult = await mAuthClient.ChangeEmail(aChangeEmailRequestModel);
+
+            if (!sResult.Success)
+            {
+                Errors.AddRange(sResult.Errors);
+                sSuccess = false;
+            }
+            else
+            {
+                SuccessMessages.Add($"Ett bekräftelsemejl för att byta e-postadress till {aChangeEmailRequestModel.NewEmail} har skickats till din nuvarande e-postadress!");
+            }
+
+            IsBusy = false;
+            return sSuccess;
+        }
+
+        public async Task<bool> ConfirmChangeEmail(ConfirmChangeEmailRequestModel aConfirmChangeEmailRequestModel)
+        {
+            bool sSuccess = true;
+            IsBusy = true;
+
+            var sResult = await mAuthClient.ConfirmChangeEmail(aConfirmChangeEmailRequestModel);
+
+            if (!sResult.Success)
+            {
+                Errors.AddRange(sResult.Errors);
+                sSuccess = false;
+            }
+            else
+            {
+                SuccessMessages.Add($"Bytet av e-postadress lyckades!");
+            }
+
+            IsBusy = false;
+            return sSuccess;
+        }
         #endregion
 
 
@@ -220,6 +268,80 @@ namespace SnusPunch.Web.ViewModels.Snus
             }
 
             IsBusy = false;
+            return sSuccess;
+        }
+
+        public async Task<bool> AddOrUpdateProfilePicture(IBrowserFile aBrowserFile)
+        {
+            bool sSuccess = true;
+            IsBusy = true;
+
+            try
+            {
+                if(!ValidateProfilePicture(aBrowserFile))
+                {
+                    IsBusy = false;
+                    return false;
+                }
+
+                using var sContent = new MultipartFormDataContent();
+                var sFileContent = new StreamContent(aBrowserFile.OpenReadStream(AllowedImageFileTypes.ImageMaximumBytes));
+                sFileContent.Headers.ContentType = new MediaTypeHeaderValue(aBrowserFile.ContentType);
+
+                sContent.Add(sFileContent, "aFormFile", aBrowserFile.Name);
+
+                var sResult = await mAuthClient.AddOrUpdateProfilePicture(sContent);
+
+                if (!sResult.Success)
+                {
+                    sSuccess = false;
+                    Errors.AddRange(sResult.Errors);
+                }
+                else
+                {
+                    SuccessMessages.Add($"Din profilbild har uppdaterats");
+                }
+
+            }
+            catch(Exception ex)
+            {
+                AddError(ex.Message);
+                sSuccess = false;
+            }
+
+            
+
+            IsBusy = false;
+            return sSuccess;
+        }
+
+        private bool ValidateProfilePicture(IBrowserFile aBrowserFile)
+        {
+            bool sSuccess = true;
+
+            try
+            {
+                if(aBrowserFile == null)
+                {
+                    throw new Exception("Ingen fil vald.");
+                }
+
+                if (!AllowedImageFileTypes.AllowedMimeTypes.Any(x => string.Equals(x, aBrowserFile.ContentType, StringComparison.OrdinalIgnoreCase)))
+                {
+                    throw new Exception("Ogiltigt filformat.");
+                }
+
+                if (aBrowserFile.Size > AllowedImageFileTypes.ImageMaximumBytes)
+                {
+                    throw new Exception("Filen är för stor.");
+                }
+            }
+            catch(Exception ex)
+            {
+                AddError(ex.Message);
+                sSuccess = false;
+            }
+
             return sSuccess;
         }
         #endregion

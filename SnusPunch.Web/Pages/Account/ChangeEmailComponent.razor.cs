@@ -1,20 +1,26 @@
 ﻿using Blazored.Modal;
 using Microsoft.AspNetCore.Components;
-using SnusPunch.Shared.Models.Auth.Password;
+using SnusPunch.Shared.Models.Auth.Email;
 using SnusPunch.Web.ViewModels.Snus;
 
 namespace SnusPunch.Web.Pages.Account
 {
-    public partial class ChangePasswordComponent
+    public partial class ChangeEmailComponent
     {
         [CascadingParameter] BlazoredModalInstance BlazoredModal { get; set; } = default!;
         [Inject] AuthViewModel AuthViewModel { get; set; }
 
-        private ChangePasswordRequestModel mChangePasswordRequestModel = new ChangePasswordRequestModel();
+        private ChangeEmailRequestModel mChangeEmailRequestModel = new ChangeEmailRequestModel();
 
         private async Task Confirm()
         {
-            if(await AuthViewModel.ChangePassword(mChangePasswordRequestModel))
+            if(mChangeEmailRequestModel.NewEmail == AuthViewModel.UserInfoModel.Email)
+            {
+                AuthViewModel.AddError("Din nya e-post kan inte vara likadan som din nuvarande!");
+                return;
+            }
+
+            if(await AuthViewModel.ChangeEmail(mChangeEmailRequestModel))
             {
                 await BlazoredModal.CloseAsync();
             }

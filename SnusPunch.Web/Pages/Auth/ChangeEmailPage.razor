@@ -1,0 +1,24 @@
+﻿@page "/ChangeEmail"
+@layout EmptyLayout
+
+<PageTitle>SnusPunch - Byt E-postadress</PageTitle>
+
+<MessageComponent Errors="AuthViewModel.Errors" SuccessMessages="AuthViewModel.SuccessMessages" IsBusy="AuthViewModel.IsBusy" />
+
+<div class="center box">
+    <h2>Byt E-postadress</h2>
+
+    <EditForm Model="mConfirmChangeEmailRequestModel" OnValidSubmit="ConfirmChangeEmail">
+        <DataAnnotationsValidator />
+
+        <p>
+            <ValidationSummary />
+        </p>
+
+        <p>
+            <label for="email">Ny E-postadress</label>
+            <input @bind="mConfirmChangeEmailRequestModel.NewEmail" id="email" class="full-width" />
+        </p>
+        <button class="full-width mb-1" type="submit">Bekräfta Ny E-postadress</button>
+    </EditForm>
+</div>

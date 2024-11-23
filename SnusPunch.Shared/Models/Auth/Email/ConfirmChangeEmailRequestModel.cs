@@ -1,11 +1,13 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace SnusPunch.Shared.Models.Auth
+namespace SnusPunch.Shared.Models.Auth.Email
 {
-    public class ForgotPasswordRequestModel
+    public class ConfirmChangeEmailRequestModel
     {
         [Required(ErrorMessage = "E-post är obligatoriskt!")]
         [EmailAddress(ErrorMessage = "E-postadressen är ogiltig!")]
-        public string Email { get; set; }
+        public string NewEmail { get; set; }
+
+        public string Token { get; set; } 
     }
 }

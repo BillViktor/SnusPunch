@@ -9,25 +9,51 @@
 
 <h2>Ditt konto</h2>
 
-<AuthorizeView>
-    <p>
-        <b>UserName: </b> @context.User.Identity.Name
-    </p>
-    <p>
-        <b>AuthenticationType: </b> @context.User.Identity.AuthenticationType
-    </p>
-    <p>
-        <b>Identities: </b> @string.Join(", ", context.User.Identities.Select(x => x.Name))
-    </p>
-    <p>
-        <b>Claims: </b> @string.Join(", ", context.User.Claims.Select(x => x.Value))
-    </p>
+<p>
+    <b>Användarnamn: </b> @AuthViewModel.UserInfoModel.UserName
+</p>
 
-    <hr/>
+<p>
+    <b>E-postadress: </b> @AuthViewModel.UserInfoModel.Email
+    <b style="color: @(AuthViewModel.UserInfoModel.IsEmailConfirmed ? "green" : "red")">(@(AuthViewModel.UserInfoModel.IsEmailConfirmed ? "Verifierad" : "Ej verifierad"))</b>
+</p>
 
-    <div class="row gap-1">
-        <button class="button-warning" @onclick="async () => await ChangePassword()">Byt Lösenord</button>
-        <button class="button-danger" @onclick="async () => await DeleteAccount()">Radera Konto</button>
-    </div>
-    
-</AuthorizeView>
+@if(AuthViewModel.UserInfoModel.RoleClaims.Count > 0)
+{
+    <p>
+        <b>Roller: </b> @string.Join(", ", AuthViewModel.UserInfoModel.RoleClaims.Select(x => x.Value))
+    </p>
+}
+
+<p>
+    <b>Favoritsnus: </b> @AuthViewModel.UserInfoModel.FavouriteSnusName
+</p>
+
+
+<h3>Profilbild</h3>
+<img class="profile-picture-full-size" style="display: block" src="@AuthViewModel.UserInfoModel.ProfilePictureUrl" />
+
+<InputFile accept=".png,.jpeg,.jpg" @key="mInputFileId" class="mt-1" OnChange="LoadImage" />
+<div class="row gap-1">
+    <button class="button-warning" @onclick="async () => await AddOrUpdateProfilePicture()">Uppdatera Profilbild</button>
+    @if(!AuthViewModel.UserInfoModel.ProfilePictureUrl.Contains("default"))
+    {
+        <button class="button-danger" @onclick="async () => await DeleteProfilePicture()">Radera Profilbild</button>
+    }
+</div>
+<hr />
+
+<div class="row gap-1">
+    @if (!AuthViewModel.UserInfoModel.IsEmailConfirmed)
+    {
+        <button class="button-success" @onclick="async () => await ResendConfirmationEmail()">Verifiera E-post</button>
+    }
+    <button class="button-warning" @onclick="async () => await ChangeEmail()">Byt E-post</button>
+    <button class="button-warning" @onclick="async () => await ChangePassword()">Byt Lösenord</button>
+    <button class="button-danger" @onclick="async () => await DeleteAccount()">Radera Konto</button>
+</div>
+
+
+<script>
+
+</script>

@@ -1,4 +1,4 @@
-﻿namespace SnusPunch.Shared.Models.Auth
+﻿namespace SnusPunch.Shared.Models.Auth.Email
 {
     public class VerifyEmailRequest
     {
