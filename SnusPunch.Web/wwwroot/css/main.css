@@ -148,6 +148,7 @@ textarea {
     outline: none;
     resize: none;
     margin: 1rem 0;
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }
 
 /* Snus Entry */
