@@ -255,6 +255,10 @@ hr {
     text-align: center;
 }
 
+.text-end {
+    text-align: end;
+}
+
 /* Cursor */
 .cursor-pointer {
     cursor: pointer;

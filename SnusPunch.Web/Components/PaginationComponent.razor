@@ -17,7 +17,7 @@
         </p>
 
         <p>
-            <ul class="pagination-buttons pl-1">
+            <ul class="pagination-buttons">
                 @foreach (var sButton in mPaginationButtons)
                 {
                     <li class="pagination-button @(sButton.Enabled ? "cursor-pointer" : "cursor-default pagination-button-disabled") @(sButton.Active ? "pagination-button-active" : "")" @onclick="async () => await OnPageClick(sButton)">

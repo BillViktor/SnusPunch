@@ -1,0 +1,72 @@
+﻿@using SnusPunch.Shared.Models.Pagination
+@using SnusPunch.Shared.Models.Snus
+@using SnusPunch.Web.ViewModels.Snus
+<div>
+    <div class="row align-items-center gap-1">
+        <input class="full-width" @bind:event="oninput" @bind="mPaginationParameters.SearchString" @onkeydown="async (x) => await OnKeyDown(x)" placeholder="Sök.." />
+        <button @onclick="async () => await GetSnus()">
+            <span class="align-middle material-symbols--search" />
+            <span class="align-middle"> Sök</span>
+        </button>
+    </div>
+
+    <table class="mt-1">
+        <thead>
+            <tr>
+                <th>Namn</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var sSnus in mSnusList)
+            {
+                <tr>
+                    <td>@sSnus.Name</td>
+                    <td class="text-end">
+                        <button @onclick="async () => await Confirm(sSnus)">Välj</button>
+                    </td>
+
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+@code {
+    [CascadingParameter] BlazoredModalInstance BlazoredModal { get; set; } = default!;
+    [Inject] SnusViewModel SnusViewModel { get; set; }
+
+    private PaginationMetaData mPaginationMetaData = null;
+    private List<SnusModel> mSnusList = new List<SnusModel>();
+    private PaginationParameters mPaginationParameters = new PaginationParameters
+    {
+        SearchPropertyNames = new List<string> { "Name" },
+        SortPropertyName = "Name",
+        PageSize = 10
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
+        await GetSnus();
+    }
+
+    private async Task GetSnus()
+    {
+        var sResult = await SnusViewModel.GetSnusPaginated(mPaginationParameters);
+        mPaginationMetaData = sResult.PaginationMetaData;
+        mSnusList = sResult.Items;
+    }
+
+    private async Task Confirm(SnusModel aSnusModel)
+    {
+        await BlazoredModal.CloseAsync(ModalResult.Ok(aSnusModel));
+    }
+
+    private async Task OnKeyDown(KeyboardEventArgs aKeyboardEventArgs)
+    {
+        if(aKeyboardEventArgs.Key == "Enter")
+        {
+            await GetSnus();
+        }
+    }
+}

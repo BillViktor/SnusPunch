@@ -123,6 +123,30 @@ namespace SnusPunch.Web.Pages
             return false;
         }
 
+        private async Task ChangeSnus()
+        {
+            var sOptions = new ModalOptions
+            {
+                DisableBackgroundCancel = false,
+                Size = ModalSize.Custom,
+                SizeCustomClass = "modal-large",
+                Position = ModalPosition.Middle
+            };
+            var sModal = Modal.Show<ChooseSnusComponent>("Välj Snus", sOptions);
+            var sResult = await sModal.Result;
+
+            if (!sResult.Cancelled)
+            {
+                var sSnus = sResult.Data as SnusModel;
+
+                mChosenSnus = new SnusDto
+                {
+                    Id = sSnus.Id,
+                    Name = sSnus.Name,
+                };
+            }
+        }
+
         public async Task ToggleLike(EntryDto aEntryDto)
         {
             EntryViewModel.AddError("Not implemented yet! :(");

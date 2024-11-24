@@ -18,9 +18,9 @@
         }
         else
         {
-            <input class="flex-grow-1" />
+            <input disabled class="flex-grow-1" />
         }
-        <button>Ändra Snus</button>
+        <button @onclick="async () => await ChangeSnus()">Ändra Snus</button>
     </div>
     
 
