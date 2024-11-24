@@ -35,13 +35,23 @@
                     </NavLink>
                 </li>
                 <li>
-                    <button title="Notifikationer" class="button-icon">
-                        <span class="mingcute--notification-fill" />
-                    </button>
+                    
                 </li>
                 <li>
                     <div class="dropdown">
-                        <button title="Konto" onclick="toggleDropDown()" class="button-drop-down">
+                        <button title="Notifikationer" onclick="togglenotificationDropDown()" class="button-icon">
+                            <span class="mingcute--notification-fill" />
+                        </button>
+                        <div id="notificationDropDown" class="dropdown-content">
+                            <p class="dropdown-text">
+                                Tomt här!
+                            </p>
+                        </div>
+                    </div>
+                </li>
+                <li>
+                    <div class="dropdown">
+                        <button title="Konto" onclick="toggleAccountDropDown()" class="button-drop-down">
                             <img class="profile-picture-round" src="@AuthViewModel.UserInfoModel?.ProfilePictureUrl" />
                         </button>
                         <div id="accountDropDown" class="dropdown-content">
@@ -66,14 +76,19 @@
  </header>
 
  <script>
-    function toggleDropDown() {
-        console.log("test");
+    function toggleAccountDropDown() {
         document.getElementById("accountDropDown").classList.toggle("show");
+    }
+
+    function togglenotificationDropDown() {
+        document.getElementById("notificationDropDown").classList.toggle("show");
     }
 
     //Stäng om man klickar utanför
     window.onclick = function (event) {
-        if (!event.target.matches('.button-drop-down')) {
+        if (!event.target.matches('.button-drop-down') && !event.target.matches('.button-icon')) {
+            console.log("stäng");
+            console.log(event.target);
             var dropdowns = document.getElementsByClassName("dropdown-content");
             var i;
             for (i = 0; i < dropdowns.length; i++) {
@@ -88,4 +103,7 @@
 
 @code {
     [Inject] AuthViewModel AuthViewModel { get; set; }
+
+    //TODO
+    //Hämta notiser & ändra färg på klockan
  }
