@@ -112,5 +112,41 @@ namespace SnusPunch.Web.ViewModels.Snus
             IsBusy = false;
             return sSuccess;
         }
+
+        #region Likes
+        public async Task<bool> LikeEntry(int aEntryModelId)
+        {
+            IsBusy = true;
+            bool sSuccess = true;
+
+            var sResult = await mEntryClient.LikeEntry(aEntryModelId);
+
+            if (!sResult.Success)
+            {
+                sSuccess = false;
+                Errors.AddRange(sResult.Errors);
+            }
+
+            IsBusy = false;
+            return sSuccess;
+        }
+
+        public async Task<bool> UnlikeEntry(int aEntryModelId)
+        {
+            IsBusy = true;
+            bool sSuccess = true;
+
+            var sResult = await mEntryClient.UnlikeEntry(aEntryModelId);
+
+            if (!sResult.Success)
+            {
+                sSuccess = false;
+                Errors.AddRange(sResult.Errors);
+            }
+
+            IsBusy = false;
+            return sSuccess;
+        }
+        #endregion
     }
 }

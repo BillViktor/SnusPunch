@@ -27,7 +27,7 @@ namespace SnusPunch.API.Controllers
         [HttpPost("GetEntriesPaginated")]
         public async Task<ResultModel<PaginationResponse<EntryDto>>> GetEntriesPaginated(PaginationParameters aPaginationParameters)
         {
-            return await mEntryService.GetEntriesPaginated(aPaginationParameters);
+            return await mEntryService.GetEntriesPaginated(aPaginationParameters, User);
         }
 
         [HttpPost("AddEntry")]
@@ -36,7 +36,6 @@ namespace SnusPunch.API.Controllers
             return await mEntryService.AddEntry(aAddEntryDto, User);
         }
 
-        [Authorize]
         [HttpDelete("RemoveEntry/{aEntryModelId}")]
         public async Task<ResultModel> RemoveEntry(int aEntryModelId)
         {
@@ -49,5 +48,25 @@ namespace SnusPunch.API.Controllers
         {
             return await mEntryService.RemoveEntry(aEntryModelId);
         }
+
+        #region Likes
+        [HttpPost("LikeEntry/{aEntryModelId}")]
+        public async Task<ResultModel> LikeEntry(int aEntryModelId)
+        {
+            return await mEntryService.LikeEntry(aEntryModelId, User);
+        }
+
+        [HttpDelete("UnlikeEntry/{aEntryModelId}")]
+        public async Task<ResultModel> UnlikeEntry(int aEntryModelId)
+        {
+            return await mEntryService.UnlikeEntry(aEntryModelId, User);
+        }
+
+        [HttpPost("GetEntryLikesPaginated/{aEntryModelId}")]
+        public async Task<ResultModel> UnlikGetEntryLikesPaginatedeEntry(PaginationParameters aPaginationParameters, int aEntryModelId)
+        {
+            return await mEntryService.GetEntryLikesPaginated(aPaginationParameters, aEntryModelId);
+        }
+        #endregion
     }
 }

@@ -14,6 +14,8 @@
 html {
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
     font-size: 100%;
+    min-height: 100vh;
+    position: relative;
 }
 
 body {
@@ -24,6 +26,10 @@ body {
 /* Navbar/huvud */
 header {
     background-color: var(--foreground-color);
+    position: sticky;
+    top: 0;
+    border-bottom: 0.25rem solid black;
+    z-index: 10;
 }
 
 header a {
@@ -65,6 +71,7 @@ main {
     margin: 1rem auto;
     max-width: var(--website-width);
     background-color: var(--foreground-color);
+    margin-bottom: 5.5rem;
 }
 
 .no-background {
@@ -345,6 +352,17 @@ a {
 }
 
 /* Buttons */
+.text-button {
+    background-color: transparent;
+    border: none;
+    margin: 0;
+    padding: 0;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: normal;
+    height: auto;
+}
+
 .button-icon {
     background-color: transparent;
     border: none;
@@ -543,4 +561,15 @@ button:hover {
 
 .blazor-error-boundary::after {
     content: "An error has occurred."
+}
+
+footer {
+    background-color: var(--foreground-color);
+    text-align: center;
+    padding: 0.5rem;
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border-top: 0.25rem solid black;
 }

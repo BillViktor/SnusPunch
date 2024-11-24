@@ -3,6 +3,7 @@ using SnusPunch.Shared.Models.Entry;
 using SnusPunch.Shared.Models.Pagination;
 using SnusPunch.Shared.Models.ResultModel;
 using System.Net.Http.Json;
+using System.Security.Claims;
 
 namespace SnusPunch.Web.Clients.Snus
 {
@@ -114,5 +115,57 @@ namespace SnusPunch.Web.Clients.Snus
 
             return sResultModel;
         }
+
+        #region Likes
+        public async Task<ResultModel> LikeEntry(int aEntryModelId)
+        {
+            ResultModel sResultModel = new ResultModel();
+
+            try
+            {
+                var sHttpClient = mHttpClientFactory.CreateClient(HttpClientEnum.Entry.ToString());
+                var sResponse = await sHttpClient.PostAsync($"LikeEntry/{aEntryModelId}", null);
+
+                if (!sResponse.IsSuccessStatusCode)
+                {
+                    throw new Exception("Non-success status code at LikeEntry in EntryClient");
+                }
+
+                sResultModel = await sResponse.Content.ReadFromJsonAsync<ResultModel>();
+            }
+            catch (Exception aException)
+            {
+                sResultModel.Success = false;
+                sResultModel.AddExceptionError(aException);
+            }
+
+            return sResultModel;
+        }
+
+        public async Task<ResultModel> UnlikeEntry(int aEntryModelId)
+        {
+            ResultModel sResultModel = new ResultModel();
+
+            try
+            {
+                var sHttpClient = mHttpClientFactory.CreateClient(HttpClientEnum.Entry.ToString());
+                var sResponse = await sHttpClient.DeleteAsync($"UnlikeEntry/{aEntryModelId}");
+
+                if (!sResponse.IsSuccessStatusCode)
+                {
+                    throw new Exception("Non-success status code at UnlikeEntry in EntryClient");
+                }
+
+                sResultModel = await sResponse.Content.ReadFromJsonAsync<ResultModel>();
+            }
+            catch (Exception aException)
+            {
+                sResultModel.Success = false;
+                sResultModel.AddExceptionError(aException);
+            }
+
+            return sResultModel;
+        }
+        #endregion
     }
 }

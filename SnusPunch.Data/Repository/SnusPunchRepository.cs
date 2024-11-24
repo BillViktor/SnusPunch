@@ -6,6 +6,7 @@ using SnusPunch.Data.Models.Entry;
 using SnusPunch.Data.Models.Identity;
 using SnusPunch.Shared.Models.Auth;
 using SnusPunch.Shared.Models.Entry;
+using SnusPunch.Shared.Models.Entry.Likes;
 using SnusPunch.Shared.Models.Pagination;
 using SnusPunch.Shared.Models.Snus;
 using System.Linq;
@@ -91,7 +92,7 @@ namespace SnusPunch.Data.Repository
 
 
         #region Entries
-        public async Task<PaginationResponse<EntryDto>> GetEntriesPaginated(PaginationParameters aPaginationParameters)
+        public async Task<PaginationResponse<EntryDto>> GetEntriesPaginated(PaginationParameters aPaginationParameters, string aSnusPunchUserModelId)
         {
             var sSnus = await mSnusPunchDbContext.Entries
                 .Include(x => x.Snus)
@@ -110,7 +111,8 @@ namespace SnusPunch.Data.Repository
                     UserName = x.SnusPunchUserModel.UserName,
                     UserProfilePictureUrl = $"{mConfiguration["ProfilePicturePathFull"]}{x.SnusPunchUserModel.ProfilePicturePath ?? "default.jpg"}",
                     Likes = x.Likes.Count,
-                    Comments = x.Comments.Count
+                    Comments = x.Comments.Count,
+                    LikedByUser = x.Likes.Any(x => x.SnusPunchUserModelId == aSnusPunchUserModelId)
                 }).ToListAsync();
 
             var sCount = await mSnusPunchDbContext.Entries
@@ -157,6 +159,54 @@ namespace SnusPunch.Data.Repository
             mSnusPunchDbContext.Remove(aEntryModel);
 
             await mSnusPunchDbContext.SaveChangesAsync();
+        }
+        #endregion
+
+
+        #region Entry Likes
+        public async Task LikeEntry(EntryLikeModel aEntryLikeModel)
+        {
+            await mSnusPunchDbContext.AddAsync(aEntryLikeModel);
+            await mSnusPunchDbContext.SaveChangesAsync();
+        }
+
+        public async Task UnlikeEntry(EntryLikeModel aEntryLikeModel)
+        {
+            mSnusPunchDbContext.Remove(aEntryLikeModel);
+            await mSnusPunchDbContext.SaveChangesAsync();
+        }
+
+        public async Task<EntryLikeModel> GetEntryLike(int aEntryModelId, string aSnusPunchUserModelId)
+        {
+            var sLike = await mSnusPunchDbContext.EntryLikes.FirstOrDefaultAsync(x => x.EntryId == aEntryModelId && x.SnusPunchUserModelId == aSnusPunchUserModelId);
+
+            if(sLike == null)
+            {
+                throw new Exception("Liken hittades ej.");
+            }
+
+            return sLike;
+        }
+
+        public async Task<PaginationResponse<EntryLikeDto>> GetEntryLikesPaginated(PaginationParameters aPaginationParameters, int aEntryModelId)
+        {
+            var sLikes = await mSnusPunchDbContext.EntryLikes
+                .Where(x => x.EntryId == aEntryModelId)
+                .Include(x => x.SnusPunchUserModel)
+                .OrderByProperty("CreateDate", SortOrderEnum.Ascending)
+                .Skip(aPaginationParameters.Skip)
+                .Take(aPaginationParameters.PageSize)
+                .AsNoTracking().Select(x => new EntryLikeDto
+                {
+                    UserName = x.SnusPunchUserModel.UserName,
+                    ProfilePictureUrl = $"{mConfiguration["ProfilePicturePathFull"]}{x.SnusPunchUserModel.ProfilePicturePath ?? "default.jpg"}",
+                }).ToListAsync();
+
+            var sCount = await mSnusPunchDbContext.EntryLikes
+                .Where(x => x.EntryId == aEntryModelId)
+                .CountAsync();
+
+            return new PaginationResponse<EntryLikeDto>(sLikes, sCount, aPaginationParameters.PageNumber, aPaginationParameters.PageSize);
         }
         #endregion
 

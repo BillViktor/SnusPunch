@@ -147,13 +147,33 @@ namespace SnusPunch.Web.Pages
             }
         }
 
-        public async Task ToggleLike(EntryDto aEntryDto)
+        private async Task ToggleLike(EntryDto aEntryDto)
+        {
+            if(aEntryDto.LikedByUser)
+            {
+                if(await EntryViewModel.UnlikeEntry(aEntryDto.Id))
+                {
+                    aEntryDto.Likes -= 1;
+                    aEntryDto.LikedByUser = false;
+                }
+            }
+            else
+            {
+                if (await EntryViewModel.LikeEntry(aEntryDto.Id))
+                {
+                    aEntryDto.Likes += 1;
+                    aEntryDto.LikedByUser = true;
+                }
+            }
+        }
+
+        private async Task ShowLikes()
         {
             EntryViewModel.AddError("Not implemented yet! :(");
             await Task.Delay(0);
         }
 
-        public async Task Comment(EntryDto aEntryDto)
+        private async Task Comment(EntryDto aEntryDto)
         {
             EntryViewModel.AddError("Not implemented yet! :(");
             await Task.Delay(0);

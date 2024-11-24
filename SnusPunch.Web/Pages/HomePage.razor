@@ -81,14 +81,16 @@
             }
 
             <div class="row mt-1 justify-content-between">
-                <span>@sEntry.Likes likes</span>
-                <span>@sEntry.Comments kommentarer</span>
+                <button @onclick="async () => await ShowLikes()" class="text-button">
+                    <span title="Klicka för att se vilka som gillar inlägget!">@sEntry.GetLikesString()</span>
+                </button>
+                <span>@sEntry.GetCommentsString()</span>
             </div>
 
             <hr />
 
             <div class="row gap-1">
-                <button @onclick="async () => await ToggleLike(sEntry)" class="full-width">Gilla</button>
+                <button @onclick="async () => await ToggleLike(sEntry)" class="full-width">@(sEntry.LikedByUser ? "Du gillar detta" : "Gilla")</button>
                 <button @onclick="async () => await Comment(sEntry)" class="full-width">Kommentera</button>
             </div>
         </div>

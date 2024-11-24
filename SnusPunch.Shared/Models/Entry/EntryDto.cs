@@ -10,7 +10,8 @@
         public string? UserProfilePictureUrl { get; set; }
         public int Likes { get; set; }
         public int Comments { get; set; }
-        public DateTime CreateDate { get; set; }
+        public DateTime CreateDate { get; set; } 
+        public bool LikedByUser { get; set; }
 
         public string GetTimeAgo()
         {
@@ -45,6 +46,16 @@
                 var sYears = (int)(sTimeDifference.TotalDays / 365);
                 return $"{sYears} {(sYears == 1 ? "år" : "år")} sedan";
             }
+        }
+
+        public string GetLikesString()
+        {
+            return Likes == 1 ? "1 like" : $"{Likes} likes";
+        }
+
+        public string GetCommentsString()
+        {
+            return Comments == 1 ? "1 kommentar" : $"{Comments} kommentarer";
         }
     }
 }

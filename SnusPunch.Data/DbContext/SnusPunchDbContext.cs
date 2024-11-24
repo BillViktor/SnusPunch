@@ -11,6 +11,8 @@ namespace SnusPunch.Data.DbContexts
     {
         public DbSet<SnusModel> Snus { get; set; }
         public DbSet<EntryModel> Entries { get; set; }
+        public DbSet<EntryLikeModel> EntryLikes { get; set; }
+        public DbSet<EntryCommentModel> EntryComments { get; set; }
 
         public SnusPunchDbContext(DbContextOptions<SnusPunchDbContext> aDbContextOptions) : base(aDbContextOptions) { }
 

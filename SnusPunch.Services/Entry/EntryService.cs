@@ -5,6 +5,7 @@ using SnusPunch.Data.Models.Identity;
 using SnusPunch.Data.Repository;
 using SnusPunch.Services.Snus;
 using SnusPunch.Shared.Models.Entry;
+using SnusPunch.Shared.Models.Entry.Likes;
 using SnusPunch.Shared.Models.Pagination;
 using SnusPunch.Shared.Models.ResultModel;
 using SnusPunch.Shared.Models.Snus;
@@ -25,13 +26,22 @@ namespace SnusPunch.Services.Entry
             mUserManager = aUserManager;
         }
 
-        public async Task<ResultModel<PaginationResponse<EntryDto>>> GetEntriesPaginated(PaginationParameters aPaginationParameters)
+        public async Task<ResultModel<PaginationResponse<EntryDto>>> GetEntriesPaginated(PaginationParameters aPaginationParameters, ClaimsPrincipal aClaimsPrincipal)
         {
             ResultModel<PaginationResponse<EntryDto>> sResultModel = new ResultModel<PaginationResponse<EntryDto>>();
 
             try
             {
-                sResultModel.ResultObject = await mSnusPunchRepository.GetEntriesPaginated(aPaginationParameters);
+                var sUser = await mUserManager.GetUserAsync(aClaimsPrincipal);
+
+                if(sUser == null)
+                {
+                    sResultModel.AddError("Användaren hittades ej");
+                    sResultModel.Success = false;
+                    return sResultModel;
+                }
+
+                sResultModel.ResultObject = await mSnusPunchRepository.GetEntriesPaginated(aPaginationParameters, sUser.Id);
             }
             catch (Exception aException)
             {
@@ -147,5 +157,96 @@ namespace SnusPunch.Services.Entry
 
             return sResultModel;
         }
+
+        #region Likes
+        public async Task<ResultModel> LikeEntry(int aEntryModelId, ClaimsPrincipal aClaimsPrincipal)
+        {
+            ResultModel sResultModel = new ResultModel();
+
+            try
+            {
+                var sUser = await mUserManager.GetUserAsync(aClaimsPrincipal);
+
+                if(sUser == null)
+                {
+                    sResultModel.Success = false;
+                    sResultModel.AddError("Användaren hittades ej.");
+                    return sResultModel;
+                }
+
+                var sEntry = await mSnusPunchRepository.GetEntryById(aEntryModelId);
+
+                if (sEntry == null)
+                {
+                    sResultModel.Success = false;
+                    sResultModel.AddError("Inlägget hittades ej.");
+                    return sResultModel;
+                }
+
+                EntryLikeModel sEntryLikeModel = new EntryLikeModel
+                {
+                    EntryId = sEntry.Id,
+                    SnusPunchUserModelId = sUser.Id
+                };
+
+                await mSnusPunchRepository.LikeEntry(sEntryLikeModel);
+            }
+            catch (Exception aException)
+            {
+                mLogger.LogError(aException, "Exception at LikeEntry in EntryService");
+                sResultModel.Success = false;
+                sResultModel.AddExceptionError(aException);
+            }
+
+            return sResultModel;
+        }
+
+        public async Task<ResultModel> UnlikeEntry(int aEntryModelId, ClaimsPrincipal aClaimsPrincipal)
+        {
+            ResultModel sResultModel = new ResultModel();
+
+            try
+            {
+                var sUser = await mUserManager.GetUserAsync(aClaimsPrincipal);
+
+                if (sUser == null)
+                {
+                    sResultModel.Success = false;
+                    sResultModel.AddError("Användaren hittades ej.");
+                    return sResultModel;
+                }
+
+                var sLike = await mSnusPunchRepository.GetEntryLike(aEntryModelId, sUser.Id);
+
+                await mSnusPunchRepository.UnlikeEntry(sLike);
+            }
+            catch (Exception aException)
+            {
+                mLogger.LogError(aException, "Exception at UnlikeEntry in EntryService");
+                sResultModel.Success = false;
+                sResultModel.AddExceptionError(aException);
+            }
+
+            return sResultModel;
+        }
+
+        public async Task<ResultModel<PaginationResponse<EntryLikeDto>>> GetEntryLikesPaginated(PaginationParameters aPaginationParameters, int aEntryModelId)
+        {
+            ResultModel<PaginationResponse<EntryLikeDto>> sResultModel = new ResultModel<PaginationResponse<EntryLikeDto>>();
+
+            try
+            {
+                sResultModel.ResultObject = await mSnusPunchRepository.GetEntryLikesPaginated(aPaginationParameters, aEntryModelId);
+            }
+            catch (Exception aException)
+            {
+                mLogger.LogError(aException, "Exception at UnlikeEntry in EntryService");
+                sResultModel.Success = false;
+                sResultModel.AddExceptionError(aException);
+            }
+
+            return sResultModel;
+        }
+        #endregion
     }
 }
