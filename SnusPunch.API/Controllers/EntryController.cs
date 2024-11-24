@@ -35,5 +35,19 @@ namespace SnusPunch.API.Controllers
         {
             return await mEntryService.AddEntry(aAddEntryDto, User);
         }
+
+        [Authorize]
+        [HttpDelete("RemoveEntry/{aEntryModelId}")]
+        public async Task<ResultModel> RemoveEntry(int aEntryModelId)
+        {
+            return await mEntryService.RemoveEntry(aEntryModelId, User);
+        }
+
+        [Authorize(Roles = "Admin")]
+        [HttpDelete("AdminRemoveEntry/{aEntryModelId}")]
+        public async Task<ResultModel> AdminRemoveEntry(int aEntryModelId)
+        {
+            return await mEntryService.RemoveEntry(aEntryModelId);
+        }
     }
 }

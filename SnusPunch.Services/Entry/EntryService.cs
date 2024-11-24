@@ -76,5 +76,76 @@ namespace SnusPunch.Services.Entry
 
             return sResultModel;
         }
+
+        public async Task<ResultModel> RemoveEntry(int aEntryModelId, ClaimsPrincipal aClaimsPrincipal)
+        {
+            ResultModel sResultModel = new ResultModel();
+
+            try
+            {
+                var sUserId = mUserManager.GetUserId(aClaimsPrincipal);
+
+                if (sUserId == null)
+                {
+                    sResultModel.Success = false;
+                    sResultModel.AddError("Användaren hittades ej.");
+                    return sResultModel;
+                }
+
+                var sEntry = await mSnusPunchRepository.GetEntryById(aEntryModelId);
+
+                if (sEntry == null)
+                {
+                    sResultModel.Success = false;
+                    sResultModel.AddError("Inlägget hittades ej.");
+                    return sResultModel;
+                }
+
+                //Verifiera konto
+                if (sEntry.SnusPunchUserModelId != sUserId)
+                {
+                    sResultModel.Success = false;
+                    sResultModel.AddError("Du saknar behörighet för att radera detta inlägg.");
+                    return sResultModel;
+                }
+
+                await mSnusPunchRepository.RemoveEntry(sEntry);
+            }
+            catch (Exception aException)
+            {
+                mLogger.LogError(aException, "Exception at RemoveEntry in EntryService");
+                sResultModel.Success = false;
+                sResultModel.AddExceptionError(aException);
+            }
+
+            return sResultModel;
+        }
+
+        public async Task<ResultModel> RemoveEntry(int aEntryModelId)
+        {
+            ResultModel sResultModel = new ResultModel();
+
+            try
+            {
+                var sEntry = await mSnusPunchRepository.GetEntryById(aEntryModelId);
+
+                if (sEntry == null)
+                {
+                    sResultModel.Success = false;
+                    sResultModel.AddError("Inlägget hittades ej.");
+                    return sResultModel;
+                }
+
+                await mSnusPunchRepository.RemoveEntry(sEntry);
+            }
+            catch (Exception aException)
+            {
+                mLogger.LogError(aException, "Exception at RemoveEntry in EntryService");
+                sResultModel.Success = false;
+                sResultModel.AddExceptionError(aException);
+            }
+
+            return sResultModel;
+        }
     }
 }

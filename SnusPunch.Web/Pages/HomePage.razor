@@ -12,9 +12,9 @@
     </h2>
 
     <div class="row gap-1">
-        @if(mFavouriteSnus != null)
+        @if(mChosenSnus != null)
         {
-            <input class="flex-grow-1" disabled @bind="mFavouriteSnus.Name" />
+            <input class="flex-grow-1" disabled @bind="mChosenSnus.Name" />
         }
         else
         {
@@ -58,7 +58,7 @@
                     @if(context.User.IsInRole("Admin"))
                     {
                         <button title="Radera inlägg" class="button-icon">
-                            <span @onclick="async () => await RemoveEntry(sEntry)" class="material-symbols--delete" />
+                            <span @onclick="async () => await AdminRemoveEntry(sEntry)" class="material-symbols--delete" />
                         </button>
                     }
                     else

@@ -18,7 +18,7 @@ namespace SnusPunch.Web.Pages
         [Inject] EntryViewModel EntryViewModel { get; set; }
 
         private string mDescription = "";
-        private SnusDto? mFavouriteSnus = null;
+        private SnusDto? mChosenSnus = null;
         private PaginationMetaData mPaginationMetaData = null;
         private List<EntryDto> mEntryList = new List<EntryDto>();
         private PaginationParameters mPaginationParameters = new PaginationParameters
@@ -51,7 +51,7 @@ namespace SnusPunch.Web.Pages
         {
             if (AuthViewModel.UserInfoModel?.FavouriteSnusId != null && !string.IsNullOrEmpty(AuthViewModel.UserInfoModel?.FavouriteSnusName))
             {
-                mFavouriteSnus = new SnusDto
+                mChosenSnus = new SnusDto
                 {
                     Id = (int)AuthViewModel.UserInfoModel.FavouriteSnusId,
                     Name = AuthViewModel.UserInfoModel.FavouriteSnusName,
@@ -62,13 +62,13 @@ namespace SnusPunch.Web.Pages
         #region Actions
         public async Task AddEntry()
         {
-            if(mFavouriteSnus?.Id == null)
+            if(mChosenSnus?.Id == null)
             {
-                EntryViewModel.AddError("Du har inget favoritsnus!");
+                EntryViewModel.AddError("Du har inte valt något snus!");
                 return;
             }
 
-            var sResult = await EntryViewModel.AddEntry(mFavouriteSnus.Id, mDescription);
+            var sResult = await EntryViewModel.AddEntry(mChosenSnus.Id, mDescription);
 
             if(sResult != null)
             {
@@ -84,8 +84,43 @@ namespace SnusPunch.Web.Pages
 
         public async Task RemoveEntry(EntryDto aEntryDto)
         {
-            EntryViewModel.AddError("Not implemented yet! :(");
-            await Task.Delay(0);
+            if (!await ConfirmDeleteEntry()) return;
+
+            if(await EntryViewModel.RemoveEntry(aEntryDto.Id))
+            {
+                await GetEntries();
+            }
+        }
+
+        public async Task AdminRemoveEntry(EntryDto aEntryDto)
+        {
+            if (!await ConfirmDeleteEntry()) return;
+
+            if (await EntryViewModel.AdminRemoveEntry(aEntryDto.Id))
+            {
+                await GetEntries();
+            }
+        }
+
+        private async Task<bool> ConfirmDeleteEntry()
+        {
+            var sOptions = new ModalOptions
+            {
+                DisableBackgroundCancel = true,
+                Size = ModalSize.Custom,
+                SizeCustomClass = "modal-large",
+                Position = ModalPosition.Middle
+            };
+            var sParameters = new ModalParameters { { "Message", $"Är du säker på att du vill radera detta inlägg? Det går inte att ångra!" } };
+            var sModal = Modal.Show<ConfirmationComponent>("Bekräfta borttagning", sParameters, sOptions);
+            var sResult = await sModal.Result;
+
+            if (!sResult.Cancelled)
+            {
+                return true;
+            }
+
+            return false;
         }
 
         public async Task ToggleLike(EntryDto aEntryDto)

@@ -70,5 +70,47 @@ namespace SnusPunch.Web.ViewModels.Snus
             IsBusy = false;
             return sReturnEntry;
         }
+
+        public async Task<bool> RemoveEntry(int aEntryModelId)
+        {
+            IsBusy = true;
+            bool sSuccess = true;
+
+            var sResult = await mEntryClient.RemoveEntry(aEntryModelId);
+
+            if (!sResult.Success)
+            {
+                sSuccess = false;
+                Errors.AddRange(sResult.Errors);
+            }
+            else
+            {
+                SuccessMessages.Add("Stämpling raderad!");
+            }
+
+            IsBusy = false;
+            return sSuccess;
+        }
+
+        public async Task<bool> AdminRemoveEntry(int aEntryModelId)
+        {
+            IsBusy = true;
+            bool sSuccess = true;
+
+            var sResult = await mEntryClient.AdminRemoveEntry(aEntryModelId);
+
+            if (!sResult.Success)
+            {
+                sSuccess = false;
+                Errors.AddRange(sResult.Errors);
+            }
+            else
+            {
+                SuccessMessages.Add("Stämpling raderad!");
+            }
+
+            IsBusy = false;
+            return sSuccess;
+        }
     }
 }

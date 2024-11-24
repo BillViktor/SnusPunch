@@ -64,5 +64,55 @@ namespace SnusPunch.Web.Clients.Snus
 
             return sResultModel;
         }
+
+        public async Task<ResultModel> RemoveEntry(int aEntryModelId)
+        {
+            ResultModel sResultModel = new ResultModel();
+
+            try
+            {
+                var sHttpClient = mHttpClientFactory.CreateClient(HttpClientEnum.Entry.ToString());
+                var sResponse = await sHttpClient.DeleteAsync($"RemoveEntry/{aEntryModelId}");
+
+                if (!sResponse.IsSuccessStatusCode)
+                {
+                    throw new Exception("Non-success status code at RemoveEntry in EntryClient");
+                }
+
+                sResultModel = await sResponse.Content.ReadFromJsonAsync<ResultModel>();
+            }
+            catch (Exception aException)
+            {
+                sResultModel.Success = false;
+                sResultModel.AddExceptionError(aException);
+            }
+
+            return sResultModel;
+        }
+
+        public async Task<ResultModel> AdminRemoveEntry(int aEntryModelId)
+        {
+            ResultModel sResultModel = new ResultModel();
+
+            try
+            {
+                var sHttpClient = mHttpClientFactory.CreateClient(HttpClientEnum.Entry.ToString());
+                var sResponse = await sHttpClient.DeleteAsync($"AdminRemoveEntry/{aEntryModelId}");
+
+                if (!sResponse.IsSuccessStatusCode)
+                {
+                    throw new Exception("Non-success status code at AdminRemoveEntry in EntryClient");
+                }
+
+                sResultModel = await sResponse.Content.ReadFromJsonAsync<ResultModel>();
+            }
+            catch (Exception aException)
+            {
+                sResultModel.Success = false;
+                sResultModel.AddExceptionError(aException);
+            }
+
+            return sResultModel;
+        }
     }
 }

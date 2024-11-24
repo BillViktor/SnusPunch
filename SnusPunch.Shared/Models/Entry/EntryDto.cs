@@ -2,6 +2,7 @@
 {
     public class EntryDto
     {
+        public int Id { get; set; }
         public string? PhotoUrl { get; set; }
         public string? Description { get; set; }
         public string SnusName { get; set; }

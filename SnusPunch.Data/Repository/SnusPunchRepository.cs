@@ -102,6 +102,7 @@ namespace SnusPunch.Data.Repository
                 .Take(aPaginationParameters.PageSize)
                 .AsNoTracking().Select(x => new EntryDto
                 {
+                    Id = x.Id,
                     CreateDate = x.CreateDate,
                     Description = x.Description,
                     PhotoUrl = x.PhotoUrl,
@@ -119,6 +120,11 @@ namespace SnusPunch.Data.Repository
             return new PaginationResponse<EntryDto>(sSnus, sCount, aPaginationParameters.PageNumber, aPaginationParameters.PageSize);
         }
 
+        public async Task<EntryModel> GetEntryById(int aEntryModelId)
+        {
+            return await mSnusPunchDbContext.Entries.AsNoTracking().FirstOrDefaultAsync(x => x.Id == aEntryModelId);
+        }
+
         private async Task<EntryDto> GetEntryDtoById(int aEntryModelId)
         {
             var sEntry = await mSnusPunchDbContext.Entries
@@ -129,6 +135,7 @@ namespace SnusPunch.Data.Repository
 
             return new EntryDto
             {
+                Id = aEntryModelId,
                 CreateDate = sEntry.CreateDate,
                 Description = sEntry.Description,
                 SnusName = sEntry.Snus.Name,
@@ -143,6 +150,13 @@ namespace SnusPunch.Data.Repository
             await mSnusPunchDbContext.SaveChangesAsync();
 
             return await GetEntryDtoById(aEntryModel.Id);
+        }
+
+        public async Task RemoveEntry(EntryModel aEntryModel)
+        {
+            mSnusPunchDbContext.Remove(aEntryModel);
+
+            await mSnusPunchDbContext.SaveChangesAsync();
         }
         #endregion
 
