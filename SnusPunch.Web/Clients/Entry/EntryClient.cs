@@ -1,5 +1,6 @@
 ﻿using SnusPunch.Shared.Models.Auth;
 using SnusPunch.Shared.Models.Entry;
+using SnusPunch.Shared.Models.Entry.Likes;
 using SnusPunch.Shared.Models.Pagination;
 using SnusPunch.Shared.Models.ResultModel;
 using System.Net.Http.Json;
@@ -157,6 +158,31 @@ namespace SnusPunch.Web.Clients.Snus
                 }
 
                 sResultModel = await sResponse.Content.ReadFromJsonAsync<ResultModel>();
+            }
+            catch (Exception aException)
+            {
+                sResultModel.Success = false;
+                sResultModel.AddExceptionError(aException);
+            }
+
+            return sResultModel;
+        }
+
+        public async Task<ResultModel<PaginationResponse<EntryLikeDto>>> GetEntryLikesPaginated(PaginationParameters aPaginationParameters, int aEntryModelId)
+        {
+            ResultModel<PaginationResponse<EntryLikeDto>> sResultModel = new ResultModel<PaginationResponse<EntryLikeDto>>();
+
+            try
+            {
+                var sHttpClient = mHttpClientFactory.CreateClient(HttpClientEnum.Entry.ToString());
+                var sResponse = await sHttpClient.PostAsJsonAsync($"GetEntryLikesPaginated/{aEntryModelId}", aPaginationParameters);
+
+                if (!sResponse.IsSuccessStatusCode)
+                {
+                    throw new Exception("Non-success status code at GetEntryLikesPaginated in EntryClient");
+                }
+
+                sResultModel = await sResponse.Content.ReadFromJsonAsync<ResultModel<PaginationResponse<EntryLikeDto>>>();
             }
             catch (Exception aException)
             {

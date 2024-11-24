@@ -1,0 +1,82 @@
+﻿@using SnusPunch.Shared.Models.Entry.Likes
+@using SnusPunch.Shared.Models.Pagination
+@using SnusPunch.Shared.Models.Snus
+@using SnusPunch.Web.ViewModels.Snus
+<div>
+    <div class="row align-items-center gap-1">
+        <input class="full-width" @bind:event="oninput" @bind="mPaginationParameters.SearchString" @onkeydown="async (x) => await OnKeyDown(x)" placeholder="Sök.." />
+        <button @onclick="async () => await GetEntryLikes()">
+            <span class="align-middle material-symbols--search" />
+            <span class="align-middle"> Sök</span>
+        </button>
+    </div>
+
+    <div class="mt-1" style="max-height: 400px; overflow-y: auto; padding-bottom: 1px">
+        <table style="min-width: 200px" class="mt-1">
+            <tbody>
+                @foreach (var sUser in mLikeList)
+                {
+                    <tr>
+                        <td class="row justify-content-start profile-picture-cell">
+                            <button @onclick="() => ShowProfilePicture(sUser)" class="profile-picture-button">
+                                <img class="profile-picture-round" src="@sUser.ProfilePictureUrl" />
+                            </button>
+                        </td>
+                        <td>@sUser.UserName</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    
+    <div class="row justify-content-between align-items-center mt-1">
+        <p>
+            @(mPaginationMetaData?.TotalCount ?? 0) likes
+        </p>
+        <button class="button-warning" @onclick="async () => await BlazoredModal.CloseAsync()">Stäng</button>
+    </div>
+</div>
+
+@code {
+    [CascadingParameter] BlazoredModalInstance BlazoredModal { get; set; } = default!;
+    [CascadingParameter] public IModalService Modal { get; set; } = default!;
+    [Parameter] public int EntryModelId { get; set; }
+    [Inject] EntryViewModel EntryViewModel { get; set; }
+
+    private PaginationMetaData mPaginationMetaData = null;
+    private List<EntryLikeDto> mLikeList = new List<EntryLikeDto>();
+    private PaginationParameters mPaginationParameters = new PaginationParameters
+    {
+        SortPropertyName = "CreateDate",
+        SearchPropertyNames = new List<string> { "SnusPunchUserModel.UserName" },
+        PageSize = 25
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
+        await GetEntryLikes();
+    }
+
+    private async Task GetEntryLikes()
+    {
+        var sResult = await EntryViewModel.GetEntryLikesPaginated(mPaginationParameters, EntryModelId);
+        mPaginationMetaData = sResult.PaginationMetaData;
+        mLikeList = sResult.Items;
+    }
+
+    private async Task OnKeyDown(KeyboardEventArgs aKeyboardEventArgs)
+    {
+        if (aKeyboardEventArgs.Key == "Enter")
+        {
+            await GetEntryLikes();
+        }
+    }
+
+    private void ShowProfilePicture(EntryLikeDto aEntryLikeDto)
+    {
+        var sParameters = new ModalParameters { { "ProfilePictureUrl", aEntryLikeDto.ProfilePictureUrl } };
+        var sOptions = new ModalOptions { Size = ModalSize.Automatic, Position = ModalPosition.Middle };
+
+        Modal.Show<ProfilePictureComponent>($"{aEntryLikeDto.UserName}'s Profilbild", sParameters, sOptions);
+    }
+}

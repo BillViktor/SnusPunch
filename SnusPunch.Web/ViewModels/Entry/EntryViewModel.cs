@@ -1,5 +1,6 @@
 ﻿using SnusPunch.Shared.Models.Auth;
 using SnusPunch.Shared.Models.Entry;
+using SnusPunch.Shared.Models.Entry.Likes;
 using SnusPunch.Shared.Models.Pagination;
 using SnusPunch.Shared.Models.Snus;
 using SnusPunch.Web.Clients.Snus;
@@ -146,6 +147,26 @@ namespace SnusPunch.Web.ViewModels.Snus
 
             IsBusy = false;
             return sSuccess;
+        }
+
+        public async Task<PaginationResponse<EntryLikeDto>> GetEntryLikesPaginated(PaginationParameters aPaginationParameters, int aEntryModelId)
+        {
+            IsBusy = true;
+            PaginationResponse<EntryLikeDto> sPaginationResponse = new PaginationResponse<EntryLikeDto>();
+
+            var sResult = await mEntryClient.GetEntryLikesPaginated(aPaginationParameters, aEntryModelId);
+
+            if (!sResult.Success)
+            {
+                Errors.AddRange(sResult.Errors);
+            }
+            else
+            {
+                sPaginationResponse = sResult.ResultObject;
+            }
+
+            IsBusy = false;
+            return sPaginationResponse;
         }
         #endregion
     }

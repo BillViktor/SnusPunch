@@ -81,7 +81,7 @@
             }
 
             <div class="row mt-1 justify-content-between">
-                <button @onclick="async () => await ShowLikes()" class="text-button">
+                <button @onclick="() => ShowLikes(sEntry)" class="text-button">
                     <span title="Klicka för att se vilka som gillar inlägget!">@sEntry.GetLikesString()</span>
                 </button>
                 <span>@sEntry.GetCommentsString()</span>

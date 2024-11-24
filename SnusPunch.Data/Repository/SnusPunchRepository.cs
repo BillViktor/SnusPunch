@@ -193,6 +193,7 @@ namespace SnusPunch.Data.Repository
             var sLikes = await mSnusPunchDbContext.EntryLikes
                 .Where(x => x.EntryId == aEntryModelId)
                 .Include(x => x.SnusPunchUserModel)
+                .SearchByProperty(aPaginationParameters.SearchPropertyNames, aPaginationParameters.SearchString)
                 .OrderByProperty("CreateDate", SortOrderEnum.Ascending)
                 .Skip(aPaginationParameters.Skip)
                 .Take(aPaginationParameters.PageSize)
@@ -203,6 +204,7 @@ namespace SnusPunch.Data.Repository
                 }).ToListAsync();
 
             var sCount = await mSnusPunchDbContext.EntryLikes
+                .SearchByProperty(aPaginationParameters.SearchPropertyNames, aPaginationParameters.SearchString)
                 .Where(x => x.EntryId == aEntryModelId)
                 .CountAsync();
 

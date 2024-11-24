@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using SnusPunch.Services.Entry;
 using SnusPunch.Services.Snus;
 using SnusPunch.Shared.Models.Entry;
+using SnusPunch.Shared.Models.Entry.Likes;
 using SnusPunch.Shared.Models.Pagination;
 using SnusPunch.Shared.Models.ResultModel;
 using SnusPunch.Shared.Models.Snus;
@@ -63,7 +64,7 @@ namespace SnusPunch.API.Controllers
         }
 
         [HttpPost("GetEntryLikesPaginated/{aEntryModelId}")]
-        public async Task<ResultModel> UnlikGetEntryLikesPaginatedeEntry(PaginationParameters aPaginationParameters, int aEntryModelId)
+        public async Task<ResultModel<PaginationResponse<EntryLikeDto>>> GetEntryLikesPaginated(PaginationParameters aPaginationParameters, int aEntryModelId)
         {
             return await mEntryService.GetEntryLikesPaginated(aPaginationParameters, aEntryModelId);
         }

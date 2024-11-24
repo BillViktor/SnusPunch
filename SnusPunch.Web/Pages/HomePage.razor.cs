@@ -1,12 +1,12 @@
 ﻿using Blazored.Modal;
 using Blazored.Modal.Services;
 using Microsoft.AspNetCore.Components;
-using SnusPunch.Shared.Models.Auth;
 using SnusPunch.Shared.Models.Entry;
 using SnusPunch.Shared.Models.Pagination;
 using SnusPunch.Shared.Models.Snus;
 using SnusPunch.Web.Components;
-using SnusPunch.Web.Identity;
+using SnusPunch.Web.Components.Entry;
+using SnusPunch.Web.Components.Snus;
 using SnusPunch.Web.ViewModels.Snus;
 
 namespace SnusPunch.Web.Pages
@@ -167,10 +167,24 @@ namespace SnusPunch.Web.Pages
             }
         }
 
-        private async Task ShowLikes()
+        private void ShowLikes(EntryDto aEntryDto)
         {
-            EntryViewModel.AddError("Not implemented yet! :(");
-            await Task.Delay(0);
+            if(aEntryDto.Likes == 0)
+            {
+                EntryViewModel.AddError("Inlägget har inga likes :(");
+                return;
+            }
+
+            var sOptions = new ModalOptions
+            {
+                DisableBackgroundCancel = false,
+                Size = ModalSize.Medium,
+                Position = ModalPosition.Middle
+            };
+
+            var sParametes = new ModalParameters { { "EntryModelId", aEntryDto.Id } };
+
+            Modal.Show<ShowEntryLikesComponent>("Likes", sParametes, sOptions);
         }
 
         private async Task Comment(EntryDto aEntryDto)
