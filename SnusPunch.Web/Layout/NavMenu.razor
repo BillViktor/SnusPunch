@@ -1,5 +1,4 @@
 ﻿@using SnusPunch.Web.ViewModels.Snus
-@inject AuthViewModel AuthViewModel
 
 <header>
      <div class="header-wrapper">
@@ -36,8 +35,15 @@
                     </NavLink>
                 </li>
                 <li>
+                    <button title="Notifikationer" class="button-icon">
+                        <span class="mingcute--notification-fill" />
+                    </button>
+                </li>
+                <li>
                     <div class="dropdown">
-                        <button onclick="toggleDropDown()" class="button-drop-down">Konto</button>
+                        <button title="Konto" onclick="toggleDropDown()" class="button-drop-down">
+                            <img class="profile-picture-round" src="@AuthViewModel.UserInfoModel?.ProfilePictureUrl" />
+                        </button>
                         <div id="accountDropDown" class="dropdown-content">
                             <AuthorizeView>
                                 <p class="dropdown-text">
@@ -61,6 +67,7 @@
 
  <script>
     function toggleDropDown() {
+        console.log("test");
         document.getElementById("accountDropDown").classList.toggle("show");
     }
 
@@ -78,3 +85,7 @@
         }
     }
  </script>
+
+@code {
+    [Inject] AuthViewModel AuthViewModel { get; set; }
+ }

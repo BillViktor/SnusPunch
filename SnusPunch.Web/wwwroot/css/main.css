@@ -453,7 +453,7 @@ button:hover {
 .dropdown {
     position: relative;
     display: inline-block;
-
+    float: right;
 }
 
 .dropdown-content {
@@ -461,9 +461,10 @@ button:hover {
     position: absolute;
     background-color: var(--foreground-color);
     min-width: 160px;
-    box-shadow: 0 0 1rem 0.125rem #000;
+    box-shadow: 0 1rem 2rem 0 #000;
     z-index: 1;
     padding: 1rem 0;
+    right: 0;
 }
 
 .dropdown-content a, .dropdown-content button {
@@ -508,6 +509,7 @@ button:hover {
     width: 2.5rem;
     border-radius: 50%;
     object-fit: cover;
+    pointer-events: none;
 }
 
 .profile-picture-full-size {
