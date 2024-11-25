@@ -25,10 +25,10 @@ namespace SnusPunch.API.Controllers
             mEntryService = aEntryService;
         }
 
-        [HttpPost("GetEntriesPaginated")]
-        public async Task<ResultModel<PaginationResponse<EntryDto>>> GetEntriesPaginated(PaginationParameters aPaginationParameters)
+        [HttpPost("GetEntriesPaginated/{aFetchEmptyPunches}/{aEntryFilterEnum}")]
+        public async Task<ResultModel<PaginationResponse<EntryDto>>> GetEntriesPaginated(PaginationParameters aPaginationParameters, bool aFetchEmptyPunches, EntryFilterEnum aEntryFilterEnum)
         {
-            return await mEntryService.GetEntriesPaginated(aPaginationParameters, User);
+            return await mEntryService.GetEntriesPaginated(aPaginationParameters, aFetchEmptyPunches, aEntryFilterEnum, User);
         }
 
         [HttpPost("AddEntry")]

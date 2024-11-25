@@ -1,10 +1,8 @@
-﻿using SnusPunch.Shared.Models.Auth;
-using SnusPunch.Shared.Models.Entry;
+﻿using SnusPunch.Shared.Models.Entry;
 using SnusPunch.Shared.Models.Entry.Likes;
 using SnusPunch.Shared.Models.Pagination;
 using SnusPunch.Shared.Models.ResultModel;
 using System.Net.Http.Json;
-using System.Security.Claims;
 
 namespace SnusPunch.Web.Clients.Snus
 {
@@ -17,14 +15,14 @@ namespace SnusPunch.Web.Clients.Snus
             mHttpClientFactory = aHttpClientFactory;
         }
 
-        public async Task<ResultModel<PaginationResponse<EntryDto>>> GetEntriesPaginated(PaginationParameters aPaginationParameters)
+        public async Task<ResultModel<PaginationResponse<EntryDto>>> GetEntriesPaginated(PaginationParameters aPaginationParameters, bool aFetchEmptyPunches, EntryFilterEnum aEntryFilterEnum)
         {
             ResultModel<PaginationResponse<EntryDto>> sResultModel = new ResultModel<PaginationResponse<EntryDto>>();
 
             try
             {
                 var sHttpClient = mHttpClientFactory.CreateClient(HttpClientEnum.Entry.ToString());
-                var sResponse = await sHttpClient.PostAsJsonAsync("GetEntriesPaginated", aPaginationParameters);
+                var sResponse = await sHttpClient.PostAsJsonAsync($"GetEntriesPaginated/{aFetchEmptyPunches}/{aEntryFilterEnum}", aPaginationParameters);
 
                 if (!sResponse.IsSuccessStatusCode)
                 {

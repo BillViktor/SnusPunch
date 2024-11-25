@@ -1,6 +1,9 @@
 ﻿using Blazored.Modal;
 using Blazored.Modal.Services;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Forms;
+using Microsoft.AspNetCore.Components.Web;
+using SnusPunch.Shared.Constants;
 using SnusPunch.Shared.Models.Entry;
 using SnusPunch.Shared.Models.Pagination;
 using SnusPunch.Shared.Models.Snus;
@@ -17,6 +20,11 @@ namespace SnusPunch.Web.Pages
         [Inject] AuthViewModel AuthViewModel { get; set; }
         [Inject] EntryViewModel EntryViewModel { get; set; }
 
+        private bool mFetchEmptyPunches = false;
+        private string? mImagePreview = "";
+        private EntryFilterEnum mEntryFilterEnum = EntryFilterEnum.All;
+        private IBrowserFile mBrowserFile = null;
+        private Guid mInputFileId = Guid.NewGuid();
         private string mDescription = "";
         private SnusDto? mChosenSnus = null;
         private PaginationMetaData mPaginationMetaData = null;
@@ -42,9 +50,23 @@ namespace SnusPunch.Web.Pages
 
         private async Task GetEntries()
         {
-            var sResult = await EntryViewModel.GetEntriesPaginated(mPaginationParameters);
+            var sResult = await EntryViewModel.GetEntriesPaginated(mPaginationParameters, mFetchEmptyPunches, mEntryFilterEnum);
             mPaginationMetaData = sResult.PaginationMetaData;
             mEntryList = sResult.Items;
+        }
+
+        private async Task OnSearch()
+        {
+            mPaginationParameters.PageNumber = 1;
+            await GetEntries();
+        }
+
+        private async Task OnKeyDown(KeyboardEventArgs aKeyboardEventArgs)
+        {
+            if (aKeyboardEventArgs.Key == "Enter")
+            {
+                await OnSearch();
+            }
         }
 
         private void GetFavouriteSnus()
@@ -60,6 +82,52 @@ namespace SnusPunch.Web.Pages
         }
 
         #region Actions
+        private async void LoadImage(InputFileChangeEventArgs aInputFileChangeEventArgs)
+        {
+            try
+            {
+                if(aInputFileChangeEventArgs.File == null)
+                {
+                    throw new Exception("Ingen fil vald!");
+                }
+
+                if(!AllowedImageFileTypes.AllowedMimeTypes.Any(x => string.Equals(x, aInputFileChangeEventArgs.File.ContentType, StringComparison.OrdinalIgnoreCase)))
+                {
+                    throw new Exception($"Ogiltigt filformat, endast: {string.Join(", ", AllowedImageFileTypes.AllowedExtensions)} tillåts");
+                }
+
+                if(AllowedImageFileTypes.ImageMaximumBytes <= aInputFileChangeEventArgs.File.Size)
+                {
+                    throw new Exception($"Filen är för stor!");
+                }
+
+                var sBuf = new byte[aInputFileChangeEventArgs.File.Size];
+
+                using (var sStram = aInputFileChangeEventArgs.File.OpenReadStream())
+                {
+                    await sStram.ReadAsync(sBuf);
+                }
+
+                mImagePreview = "data:image/jpeg;base64, " + Convert.ToBase64String(sBuf);
+                
+                mBrowserFile = aInputFileChangeEventArgs.File;
+            }
+            catch(Exception ex)
+            {
+                mInputFileId = Guid.NewGuid();
+                EntryViewModel.AddError($"Ett fel uppstod: {ex.Message}");
+            }
+
+            StateHasChanged();
+        }
+
+        private void RemoveImage()
+        {
+            mImagePreview = null;
+            mBrowserFile = null;
+            mInputFileId = Guid.NewGuid();
+        }
+
         public async Task AddEntry()
         {
             if(mChosenSnus?.Id == null)
@@ -68,7 +136,7 @@ namespace SnusPunch.Web.Pages
                 return;
             }
 
-            var sResult = await EntryViewModel.AddEntry(mChosenSnus.Id, mDescription);
+            var sResult = await EntryViewModel.AddEntry(mChosenSnus.Id, mDescription, mBrowserFile);
 
             if(sResult != null)
             {
@@ -79,6 +147,8 @@ namespace SnusPunch.Web.Pages
                 {
                     mEntryList.Remove(mEntryList[mPaginationParameters.PageSize - 1]);
                 }
+
+                RemoveImage();
             }
         }
 

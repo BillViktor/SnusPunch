@@ -1,4 +1,5 @@
 ﻿@page "/"
+@using SnusPunch.Shared.Models.Entry
 @layout FeedLayout
 @attribute [Authorize]
 
@@ -26,13 +27,53 @@
 
     <textarea placeholder="Skriv något roligt om du vill!" class="full-width" @bind="mDescription" rows="2"></textarea>
 
-    <button class="full-width" @onclick="async () => await AddEntry()">Stämpla</button>
+    @if (mBrowserFile != null)
+    {
+        <p class="mn">
+            <img src="@mImagePreview" class="full-width" />
+            <button class="button-danger mt-1" @onclick="() => RemoveImage()">Ta Bort Bild</button>
+        </p>
+    }
+    else
+    {
+        <p class="mn">
+            <InputFile accept=".png,.jpeg,.jpg" @key="mInputFileId" OnChange="LoadImage" />
+        </p>
+    }
+
+    <button class="full-width mt-1" @onclick="async () => await AddEntry()">Stämpla</button>
 </div>
 
 <div class="content mt-1">
-    <h2>Senaste Stämplingara</h2>
+    <div class="row align-items-bottom justify-content-between">
+        <h2>Senaste Stämplingara</h2>
 
-    <SearchSortComponent OnSearch="async () => await GetEntries()" PaginationMetaData="mPaginationMetaData" PaginationParameters="mPaginationParameters" SortProperties="mSortProperties" />
+        <div class="row align-items-center">
+            <label for="fetchEmptyPunches">Visa tomma stämplingar</label>
+            <input class="ml-1 checkbox" type="checkbox" id="fetchEmptyPunches" @bind="mFetchEmptyPunches" @bind:after="async () => await GetEntries()" />
+        </div>
+    </div>
+    
+    <div class="row">
+        <p class="flex-grow-1">
+            <input class="flex-grow-1" @bind:event="oninput" @bind="mPaginationParameters.SearchString" @onkeydown="async (x) => await OnKeyDown(x)" placeholder="Sök.." />
+            <button @onclick="async () => await OnSearch()">
+                <span class="align-middle material-symbols--search" />
+                <span class="align-middle"> Sök</span>
+            </button>
+        </p>
+
+        <p>
+            Filter
+            <select @bind="mEntryFilterEnum" @bind:after="async () => await OnSearch()">
+                @foreach(var sFilter in Enum.GetValues(typeof(EntryFilterEnum)))
+                {
+                    <option value="@sFilter">@EntryFilterEnumHelper.GetEntryFilterEnumName((EntryFilterEnum)sFilter)</option>
+                }
+            </select>
+        </p>
+    </div>
+    
 
     @foreach (var sEntry in mEntryList)
     {
@@ -77,6 +118,13 @@
             {
                 <p>
                     @sEntry.Description
+                </p>
+            }
+
+            @if(!string.IsNullOrEmpty(sEntry.PhotoUrl))
+            {
+                <p>
+                    <img class="full-width" src="@sEntry.PhotoUrl" />
                 </p>
             }
 

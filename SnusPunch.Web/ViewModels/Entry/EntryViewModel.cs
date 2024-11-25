@@ -1,8 +1,8 @@
-﻿using SnusPunch.Shared.Models.Auth;
+﻿using Microsoft.AspNetCore.Components.Forms;
+using SnusPunch.Shared.Models.Auth;
 using SnusPunch.Shared.Models.Entry;
 using SnusPunch.Shared.Models.Entry.Likes;
 using SnusPunch.Shared.Models.Pagination;
-using SnusPunch.Shared.Models.Snus;
 using SnusPunch.Web.Clients.Snus;
 
 namespace SnusPunch.Web.ViewModels.Snus
@@ -25,12 +25,12 @@ namespace SnusPunch.Web.ViewModels.Snus
             mEntryClient = aEntryClient;
         }
 
-        public async Task<PaginationResponse<EntryDto>> GetEntriesPaginated(PaginationParameters aPaginationParameters)
+        public async Task<PaginationResponse<EntryDto>> GetEntriesPaginated(PaginationParameters aPaginationParameters, bool aFetchEmptyPunches, EntryFilterEnum aEntryFilterEnum)
         {
             IsBusy = true;
             PaginationResponse<EntryDto> sPaginationResponse = new PaginationResponse<EntryDto>();
 
-            var sResult = await mEntryClient.GetEntriesPaginated(aPaginationParameters);
+            var sResult = await mEntryClient.GetEntriesPaginated(aPaginationParameters, aFetchEmptyPunches, aEntryFilterEnum);
 
             if (!sResult.Success)
             {
@@ -45,7 +45,7 @@ namespace SnusPunch.Web.ViewModels.Snus
             return sPaginationResponse;
         }
 
-        public async Task<EntryDto> AddEntry(int aSnusId, string? aDescription)
+        public async Task<EntryDto> AddEntry(int aSnusId, string? aDescription, IBrowserFile aBrowserFile)
         {
             IsBusy = true;
             EntryDto? sReturnEntry = null;

@@ -1,14 +1,13 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using SnusPunch.Data.Models.Entry;
 using SnusPunch.Data.Models.Identity;
 using SnusPunch.Data.Repository;
-using SnusPunch.Services.Snus;
 using SnusPunch.Shared.Models.Entry;
 using SnusPunch.Shared.Models.Entry.Likes;
 using SnusPunch.Shared.Models.Pagination;
 using SnusPunch.Shared.Models.ResultModel;
-using SnusPunch.Shared.Models.Snus;
 using System.Security.Claims;
 
 namespace SnusPunch.Services.Entry
@@ -16,17 +15,19 @@ namespace SnusPunch.Services.Entry
     public class EntryService
     {
         private readonly ILogger<EntryService> mLogger;
+        private readonly IConfiguration mConfiguration;
         private readonly SnusPunchRepository mSnusPunchRepository;
         private readonly UserManager<SnusPunchUserModel> mUserManager;
 
-        public EntryService(ILogger<EntryService> aLogger, SnusPunchRepository aSnusPunchRepository, UserManager<SnusPunchUserModel> aUserManager)
+        public EntryService(ILogger<EntryService> aLogger, IConfiguration aConfiguration, SnusPunchRepository aSnusPunchRepository, UserManager<SnusPunchUserModel> aUserManager)
         {
             mLogger = aLogger;
+            mConfiguration = aConfiguration;
             mSnusPunchRepository = aSnusPunchRepository;
             mUserManager = aUserManager;
         }
 
-        public async Task<ResultModel<PaginationResponse<EntryDto>>> GetEntriesPaginated(PaginationParameters aPaginationParameters, ClaimsPrincipal aClaimsPrincipal)
+        public async Task<ResultModel<PaginationResponse<EntryDto>>> GetEntriesPaginated(PaginationParameters aPaginationParameters, bool aFetchEmptyPunches, EntryFilterEnum aEntryFilterEnum, ClaimsPrincipal aClaimsPrincipal)
         {
             ResultModel<PaginationResponse<EntryDto>> sResultModel = new ResultModel<PaginationResponse<EntryDto>>();
 
@@ -41,7 +42,7 @@ namespace SnusPunch.Services.Entry
                     return sResultModel;
                 }
 
-                sResultModel.ResultObject = await mSnusPunchRepository.GetEntriesPaginated(aPaginationParameters, sUser.Id);
+                sResultModel.ResultObject = await mSnusPunchRepository.GetEntriesPaginated(aPaginationParameters, aFetchEmptyPunches, aEntryFilterEnum, sUser.Id);
             }
             catch (Exception aException)
             {
@@ -70,10 +71,41 @@ namespace SnusPunch.Services.Entry
 
                 EntryModel sEntryModel = new EntryModel
                 {
-                    Description = aAddEntryDto.Description,
+                    Description = string.IsNullOrEmpty(aAddEntryDto.Description) ? null : aAddEntryDto.Description,
                     SnusId = aAddEntryDto.SnusId,
                     SnusPunchUserModelId = sUserId
                 };
+                
+                //Spara bild om vi fick en sån
+                //if (aAddEntryDto.FormFile != null)
+                //{
+                //    //Verifiera filen
+                //    var sVerifyFileResult = ImageFileVerification.IsValidImage(aAddEntryDto.FormFile);
+                //    if (!sVerifyFileResult.Success)
+                //    {
+                //        sResultModel.Errors = sVerifyFileResult.Errors;
+                //        sResultModel.Success = false;
+                //        return sResultModel;
+                //    }
+
+                //    //Fil OK, generera en Guid för filnamnet (för att undvika att användare gissar sig till en annans profilbild)
+                //    Guid sFileName = Guid.NewGuid();
+
+                //    string sFilePath = mConfiguration["PostPicturePath"] + $"{sFileName}.jpg";
+
+                //    //Konvertera filen till jpg & spara på disk
+                //    using (var sStream = new MemoryStream())
+                //    {
+                //        await aAddEntryDto.FormFile.CopyToAsync(sStream);
+
+                //        using (var sImage = System.Drawing.Image.FromStream(sStream))
+                //        {
+                //            sImage.Save(sFilePath, System.Drawing.Imaging.ImageFormat.Jpeg);
+                //        }
+                //    }
+
+                //    sEntryModel.PhotoUrl = sFileName + ".jpg";
+                //}
 
                 sResultModel.ResultObject = await mSnusPunchRepository.AddEntry(sEntryModel);
             }
@@ -103,6 +135,17 @@ namespace SnusPunch.Services.Entry
                 }
 
                 var sEntry = await mSnusPunchRepository.GetEntryById(aEntryModelId);
+
+                //Ta bort bilden om den finns
+                if(!string.IsNullOrEmpty(sEntry.PhotoUrl))
+                {
+                    string sFile = mConfiguration["PostPicturePath"] + $"/{sEntry.PhotoUrl}";
+
+                    if (File.Exists(sFile))
+                    {
+                        File.Delete(sFile);
+                    }
+                }
 
                 if (sEntry == null)
                 {

@@ -61,6 +61,8 @@ namespace SnusPunch.Data.DbContexts
                     tb.HasTrigger("TR_tblEntry_Update");
                 });
 
+                e.Property(p => p.SnusPortionPriceInSek).HasColumnType("decimal(6,2)");
+
                 e.Property(c => c.CreateDate).HasDefaultValueSql("getdate()");
 
                 e.HasOne(e => e.Snus)
