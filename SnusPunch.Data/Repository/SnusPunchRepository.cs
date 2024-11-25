@@ -97,9 +97,8 @@ namespace SnusPunch.Data.Repository
             var sSnus = await mSnusPunchDbContext.Entries
                 .Include(x => x.Snus)
                 .Include(x => x.SnusPunchUserModel)
-                .Where(x => aFetchEmptyPunches || (x.Description != null || x.PhotoUrl != null))
-                .Where(x => aEntryFilterEnum == EntryFilterEnum.All || x.SnusPunchUserModelId == aSnusPunchUserModelId)
                 .SearchByProperty(aPaginationParameters.SearchPropertyNames, aPaginationParameters.SearchString)
+                .FilterEntryHelper(aSnusPunchUserModelId, aEntryFilterEnum, aFetchEmptyPunches)
                 .OrderByProperty(aPaginationParameters.SortPropertyName, aPaginationParameters.SortOrder)
                 .Skip(aPaginationParameters.Skip)
                 .Take(aPaginationParameters.PageSize)
@@ -108,7 +107,7 @@ namespace SnusPunch.Data.Repository
                     Id = x.Id,
                     CreateDate = x.CreateDate,
                     Description = x.Description,
-                    PhotoUrl = x.PhotoUrl,
+                    PhotoUrl = x.PhotoUrl != null ? mConfiguration["PostPicturePathFull"] + x.PhotoUrl : null,
                     SnusName = x.SnusName,
                     UserName = x.SnusPunchUserModel.UserName,
                     UserProfilePictureUrl = $"{mConfiguration["ProfilePicturePathFull"]}{x.SnusPunchUserModel.ProfilePicturePath ?? "default.jpg"}",
@@ -118,9 +117,8 @@ namespace SnusPunch.Data.Repository
                 }).ToListAsync();
 
             var sCount = await mSnusPunchDbContext.Entries
-                .Where(x => aFetchEmptyPunches || (x.Description != null || x.PhotoUrl != null))
-                .Where(x => aEntryFilterEnum == EntryFilterEnum.All || x.SnusPunchUserModelId == aSnusPunchUserModelId)
                 .SearchByProperty(aPaginationParameters.SearchPropertyNames, aPaginationParameters.SearchString)
+                .FilterEntryHelper(aSnusPunchUserModelId, aEntryFilterEnum, aFetchEmptyPunches)
                 .CountAsync();
 
             return new PaginationResponse<EntryDto>(sSnus, sCount, aPaginationParameters.PageNumber, aPaginationParameters.PageSize);
@@ -146,7 +144,8 @@ namespace SnusPunch.Data.Repository
                 Description = sEntry.Description,
                 SnusName = sEntry.SnusName,
                 UserName = sEntry.SnusPunchUserModel.UserName,
-                UserProfilePictureUrl = $"{mConfiguration["ProfilePicturePathFull"]}{sEntry.SnusPunchUserModel.ProfilePicturePath ?? "default.jpg"}"
+                UserProfilePictureUrl = $"{mConfiguration["ProfilePicturePathFull"]}{sEntry.SnusPunchUserModel.ProfilePicturePath ?? "default.jpg"}",
+                PhotoUrl = sEntry.PhotoUrl == null ? null : mConfiguration["PostPicturePathFull"] + sEntry.PhotoUrl,
             };
         }
 

@@ -1,4 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using SnusPunch.Data.Models.Entry;
+using SnusPunch.Shared.Models.Entry;
 using SnusPunch.Shared.Models.Pagination;
 using System.Data.Common;
 using System.Linq.Expressions;
@@ -76,6 +78,31 @@ namespace SnusPunch.Data.Helpers
             var sLambda = Expression.Lambda<Func<T, bool>>(sCombinedExpression, sParameter);
 
             return aQuery.Where(sLambda);
+        }
+
+        public static IQueryable<EntryModel> FilterEntryHelper(this IQueryable<EntryModel> aQuery, string aSnusPunchUserModelId, EntryFilterEnum aEntryFilterEnum, bool aFetchEmptyPunches)
+        {
+            IQueryable<EntryModel> sQuery = aQuery;
+
+            switch (aEntryFilterEnum)
+            {
+                default:
+                case EntryFilterEnum.All:
+                    break;
+                case EntryFilterEnum.Self:
+                    sQuery = sQuery.Where(x => x.SnusPunchUserModelId == aSnusPunchUserModelId);
+                    break;
+                case EntryFilterEnum.Friends:
+                    sQuery = sQuery.Where(x => x.SnusPunchUserModelId == aSnusPunchUserModelId);
+                    break;
+            }
+
+            if(!aFetchEmptyPunches)
+            {
+                sQuery = sQuery.Where(x => x.PhotoUrl != null || x.Description != null);
+            }
+
+            return sQuery;
         }
     }
 }

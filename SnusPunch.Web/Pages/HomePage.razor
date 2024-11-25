@@ -27,19 +27,14 @@
 
     <textarea placeholder="Skriv något roligt om du vill!" class="full-width" @bind="mDescription" rows="2"></textarea>
 
-    @if (mBrowserFile != null)
-    {
-        <p class="mn">
+    <p class="mn">
+        @if (mBrowserFile != null)
+        {
             <img src="@mImagePreview" class="full-width" />
-            <button class="button-danger mt-1" @onclick="() => RemoveImage()">Ta Bort Bild</button>
-        </p>
-    }
-    else
-    {
-        <p class="mn">
-            <InputFile accept=".png,.jpeg,.jpg" @key="mInputFileId" OnChange="LoadImage" />
-        </p>
-    }
+            <button class="button-danger mt-1" @onclick="() => RemoveImage()">Ta Bort Bild</button> <br/>
+        }
+        <InputFile class="mt-1" accept=".png,.jpeg,.jpg" @key="mInputFileId" OnChange="LoadImage" />
+    </p>
 
     <button class="full-width mt-1" @onclick="async () => await AddEntry()">Stämpla</button>
 </div>
@@ -48,9 +43,9 @@
     <div class="row align-items-bottom justify-content-between">
         <h2>Senaste Stämplingara</h2>
 
-        <div class="row align-items-center">
-            <label for="fetchEmptyPunches">Visa tomma stämplingar</label>
-            <input class="ml-1 checkbox" type="checkbox" id="fetchEmptyPunches" @bind="mFetchEmptyPunches" @bind:after="async () => await GetEntries()" />
+        <div class="row align-items-center gap-05">
+            <label for="fetchEmptyPunches">Visa tomma inlägg</label>
+            <input class="checkbox" type="checkbox" id="fetchEmptyPunches" @bind="mFetchEmptyPunches" @bind:after="async () => await GetEntries()" />
         </div>
     </div>
     

@@ -87,8 +87,6 @@
     //Stäng om man klickar utanför
     window.onclick = function (event) {
         if (!event.target.matches('.button-drop-down') && !event.target.matches('.button-icon')) {
-            console.log("stäng");
-            console.log(event.target);
             var dropdowns = document.getElementsByClassName("dropdown-content");
             var i;
             for (i = 0; i < dropdowns.length; i++) {

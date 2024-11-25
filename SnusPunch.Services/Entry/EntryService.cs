@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using SnusPunch.Data.Models.Entry;
 using SnusPunch.Data.Models.Identity;
 using SnusPunch.Data.Repository;
+using SnusPunch.Services.Helpers;
 using SnusPunch.Shared.Models.Entry;
 using SnusPunch.Shared.Models.Entry.Likes;
 using SnusPunch.Shared.Models.Pagination;
@@ -54,7 +55,7 @@ namespace SnusPunch.Services.Entry
             return sResultModel;
         }
 
-        public async Task<ResultModel<EntryDto>> AddEntry(AddEntryDto aAddEntryDto, ClaimsPrincipal aClaimsPrincipal)
+        public async Task<ResultModel<EntryDto>> AddEntry(AddEntryWithImageDto aAddEntryDto, ClaimsPrincipal aClaimsPrincipal)
         {
             ResultModel<EntryDto> sResultModel = new ResultModel<EntryDto>();
 
@@ -75,37 +76,37 @@ namespace SnusPunch.Services.Entry
                     SnusId = aAddEntryDto.SnusId,
                     SnusPunchUserModelId = sUserId
                 };
-                
+
                 //Spara bild om vi fick en sån
-                //if (aAddEntryDto.FormFile != null)
-                //{
-                //    //Verifiera filen
-                //    var sVerifyFileResult = ImageFileVerification.IsValidImage(aAddEntryDto.FormFile);
-                //    if (!sVerifyFileResult.Success)
-                //    {
-                //        sResultModel.Errors = sVerifyFileResult.Errors;
-                //        sResultModel.Success = false;
-                //        return sResultModel;
-                //    }
+                if (aAddEntryDto.FormFile != null)
+                {
+                    //Verifiera filen
+                    var sVerifyFileResult = ImageFileVerification.IsValidImage(aAddEntryDto.FormFile);
+                    if (!sVerifyFileResult.Success)
+                    {
+                        sResultModel.Errors = sVerifyFileResult.Errors;
+                        sResultModel.Success = false;
+                        return sResultModel;
+                    }
 
-                //    //Fil OK, generera en Guid för filnamnet (för att undvika att användare gissar sig till en annans profilbild)
-                //    Guid sFileName = Guid.NewGuid();
+                    //Fil OK, generera en Guid för filnamnet (för att undvika att användare gissar sig till en annans profilbild)
+                    Guid sFileName = Guid.NewGuid();
 
-                //    string sFilePath = mConfiguration["PostPicturePath"] + $"{sFileName}.jpg";
+                    string sFilePath = mConfiguration["PostPicturePath"] + $"{sFileName}.jpg";
 
-                //    //Konvertera filen till jpg & spara på disk
-                //    using (var sStream = new MemoryStream())
-                //    {
-                //        await aAddEntryDto.FormFile.CopyToAsync(sStream);
+                    //Konvertera filen till jpg & spara på disk
+                    using (var sStream = new MemoryStream())
+                    {
+                        await aAddEntryDto.FormFile.CopyToAsync(sStream);
 
-                //        using (var sImage = System.Drawing.Image.FromStream(sStream))
-                //        {
-                //            sImage.Save(sFilePath, System.Drawing.Imaging.ImageFormat.Jpeg);
-                //        }
-                //    }
+                        using (var sImage = System.Drawing.Image.FromStream(sStream))
+                        {
+                            sImage.Save(sFilePath, System.Drawing.Imaging.ImageFormat.Jpeg);
+                        }
+                    }
 
-                //    sEntryModel.PhotoUrl = sFileName + ".jpg";
-                //}
+                    sEntryModel.PhotoUrl = sFileName + ".jpg";
+                }
 
                 sResultModel.ResultObject = await mSnusPunchRepository.AddEntry(sEntryModel);
             }

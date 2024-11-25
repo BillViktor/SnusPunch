@@ -1,9 +1,11 @@
 ﻿using Microsoft.AspNetCore.Components.Forms;
+using SnusPunch.Shared.Constants;
 using SnusPunch.Shared.Models.Auth;
 using SnusPunch.Shared.Models.Entry;
 using SnusPunch.Shared.Models.Entry.Likes;
 using SnusPunch.Shared.Models.Pagination;
 using SnusPunch.Web.Clients.Snus;
+using System.Net.Http.Headers;
 
 namespace SnusPunch.Web.ViewModels.Snus
 {
@@ -46,6 +48,66 @@ namespace SnusPunch.Web.ViewModels.Snus
         }
 
         public async Task<EntryDto> AddEntry(int aSnusId, string? aDescription, IBrowserFile aBrowserFile)
+        {
+            return aBrowserFile == null ? await AddEntry(aSnusId, aDescription) : await AddEntryWithImage(aSnusId, aDescription, aBrowserFile);
+        }
+
+        private async Task<EntryDto> AddEntryWithImage(int aSnusId, string? aDescription, IBrowserFile aBrowserFile)
+        {
+            IsBusy = true;
+            EntryDto? sReturnEntry = null;
+
+            try
+            {
+                if (aBrowserFile == null)
+                {
+                    throw new Exception("Ingen fil vald.");
+                }
+
+                if (!AllowedImageFileTypes.AllowedMimeTypes.Any(x => string.Equals(x, aBrowserFile.ContentType, StringComparison.OrdinalIgnoreCase)))
+                {
+                    throw new Exception("Ogiltigt filformat.");
+                }
+
+                if (aBrowserFile.Size > AllowedImageFileTypes.ImageMaximumBytes)
+                {
+                    throw new Exception("Filen är för stor.");
+                }
+
+                using var sContent = new MultipartFormDataContent();
+                var sFileContent = new StreamContent(aBrowserFile.OpenReadStream(AllowedImageFileTypes.ImageMaximumBytes));
+                sFileContent.Headers.ContentType = new MediaTypeHeaderValue(aBrowserFile.ContentType);
+
+                sContent.Add(sFileContent, "FormFile", aBrowserFile.Name);
+                if (aDescription != null)
+                {
+                    sContent.Add(new StringContent(aDescription), "Description");
+                }
+                sContent.Add(new StringContent(aSnusId.ToString()), "SnusId");
+
+                var sResult = await mEntryClient.AddEntryWithImage(sContent);
+
+                if (!sResult.Success)
+                {
+                    Errors.AddRange(sResult.Errors);
+                }
+                else
+                {
+                    sReturnEntry = sResult.ResultObject;
+                    SuccessMessages.Add($"Din profilbild har uppdaterats");
+                }
+            }
+            catch (Exception ex)
+            {
+                AddError(ex.Message);
+                return null;
+            }
+
+            IsBusy = false;
+            return sReturnEntry;
+        }
+
+        private async Task<EntryDto> AddEntry(int aSnusId, string? aDescription)
         {
             IsBusy = true;
             EntryDto? sReturnEntry = null;

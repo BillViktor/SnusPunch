@@ -30,7 +30,7 @@ namespace SnusPunch.Data.DbContexts
                 e.HasOne(e => e.EntryModel)
                     .WithMany(e => e.Comments)
                         .HasForeignKey(e => e.EntryId)
-                            .OnDelete(DeleteBehavior.ClientCascade);
+                            .OnDelete(DeleteBehavior.Cascade);
             });
 
             aModelBuilder.Entity<EntryLikeModel>(e =>
@@ -51,13 +51,14 @@ namespace SnusPunch.Data.DbContexts
                 e.HasOne(e => e.EntryModel)
                     .WithMany(e => e.Likes)
                         .HasForeignKey(e => e.EntryId)
-                            .OnDelete(DeleteBehavior.ClientCascade);
+                            .OnDelete(DeleteBehavior.Cascade);
             });
 
             aModelBuilder.Entity<EntryModel>(e =>
             {
                 e.ToTable("tblEntry", tb =>
                 {
+                    tb.HasTrigger("TR_tblEntry_Insert");
                     tb.HasTrigger("TR_tblEntry_Update");
                 });
 

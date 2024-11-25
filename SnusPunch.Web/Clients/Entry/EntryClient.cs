@@ -65,6 +65,31 @@ namespace SnusPunch.Web.Clients.Snus
             return sResultModel;
         }
 
+        public async Task<ResultModel<EntryDto>> AddEntryWithImage(MultipartFormDataContent aMultipartFormDataContent)
+        {
+            ResultModel<EntryDto> sResultModel = new ResultModel<EntryDto>();
+
+            try
+            {
+                var sHttpClient = mHttpClientFactory.CreateClient(HttpClientEnum.Entry.ToString());
+                var sResponse = await sHttpClient.PostAsync("AddEntryWithImage", aMultipartFormDataContent);
+
+                if (!sResponse.IsSuccessStatusCode)
+                {
+                    throw new Exception("Non-success status code at AddEntryWithImage in EntryClient");
+                }
+
+                sResultModel = await sResponse.Content.ReadFromJsonAsync<ResultModel<EntryDto>>();
+            }
+            catch (Exception aException)
+            {
+                sResultModel.Success = false;
+                sResultModel.AddExceptionError(aException);
+            }
+
+            return sResultModel;
+        }
+
         public async Task<ResultModel> RemoveEntry(int aEntryModelId)
         {
             ResultModel sResultModel = new ResultModel();

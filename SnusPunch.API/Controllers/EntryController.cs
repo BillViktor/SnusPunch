@@ -34,6 +34,12 @@ namespace SnusPunch.API.Controllers
         [HttpPost("AddEntry")]
         public async Task<ResultModel<EntryDto>> AddEntry(AddEntryDto aAddEntryDto)
         {
+            return await mEntryService.AddEntry(new AddEntryWithImageDto { FormFile = null, Description = aAddEntryDto.Description, SnusId = aAddEntryDto.SnusId}, User);
+        }
+
+        [HttpPost("AddEntryWithImage")]
+        public async Task<ResultModel<EntryDto>> AddEntryWithImage(AddEntryWithImageDto aAddEntryDto)
+        {
             return await mEntryService.AddEntry(aAddEntryDto, User);
         }
 
