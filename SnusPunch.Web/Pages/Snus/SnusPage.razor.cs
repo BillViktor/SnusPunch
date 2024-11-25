@@ -1,6 +1,7 @@
 ﻿using Blazored.Modal;
 using Blazored.Modal.Services;
 using Microsoft.AspNetCore.Components;
+using SnusPunch.Shared.Models.Auth.Email;
 using SnusPunch.Shared.Models.Errors;
 using SnusPunch.Shared.Models.Pagination;
 using SnusPunch.Shared.Models.Snus;
@@ -14,6 +15,8 @@ namespace SnusPunch.Web.Pages.Snus
     public partial class SnusPage
     {
         [CascadingParameter] public IModalService Modal { get; set; } = default!;
+        [Parameter] public string SnusName { get; set; }
+        [Inject] NavigationManager NavigationManager { get; set; }
         [Inject] AuthViewModel AuthViewModel { get; set; }
         [Inject] SnusViewModel SnusViewModel { get; set; }
 
@@ -38,6 +41,12 @@ namespace SnusPunch.Web.Pages.Snus
 
         protected override async Task OnInitializedAsync()
         {
+            if(!string.IsNullOrEmpty(SnusName))
+            {
+                mPaginationParameters.SearchString = SnusName;
+                NavigationManager.NavigateTo("Snus");
+            }
+
             await GetSnus();
 
             mFavouriteSnusId = AuthViewModel.UserInfoModel?.FavouriteSnusId;
