@@ -1,0 +1,33 @@
+SnusPunch ToDo
+
+*Kommentarer*
+- Kunna gilla kommentarer
+- Kunna svara på kommentarer
+
+*Notifikationer*
+- Få en notis när man får en like eller en kommentar
+
+*Statistik*
+- Visa en bar chart på när man snusar på dagen
+- Visa statistik jämfört med förut, snusar man mer eller mindre?
+
+*Leaderboard*
+- Visa vem som snusat mest (man ska kunna sortera på typ antal snus, antal kr samt nikotin),
+  med typ samma filter som statistik :)
+
+*Vänner*
+- Kunna lägga till vänner
+- Filtera feed på vänner
+- Chatta mellan vänner
+
+*Integritet*
+- Kunna välja vilka som ska kunna se ens inlägg
+- Kunna välja vilka som ska kunna se ens vänner
+
+*Profilsida*
+- Där man kan se ens inlägg, ens vänner, ens foton m.m. (tänk Facebook)
+
+
+*Misc*
+- Mobilanpassning (viktigt!)
+- Google Adsense
