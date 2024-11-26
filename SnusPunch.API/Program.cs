@@ -9,6 +9,7 @@ using SnusPunch.Data.Repository;
 using SnusPunch.Services.Email;
 using SnusPunch.Services.Entry;
 using SnusPunch.Services.Snus;
+using SnusPunch.Services.Statistics;
 using Swashbuckle.AspNetCore.Filters;
 using Swashbuckle.AspNetCore.SwaggerUI;
 
@@ -75,8 +76,13 @@ builder.Services.AddScoped<SnusPunchRepository>();
 #region Services
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<EmailService>();
+
 builder.Services.AddScoped<EntryService>();
+builder.Services.AddScoped<EntryLikeService>();
+builder.Services.AddScoped<EntryCommentService>();
+
 builder.Services.AddScoped<SnusService>();
+builder.Services.AddScoped<StatisticsService>();
 builder.Services.AddScoped<UserService>();
 #endregion
 

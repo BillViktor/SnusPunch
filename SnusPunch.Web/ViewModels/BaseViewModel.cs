@@ -1,11 +1,10 @@
 ﻿using SnusPunch.Shared.Models.Errors;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace SnusPunch.Web.ViewModels
 {
-    public abstract class BaseViewModel : INotifyPropertyChanged
+    public class BaseViewModel : INotifyPropertyChanged
     {
         #region Fields
         private bool mIsBusy = false;

@@ -14,8 +14,11 @@
             }
             set
             {
-                mPageSize = value;
-                Skip = (PageNumber - 1) * PageSize;
+                if(value < 100)
+                {
+                    mPageSize = value;
+                    Skip = (PageNumber - 1) * PageSize;
+                } 
             }
         }
 

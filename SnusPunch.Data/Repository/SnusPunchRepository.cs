@@ -9,7 +9,7 @@ using SnusPunch.Shared.Models.Entry;
 using SnusPunch.Shared.Models.Entry.Likes;
 using SnusPunch.Shared.Models.Pagination;
 using SnusPunch.Shared.Models.Snus;
-using System.Linq;
+using SnusPunch.Shared.Models.Statistics;
 
 namespace SnusPunch.Data.Repository
 {
@@ -112,7 +112,7 @@ namespace SnusPunch.Data.Repository
                     UserName = x.SnusPunchUserModel.UserName,
                     UserProfilePictureUrl = $"{mConfiguration["ProfilePicturePathFull"]}{x.SnusPunchUserModel.ProfilePicturePath ?? "default.jpg"}",
                     Likes = x.Likes.Count,
-                    Comments = x.Comments.Count,
+                    CommentCount = x.Comments.Count,
                     LikedByUser = x.Likes.Any(x => x.SnusPunchUserModelId == aSnusPunchUserModelId)
                 }).ToListAsync();
 
@@ -216,6 +216,70 @@ namespace SnusPunch.Data.Repository
         #endregion
 
 
+        #region Entry Comments
+        public async Task<EntryCommentDto> AddEntryComment(EntryCommentModel aEntryCommentModel)
+        {
+            await mSnusPunchDbContext.AddAsync(aEntryCommentModel);
+            await mSnusPunchDbContext.SaveChangesAsync();
+
+            return await GetEntryCommentDtoById(aEntryCommentModel.Id);
+        }
+
+        public async Task RemoveEntryComment(EntryCommentModel aEntryCommentModel)
+        {
+            mSnusPunchDbContext.Remove(aEntryCommentModel);
+            await mSnusPunchDbContext.SaveChangesAsync();
+        }
+
+        public async Task<EntryCommentModel> GetEntryCommentById(int aEntryCommentModelId)
+        {
+            return await mSnusPunchDbContext.EntryComments.AsNoTracking().FirstOrDefaultAsync(x => x.Id == aEntryCommentModelId);
+        }
+
+        private async Task<EntryCommentDto> GetEntryCommentDtoById(int aEntryCommentModelId)
+        {
+            var sComment = await mSnusPunchDbContext.EntryComments
+                .Include(x => x.SnusPunchUserModel)
+                .AsNoTracking()
+                .FirstOrDefaultAsync(x => x.Id == aEntryCommentModelId);
+
+            return new EntryCommentDto
+            {
+                Id = sComment.Id,
+                CreateDate = sComment.CreateDate,
+                Comment = sComment.Comment,
+                UserName = sComment.SnusPunchUserModel.UserName,
+                ProfilePictureUrl = $"{mConfiguration["ProfilePicturePathFull"]}{sComment.SnusPunchUserModel.ProfilePicturePath ?? "default.jpg"}",
+            };
+        }
+
+        public async Task<PaginationResponse<EntryCommentDto>> GetEntryCommentsPaginated(PaginationParameters aPaginationParameters, int aEntryModelId)
+        {
+            var sLikes = await mSnusPunchDbContext.EntryComments
+                .Where(x => x.EntryId == aEntryModelId)
+                .Include(x => x.SnusPunchUserModel)
+                .SearchByProperty(aPaginationParameters.SearchPropertyNames, aPaginationParameters.SearchString)
+                .OrderByProperty(aPaginationParameters.SortPropertyName, aPaginationParameters.SortOrder)
+                .Skip(aPaginationParameters.Skip)
+                .Take(aPaginationParameters.PageSize)
+                .AsNoTracking().Select(x => new EntryCommentDto
+                {
+                    UserName = x.SnusPunchUserModel.UserName,
+                    ProfilePictureUrl = $"{mConfiguration["ProfilePicturePathFull"]}{x.SnusPunchUserModel.ProfilePicturePath ?? "default.jpg"}",
+                    Comment = x.Comment,
+                    CreateDate = x.CreateDate,
+                    Id = x.Id,
+                }).ToListAsync();
+
+            var sCount = await mSnusPunchDbContext.EntryComments
+                .Where(x => x.EntryId == aEntryModelId)
+                .SearchByProperty(aPaginationParameters.SearchPropertyNames, aPaginationParameters.SearchString)
+                .CountAsync();
+
+            return new PaginationResponse<EntryCommentDto>(sLikes, sCount, aPaginationParameters.PageNumber, aPaginationParameters.PageSize);
+        }
+        #endregion
+
         #region Users
         public async Task<PaginationResponse<SnusPunchUserDto>> GetUsersPaginated(PaginationParameters aPaginationParameters)
         {
@@ -239,6 +303,63 @@ namespace SnusPunch.Data.Repository
                 .CountAsync();
 
             return new PaginationResponse<SnusPunchUserDto>(sUsers, sCount, aPaginationParameters.PageNumber, aPaginationParameters.PageSize);
+        }
+        #endregion
+
+
+        #region Statistics
+        public async Task<StatisticsTimePeriodResponseDto> GetStatisticsForTimePeriod(DateTime aStartDate, DateTime aEndDate, string aUserId)
+        {
+            //FromSql parameteriserar automatiskt FormattableString => Säkert mot SQL injections
+            var sStats = await mSnusPunchDbContext.StatisticsTimePeriod
+                .FromSql($@"
+                    DECLARE @StartDate DATETIME = {aStartDate};
+                    DECLARE @EndDate DATETIME = {aEndDate};
+                    DECLARE @Days INT = 
+                    CASE
+	                    WHEN DATEDIFF(DAY, @StartDate, @EndDate) <= 1 THEN 1
+	                    ELSE DATEDIFF(DAY, @StartDate, @EndDate)
+                    END;
+
+                    WITH MostUsedSnus AS
+                    (
+	                    SELECT TOP(1)
+	                    [SnusName],
+	                    COUNT(*) AS [UsedCount]
+
+	                    FROM [tblEntry]
+	
+	                    WHERE
+	                    [SnusPunchUserModelId] = {aUserId}
+	                    AND [CreateDate] >= @StartDate
+	                    AND [CreateDate] < @EndDate
+
+	                    GROUP BY
+	                    [SnusName]
+
+	                    ORDER BY
+	                    COUNT(*) DESC
+                    )
+
+                    SELECT
+                    COUNT(*) AS 'SnusCount',
+                    ISNULL(SUM([SnusPortionPriceInSek]), 0) AS 'TotalCostInSek',
+                    ISNULL(SUM([SnusPortionNicotineInMg]), 0) AS 'TotalNicotineInMg',
+                    ISNULL(CAST(COUNT(*) AS FLOAT)/@Days, 0) AS 'AvgSnusCountPerDay',
+                    ISNULL(SUM([SnusPortionPriceInSek])/@Days, 0) AS 'AvgCostPerDayInSek',
+                    ISNULL(SUM([SnusPortionNicotineInMg])/@Days, 0) AS 'AvgNicotinePerDayInMg',
+                    (SELECT [SnusName] FROM MostUsedSnus) AS 'MostUsedSnus',
+                    (SELECT [UsedCount] FROM MostUsedSnus) AS 'MostUsedSnusCount'
+
+                    FROM [tblEntry]
+
+                    WHERE
+                    [SnusPunchUserModelId] = {aUserId}
+                    AND [CreateDate] >= @StartDate
+                    AND [CreateDate] < @EndDate")
+                    .ToListAsync();
+
+            return sStats.FirstOrDefault();
         }
         #endregion
     }

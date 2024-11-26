@@ -9,7 +9,7 @@
 
 <div class="content">
     <h2>
-        Puncha här
+        Stämpla här!
     </h2>
 
     <div class="row gap-1">
@@ -127,7 +127,9 @@
                 <button @onclick="() => ShowLikes(sEntry)" class="text-button">
                     <span title="Klicka för att se vilka som gillar inlägget!">@sEntry.GetLikesString()</span>
                 </button>
-                <span>@sEntry.GetCommentsString()</span>
+                <button @onclick="async () => await Comment(sEntry)" class="text-button">
+                    <span title="Klicka för att se kommentarer!">@sEntry.GetCommentsString()</span>
+                </button>
             </div>
 
             <hr />

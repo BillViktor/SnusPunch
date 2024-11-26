@@ -6,7 +6,6 @@ using SnusPunch.Data.Models.Identity;
 using SnusPunch.Data.Repository;
 using SnusPunch.Services.Helpers;
 using SnusPunch.Shared.Models.Entry;
-using SnusPunch.Shared.Models.Entry.Likes;
 using SnusPunch.Shared.Models.Pagination;
 using SnusPunch.Shared.Models.ResultModel;
 using System.Security.Claims;
@@ -126,9 +125,9 @@ namespace SnusPunch.Services.Entry
 
             try
             {
-                var sUserId = mUserManager.GetUserId(aClaimsPrincipal);
+                var sUser = await mUserManager.GetUserAsync(aClaimsPrincipal);
 
-                if (sUserId == null)
+                if (sUser == null)
                 {
                     sResultModel.Success = false;
                     sResultModel.AddError("Användaren hittades ej.");
@@ -156,7 +155,7 @@ namespace SnusPunch.Services.Entry
                 }
 
                 //Verifiera konto
-                if (sEntry.SnusPunchUserModelId != sUserId)
+                if (sEntry.SnusPunchUserModelId != sUser.Id)
                 {
                     sResultModel.Success = false;
                     sResultModel.AddError("Du saknar behörighet för att radera detta inlägg.");
@@ -201,96 +200,5 @@ namespace SnusPunch.Services.Entry
 
             return sResultModel;
         }
-
-        #region Likes
-        public async Task<ResultModel> LikeEntry(int aEntryModelId, ClaimsPrincipal aClaimsPrincipal)
-        {
-            ResultModel sResultModel = new ResultModel();
-
-            try
-            {
-                var sUser = await mUserManager.GetUserAsync(aClaimsPrincipal);
-
-                if(sUser == null)
-                {
-                    sResultModel.Success = false;
-                    sResultModel.AddError("Användaren hittades ej.");
-                    return sResultModel;
-                }
-
-                var sEntry = await mSnusPunchRepository.GetEntryById(aEntryModelId);
-
-                if (sEntry == null)
-                {
-                    sResultModel.Success = false;
-                    sResultModel.AddError("Inlägget hittades ej.");
-                    return sResultModel;
-                }
-
-                EntryLikeModel sEntryLikeModel = new EntryLikeModel
-                {
-                    EntryId = sEntry.Id,
-                    SnusPunchUserModelId = sUser.Id
-                };
-
-                await mSnusPunchRepository.LikeEntry(sEntryLikeModel);
-            }
-            catch (Exception aException)
-            {
-                mLogger.LogError(aException, "Exception at LikeEntry in EntryService");
-                sResultModel.Success = false;
-                sResultModel.AddExceptionError(aException);
-            }
-
-            return sResultModel;
-        }
-
-        public async Task<ResultModel> UnlikeEntry(int aEntryModelId, ClaimsPrincipal aClaimsPrincipal)
-        {
-            ResultModel sResultModel = new ResultModel();
-
-            try
-            {
-                var sUser = await mUserManager.GetUserAsync(aClaimsPrincipal);
-
-                if (sUser == null)
-                {
-                    sResultModel.Success = false;
-                    sResultModel.AddError("Användaren hittades ej.");
-                    return sResultModel;
-                }
-
-                var sLike = await mSnusPunchRepository.GetEntryLike(aEntryModelId, sUser.Id);
-
-                await mSnusPunchRepository.UnlikeEntry(sLike);
-            }
-            catch (Exception aException)
-            {
-                mLogger.LogError(aException, "Exception at UnlikeEntry in EntryService");
-                sResultModel.Success = false;
-                sResultModel.AddExceptionError(aException);
-            }
-
-            return sResultModel;
-        }
-
-        public async Task<ResultModel<PaginationResponse<EntryLikeDto>>> GetEntryLikesPaginated(PaginationParameters aPaginationParameters, int aEntryModelId)
-        {
-            ResultModel<PaginationResponse<EntryLikeDto>> sResultModel = new ResultModel<PaginationResponse<EntryLikeDto>>();
-
-            try
-            {
-                sResultModel.ResultObject = await mSnusPunchRepository.GetEntryLikesPaginated(aPaginationParameters, aEntryModelId);
-            }
-            catch (Exception aException)
-            {
-                mLogger.LogError(aException, "Exception at UnlikeEntry in EntryService");
-                sResultModel.Success = false;
-                sResultModel.AddExceptionError(aException);
-            }
-
-            return sResultModel;
-        }
-        #endregion
     }
 }

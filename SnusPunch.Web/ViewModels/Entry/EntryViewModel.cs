@@ -109,8 +109,8 @@ namespace SnusPunch.Web.ViewModels.Snus
 
         private async Task<EntryDto> AddEntry(int aSnusId, string? aDescription)
         {
-            IsBusy = true;
             EntryDto? sReturnEntry = null;
+            IsBusy = true;
 
             AddEntryDto sAddEntryDto = new AddEntryDto
             {
@@ -176,6 +176,7 @@ namespace SnusPunch.Web.ViewModels.Snus
             return sSuccess;
         }
 
+
         #region Likes
         public async Task<bool> LikeEntry(int aEntryModelId)
         {
@@ -229,6 +230,98 @@ namespace SnusPunch.Web.ViewModels.Snus
 
             IsBusy = false;
             return sPaginationResponse;
+        }
+        #endregion
+
+
+        #region Comments
+        public async Task<PaginationResponse<EntryCommentDto>> GetEntryComments(PaginationParameters aPaginationParameters, int aEntryModelId)
+        {
+            PaginationResponse<EntryCommentDto> sList = new PaginationResponse<EntryCommentDto>();
+            IsBusy = true;
+
+            var sResult = await mEntryClient.GetEntryCommentsPaginated(aPaginationParameters, aEntryModelId);
+
+            if (!sResult.Success)
+            {
+                Errors.AddRange(sResult.Errors);
+            }
+            else
+            {
+                sList = sResult.ResultObject;
+            }
+
+            IsBusy = false;
+            return sList;
+        }
+
+        public async Task<EntryCommentDto> AddEntryComment(int aEntryModelId, string aComment)
+        {
+            EntryCommentDto? sReturnEntryComment = null;
+            IsBusy = true;
+
+            AddEntryCommentDto sAddEntryCommentDto = new AddEntryCommentDto
+            {
+                EntryModelId = aEntryModelId,
+                Comment = aComment
+            };
+
+            var sResult = await mEntryClient.AddEntryComment(sAddEntryCommentDto);
+
+            if (!sResult.Success)
+            {
+                Errors.AddRange(sResult.Errors);
+            }
+            else
+            {
+                sReturnEntryComment = sResult.ResultObject;
+                SuccessMessages.Add("Kommentar postad!");
+            }
+
+            IsBusy = false;
+            return sReturnEntryComment;
+        }
+
+        public async Task<bool> RemoveEntryComment(int aEntryCommentModelId)
+        {
+            IsBusy = true;
+            bool sSuccess = true;
+
+            var sResult = await mEntryClient.RemoveEntryComment(aEntryCommentModelId);
+
+            if (!sResult.Success)
+            {
+                sSuccess = false;
+                Errors.AddRange(sResult.Errors);
+            }
+            else
+            {
+                SuccessMessages.Add("Kommentar raderad!");
+            }
+
+            IsBusy = false;
+            return sSuccess;
+        }
+
+        public async Task<bool> AdminRemoveEntryComment(int aEntryCommentModelId)
+        {
+            IsBusy = true;
+            bool sSuccess = true;
+
+            var sResult = await mEntryClient.AdminRemoveEntryComment(aEntryCommentModelId);
+
+            if (!sResult.Success)
+            {
+                sSuccess = false;
+                Errors.AddRange(sResult.Errors);
+            }
+            else
+            {
+                SuccessMessages.Add("Kommentar raderad!");
+            }
+
+            IsBusy = false;
+            return sSuccess;
         }
         #endregion
     }

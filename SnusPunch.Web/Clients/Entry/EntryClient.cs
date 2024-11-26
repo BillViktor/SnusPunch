@@ -3,6 +3,7 @@ using SnusPunch.Shared.Models.Entry.Likes;
 using SnusPunch.Shared.Models.Pagination;
 using SnusPunch.Shared.Models.ResultModel;
 using System.Net.Http.Json;
+using System.Security.Claims;
 
 namespace SnusPunch.Web.Clients.Snus
 {
@@ -140,6 +141,7 @@ namespace SnusPunch.Web.Clients.Snus
             return sResultModel;
         }
 
+
         #region Likes
         public async Task<ResultModel> LikeEntry(int aEntryModelId)
         {
@@ -147,7 +149,7 @@ namespace SnusPunch.Web.Clients.Snus
 
             try
             {
-                var sHttpClient = mHttpClientFactory.CreateClient(HttpClientEnum.Entry.ToString());
+                var sHttpClient = mHttpClientFactory.CreateClient(HttpClientEnum.EntryLike.ToString());
                 var sResponse = await sHttpClient.PostAsync($"LikeEntry/{aEntryModelId}", null);
 
                 if (!sResponse.IsSuccessStatusCode)
@@ -172,7 +174,7 @@ namespace SnusPunch.Web.Clients.Snus
 
             try
             {
-                var sHttpClient = mHttpClientFactory.CreateClient(HttpClientEnum.Entry.ToString());
+                var sHttpClient = mHttpClientFactory.CreateClient(HttpClientEnum.EntryLike.ToString());
                 var sResponse = await sHttpClient.DeleteAsync($"UnlikeEntry/{aEntryModelId}");
 
                 if (!sResponse.IsSuccessStatusCode)
@@ -197,7 +199,7 @@ namespace SnusPunch.Web.Clients.Snus
 
             try
             {
-                var sHttpClient = mHttpClientFactory.CreateClient(HttpClientEnum.Entry.ToString());
+                var sHttpClient = mHttpClientFactory.CreateClient(HttpClientEnum.EntryLike.ToString());
                 var sResponse = await sHttpClient.PostAsJsonAsync($"GetEntryLikesPaginated/{aEntryModelId}", aPaginationParameters);
 
                 if (!sResponse.IsSuccessStatusCode)
@@ -206,6 +208,109 @@ namespace SnusPunch.Web.Clients.Snus
                 }
 
                 sResultModel = await sResponse.Content.ReadFromJsonAsync<ResultModel<PaginationResponse<EntryLikeDto>>>();
+            }
+            catch (Exception aException)
+            {
+                sResultModel.Success = false;
+                sResultModel.AddExceptionError(aException);
+            }
+
+            return sResultModel;
+        }
+        #endregion
+
+
+        #region Comments
+        public async Task<ResultModel<PaginationResponse<EntryCommentDto>>> GetEntryCommentsPaginated(PaginationParameters aPaginationParameters, int aEntryCommentModelId)
+        {
+            ResultModel<PaginationResponse<EntryCommentDto>> sResultModel = new ResultModel<PaginationResponse<EntryCommentDto>>();
+
+            try
+            {
+                var sHttpClient = mHttpClientFactory.CreateClient(HttpClientEnum.EntryComment.ToString());
+                var sResponse = await sHttpClient.PostAsJsonAsync($"GetEntryCommentsPaginated/{aEntryCommentModelId}", aPaginationParameters);
+
+                if (!sResponse.IsSuccessStatusCode)
+                {
+                    throw new Exception("Non-success status code at GetEntryCommentsPaginated in EntryClient");
+                }
+
+                sResultModel = await sResponse.Content.ReadFromJsonAsync<ResultModel<PaginationResponse<EntryCommentDto>>>();
+            }
+            catch (Exception aException)
+            {
+                sResultModel.Success = false;
+                sResultModel.AddExceptionError(aException);
+            }
+
+            return sResultModel;
+        }
+
+        public async Task<ResultModel<EntryCommentDto>> AddEntryComment(AddEntryCommentDto aAddEntryCommentDto)
+        {
+            ResultModel<EntryCommentDto> sResultModel = new ResultModel<EntryCommentDto>();
+
+            try
+            {
+                var sHttpClient = mHttpClientFactory.CreateClient(HttpClientEnum.EntryComment.ToString());
+                var sResponse = await sHttpClient.PostAsJsonAsync("AddEntryComment", aAddEntryCommentDto);
+
+                if (!sResponse.IsSuccessStatusCode)
+                {
+                    throw new Exception("Non-success status code at AddEntryComment in EntryClient");
+                }
+
+                sResultModel = await sResponse.Content.ReadFromJsonAsync<ResultModel<EntryCommentDto>>();
+            }
+            catch (Exception aException)
+            {
+                sResultModel.Success = false;
+                sResultModel.AddExceptionError(aException);
+            }
+
+            return sResultModel;
+        }
+
+        public async Task<ResultModel> RemoveEntryComment(int aEntryCommentModelId)
+        {
+            ResultModel sResultModel = new ResultModel();
+
+            try
+            {
+                var sHttpClient = mHttpClientFactory.CreateClient(HttpClientEnum.EntryComment.ToString());
+                var sResponse = await sHttpClient.DeleteAsync($"RemoveEntryComment/{aEntryCommentModelId}");
+
+                if (!sResponse.IsSuccessStatusCode)
+                {
+                    throw new Exception("Non-success status code at RemoveEntry in EntryClient");
+                }
+
+                sResultModel = await sResponse.Content.ReadFromJsonAsync<ResultModel>();
+            }
+            catch (Exception aException)
+            {
+                sResultModel.Success = false;
+                sResultModel.AddExceptionError(aException);
+            }
+
+            return sResultModel;
+        }
+
+        public async Task<ResultModel> AdminRemoveEntryComment(int aEntryCommentModelId)
+        {
+            ResultModel sResultModel = new ResultModel();
+
+            try
+            {
+                var sHttpClient = mHttpClientFactory.CreateClient(HttpClientEnum.EntryComment.ToString());
+                var sResponse = await sHttpClient.DeleteAsync($"AdminRemoveEntryComment/{aEntryCommentModelId}");
+
+                if (!sResponse.IsSuccessStatusCode)
+                {
+                    throw new Exception("Non-success status code at AdminRemoveEntryComment in EntryClient");
+                }
+
+                sResultModel = await sResponse.Content.ReadFromJsonAsync<ResultModel>();
             }
             catch (Exception aException)
             {

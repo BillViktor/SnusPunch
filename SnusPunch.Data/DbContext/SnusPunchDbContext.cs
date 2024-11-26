@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using SnusPunch.Data.Models.Entry;
 using SnusPunch.Data.Models.Identity;
 using SnusPunch.Shared.Models.Snus;
+using SnusPunch.Shared.Models.Statistics;
 using System.Reflection.Emit;
 
 namespace SnusPunch.Data.DbContexts
@@ -13,12 +14,20 @@ namespace SnusPunch.Data.DbContexts
         public DbSet<EntryModel> Entries { get; set; }
         public DbSet<EntryLikeModel> EntryLikes { get; set; }
         public DbSet<EntryCommentModel> EntryComments { get; set; }
+        public DbSet<StatisticsTimePeriodResponseDto> StatisticsTimePeriod { get; set; }
 
         public SnusPunchDbContext(DbContextOptions<SnusPunchDbContext> aDbContextOptions) : base(aDbContextOptions) { }
 
         protected override void OnModelCreating(ModelBuilder aModelBuilder)
         {
             base.OnModelCreating(aModelBuilder);
+
+            //No table, used in a query
+            aModelBuilder.Entity<StatisticsTimePeriodResponseDto>(e =>
+            {
+                e.HasNoKey();
+                e.Metadata.SetIsTableExcludedFromMigrations(true);
+            });
 
             aModelBuilder.Entity<EntryCommentModel>(e =>
             {

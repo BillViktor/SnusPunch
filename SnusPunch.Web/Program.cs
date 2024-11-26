@@ -7,6 +7,7 @@ using SnusPunch.Web;
 using SnusPunch.Web.Clients;
 using SnusPunch.Web.Clients.Snus;
 using SnusPunch.Web.Identity;
+using SnusPunch.Web.ViewModels;
 using SnusPunch.Web.ViewModels.Snus;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
@@ -36,10 +37,15 @@ builder.Services.AddHttpClient(HttpClientEnum.Auth.ToString(), config => config.
 builder.Services.AddScoped<AuthClient>();
 
 builder.Services.AddHttpClient(HttpClientEnum.Entry.ToString(), config => config.BaseAddress = new Uri(sBaseUrl + "Entry/")).AddHttpMessageHandler<CookieHandler>();
+builder.Services.AddHttpClient(HttpClientEnum.EntryLike.ToString(), config => config.BaseAddress = new Uri(sBaseUrl + "EntryLike/")).AddHttpMessageHandler<CookieHandler>();
+builder.Services.AddHttpClient(HttpClientEnum.EntryComment.ToString(), config => config.BaseAddress = new Uri(sBaseUrl + "EntryComment/")).AddHttpMessageHandler<CookieHandler>();
 builder.Services.AddScoped<EntryClient>();
 
 builder.Services.AddHttpClient(HttpClientEnum.Snus.ToString(), config => config.BaseAddress = new Uri(sBaseUrl + "Snus/")).AddHttpMessageHandler<CookieHandler>();
 builder.Services.AddScoped<SnusClient>();
+
+builder.Services.AddHttpClient(HttpClientEnum.Statistics.ToString(), config => config.BaseAddress = new Uri(sBaseUrl + "Statistics/")).AddHttpMessageHandler<CookieHandler>();
+builder.Services.AddScoped<StatisticsClient>();
 
 builder.Services.AddHttpClient(HttpClientEnum.User.ToString(), config => config.BaseAddress = new Uri(sBaseUrl + "User/")).AddHttpMessageHandler<CookieHandler>();
 builder.Services.AddScoped<UserClient>();
@@ -47,8 +53,10 @@ builder.Services.AddScoped<UserClient>();
 
 #region ViewModels
 builder.Services.AddScoped<AuthViewModel>();
+builder.Services.AddScoped<BaseViewModel>();
 builder.Services.AddScoped<EntryViewModel>();
 builder.Services.AddScoped<SnusViewModel>();
+builder.Services.AddScoped<StatisticsViewModel>();
 builder.Services.AddScoped<UserViewModel>();
 #endregion
 

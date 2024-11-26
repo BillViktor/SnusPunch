@@ -5,8 +5,53 @@
 
 <PageTitle>SnusPunch - Statistik</PageTitle>
 
-<h2>Statistik</h2>
+<MessageComponent Errors="StatisticsViewModel.Errors" SuccessMessages="StatisticsViewModel.SuccessMessages" IsBusy="StatisticsViewModel.IsBusy"/>
 
-<p>
-    Hemsidan är just nu under konstruktion.
-</p>
+<div class="row align-items-center justify-content-between">
+    <h2>Statistik</h2>
+
+    <div class="row gap-1">
+        <select @onchange="async (e) => await OnIntervalChanged(e)">
+            <option value="@("Today")">Idag</option>
+            <option value="@("Last7")">Senaste 7 dagarna</option>
+            <option value="@("Last30")">Senaste 30 dagarna</option>
+            <option value="@("ThisWeek")">Denna vecka</option>
+            <option value="@("ThisMonth")">Denna månad</option>
+            <option value="@("Interval")">Datumintervall</option>
+        </select>
+        <button @onclick="async () => await Update()">Uppdatera</button>
+    </div>
+    
+</div>
+
+@if (mStatisticsTimePeriodResponseDto != null)
+{
+    <hr />
+
+    <h3>@mInterval @(mInterval != "Idag" ? $"{mStartDate.ToShortDateString()} till {mEndDate.ToShortDateString()}" : "")</h3>
+
+    <table class="mt-1">
+        <thead>
+            <tr>
+                <th>Antal snus (st)</th>
+                <th>Kostnad (SEK)</th>
+                <th>Nikotin (mg)</th>
+                <th>Snus/dag (st)</th>
+                <th>Kostnad/dag (SEK)</th>
+                <th>Nikotin/dag (mg)</th>
+                <th>Mest Snusade Snus</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>@mStatisticsTimePeriodResponseDto.SnusCount</td>
+                <td>@mStatisticsTimePeriodResponseDto.TotalCostInSek</td>
+                <td>@mStatisticsTimePeriodResponseDto.TotalNicotineInMg.ToString("0.00")</td>
+                <td>@mStatisticsTimePeriodResponseDto.AvgSnusCountPerDay</td>
+                <td>@mStatisticsTimePeriodResponseDto.AvgCostPerDayInSek.ToString("0.00")</td>
+                <td>@mStatisticsTimePeriodResponseDto.AvgNicotinePerDayInMg.ToString("0.00")</td>
+                <td>@(!string.IsNullOrEmpty(mStatisticsTimePeriodResponseDto.MostUsedSnus) ? $"{mStatisticsTimePeriodResponseDto.MostUsedSnus} ({(@mStatisticsTimePeriodResponseDto.MostUsedSnusCount)} st)" : "")</td>
+            </tr>
+        </tbody>
+    </table>
+}

@@ -11,6 +11,8 @@ namespace SnusPunch.Data.Models
         public string? SnusPunchUserModelId { get; set; }
         public SnusPunchUserModel? SnusPunchUserModel { get; set; }
 
+        public bool NotificationViewed { get; set; }
+
         //TODO
         //WIP
     }

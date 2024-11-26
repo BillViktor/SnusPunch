@@ -69,19 +69,9 @@ namespace SnusPunch.Web.Pages
             }
         }
 
-        private void GetFavouriteSnus()
-        {
-            if (AuthViewModel.UserInfoModel?.FavouriteSnusId != null && !string.IsNullOrEmpty(AuthViewModel.UserInfoModel?.FavouriteSnusName))
-            {
-                mChosenSnus = new SnusDto
-                {
-                    Id = (int)AuthViewModel.UserInfoModel.FavouriteSnusId,
-                    Name = AuthViewModel.UserInfoModel.FavouriteSnusName,
-                };
-            }
-        }
+        
 
-        #region Actions
+        #region Images
         private async void LoadImage(InputFileChangeEventArgs aInputFileChangeEventArgs)
         {
             try
@@ -127,10 +117,12 @@ namespace SnusPunch.Web.Pages
             mBrowserFile = null;
             mInputFileId = Guid.NewGuid();
         }
+        #endregion
 
-        public async Task AddEntry()
+        #region CRUD
+        private async Task AddEntry()
         {
-            if(mChosenSnus?.Id == null)
+            if (mChosenSnus?.Id == null)
             {
                 EntryViewModel.AddError("Du har inte valt något snus!");
                 return;
@@ -138,7 +130,7 @@ namespace SnusPunch.Web.Pages
 
             var sResult = await EntryViewModel.AddEntry(mChosenSnus.Id, mDescription, mBrowserFile);
 
-            if(sResult != null)
+            if (sResult != null)
             {
                 mDescription = "";
 
@@ -152,17 +144,17 @@ namespace SnusPunch.Web.Pages
             }
         }
 
-        public async Task RemoveEntry(EntryDto aEntryDto)
+        private async Task RemoveEntry(EntryDto aEntryDto)
         {
             if (!await ConfirmDeleteEntry()) return;
 
-            if(await EntryViewModel.RemoveEntry(aEntryDto.Id))
+            if (await EntryViewModel.RemoveEntry(aEntryDto.Id))
             {
                 await GetEntries();
             }
         }
 
-        public async Task AdminRemoveEntry(EntryDto aEntryDto)
+        private async Task AdminRemoveEntry(EntryDto aEntryDto)
         {
             if (!await ConfirmDeleteEntry()) return;
 
@@ -192,7 +184,53 @@ namespace SnusPunch.Web.Pages
 
             return false;
         }
+        #endregion
 
+
+        #region Likes
+        private async Task ToggleLike(EntryDto aEntryDto)
+        {
+            if (aEntryDto.LikedByUser)
+            {
+                if (await EntryViewModel.UnlikeEntry(aEntryDto.Id))
+                {
+                    aEntryDto.Likes -= 1;
+                    aEntryDto.LikedByUser = false;
+                }
+            }
+            else
+            {
+                if (await EntryViewModel.LikeEntry(aEntryDto.Id))
+                {
+                    aEntryDto.Likes += 1;
+                    aEntryDto.LikedByUser = true;
+                }
+            }
+        }
+
+        private void ShowLikes(EntryDto aEntryDto)
+        {
+            if (aEntryDto.Likes == 0)
+            {
+                EntryViewModel.AddError("Inlägget har inga likes :(");
+                return;
+            }
+
+            var sOptions = new ModalOptions
+            {
+                DisableBackgroundCancel = false,
+                Size = ModalSize.Medium,
+                Position = ModalPosition.Middle
+            };
+
+            var sParametes = new ModalParameters { { "EntryModelId", aEntryDto.Id } };
+
+            Modal.Show<ShowEntryLikesComponent>("Likes", sParametes, sOptions);
+        }
+        #endregion
+
+
+        #region Misc
         private async Task ChangeSnus()
         {
             var sOptions = new ModalOptions
@@ -217,50 +255,39 @@ namespace SnusPunch.Web.Pages
             }
         }
 
-        private async Task ToggleLike(EntryDto aEntryDto)
+        private async Task Comment(EntryDto aEntryDto)
         {
-            if(aEntryDto.LikedByUser)
-            {
-                if(await EntryViewModel.UnlikeEntry(aEntryDto.Id))
-                {
-                    aEntryDto.Likes -= 1;
-                    aEntryDto.LikedByUser = false;
-                }
-            }
-            else
-            {
-                if (await EntryViewModel.LikeEntry(aEntryDto.Id))
-                {
-                    aEntryDto.Likes += 1;
-                    aEntryDto.LikedByUser = true;
-                }
-            }
-        }
-
-        private void ShowLikes(EntryDto aEntryDto)
-        {
-            if(aEntryDto.Likes == 0)
-            {
-                EntryViewModel.AddError("Inlägget har inga likes :(");
-                return;
-            }
-
             var sOptions = new ModalOptions
             {
-                DisableBackgroundCancel = false,
-                Size = ModalSize.Medium,
+                DisableBackgroundCancel = true,
+                Size = ModalSize.Custom,
+                SizeCustomClass = "modal-website-width",
                 Position = ModalPosition.Middle
             };
 
-            var sParametes = new ModalParameters { { "EntryModelId", aEntryDto.Id } };
+            var sParametes = new ModalParameters { { "EntryDto", aEntryDto} };
 
-            Modal.Show<ShowEntryLikesComponent>("Likes", sParametes, sOptions);
+            var sModal = Modal.Show<ShowEntryComponent>($"{aEntryDto.UserName}'s inlägg", sParametes, sOptions);
+
+            var sResult = await sModal.Result;
+
+            //Inlägg raderat
+            if (!sResult.Cancelled)
+            {
+                await GetEntries();
+            }
         }
 
-        private async Task Comment(EntryDto aEntryDto)
+        private void GetFavouriteSnus()
         {
-            EntryViewModel.AddError("Not implemented yet! :(");
-            await Task.Delay(0);
+            if (AuthViewModel.UserInfoModel?.FavouriteSnusId != null && !string.IsNullOrEmpty(AuthViewModel.UserInfoModel?.FavouriteSnusName))
+            {
+                mChosenSnus = new SnusDto
+                {
+                    Id = (int)AuthViewModel.UserInfoModel.FavouriteSnusId,
+                    Name = AuthViewModel.UserInfoModel.FavouriteSnusName,
+                };
+            }
         }
 
         private void ShowProfilePicture(EntryDto aEntryDto)

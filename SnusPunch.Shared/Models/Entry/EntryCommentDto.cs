@@ -1,18 +1,12 @@
 ﻿namespace SnusPunch.Shared.Models.Entry
 {
-    public class EntryDto
+    public class EntryCommentDto
     {
         public int Id { get; set; }
-        public string? PhotoUrl { get; set; }
-        public string? Description { get; set; }
-        public string SnusName { get; set; }
+        public string Comment { get; set; }
         public string UserName { get; set; }
-        public string? UserProfilePictureUrl { get; set; }
-        public int Likes { get; set; }
-        public int CommentCount { get; set; }
-        public DateTime CreateDate { get; set; } 
-        public bool LikedByUser { get; set; }
-        public List<EntryCommentDto> Comments { get; set; } = new List<EntryCommentDto>();
+        public string ProfilePictureUrl { get; set; }
+        public DateTime CreateDate { get; set; }
 
         public string GetTimeAgo()
         {
@@ -47,16 +41,6 @@
                 var sYears = (int)(sTimeDifference.TotalDays / 365);
                 return $"{sYears} {(sYears == 1 ? "år" : "år")} sedan";
             }
-        }
-
-        public string GetLikesString()
-        {
-            return Likes == 1 ? "1 like" : $"{Likes} likes";
-        }
-
-        public string GetCommentsString()
-        {
-            return CommentCount == 1 ? "1 kommentar" : $"{CommentCount} kommentarer";
         }
     }
 }

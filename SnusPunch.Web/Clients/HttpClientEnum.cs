@@ -4,7 +4,10 @@
     {
         Auth,
         Entry,
+        EntryLike,
+        EntryComment,
         Snus,
+        Statistics,
         User
     }
 }

@@ -1,0 +1,45 @@
+﻿@using SnusPunch.Shared.Models.Statistics
+@using SnusPunch.Web.ViewModels
+
+<MessageComponent Errors="BaseViewModel.Errors" IsBusy="BaseViewModel.IsBusy" SuccessMessages="BaseViewModel.SuccessMessages"/> 
+
+<div>
+    <p>
+        <label for="startDate">Startdatum</label>
+        <input @bind="mStatisticsTimePeriodRequestDto.StartDate" id="startDate" type="datetime" />
+    </p>
+
+    <p>
+        <label for="endDate">Slutdatum</label>
+        <input @bind="mStatisticsTimePeriodRequestDto.EndDate" id="endDate" type="datetime" />
+    </p>
+
+    <div class="row gap-1 mt-1 justify-content-end">
+        <button class="button button-warning" @onclick="async () => await Close()">Avbryt</button>
+        <button class="button button-danger" @onclick="async () => await Confirm()">Bekräfta</button>
+    </div>
+</div>
+
+@code {
+    [CascadingParameter] BlazoredModalInstance BlazoredModal { get; set; } = default!;
+    [Inject] BaseViewModel BaseViewModel { get; set; }
+
+    private StatisticsTimePeriodRequestDto mStatisticsTimePeriodRequestDto = new StatisticsTimePeriodRequestDto
+    {
+        StartDate = DateTime.Today,
+        EndDate = DateTime.Now
+    };
+
+    private async Task Confirm()
+    {
+        if(mStatisticsTimePeriodRequestDto.StartDate >= mStatisticsTimePeriodRequestDto.EndDate)
+        {
+            BaseViewModel.AddError("Startdatum kan inte vara större än slutdatum.");
+            return;
+        }
+
+        await BlazoredModal.CloseAsync(ModalResult.Ok(mStatisticsTimePeriodRequestDto));
+    }
+
+    private async Task Close() => await BlazoredModal.CancelAsync();
+}

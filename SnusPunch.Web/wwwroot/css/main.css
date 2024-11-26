@@ -157,6 +157,23 @@ textarea {
     padding: 1rem;
 }
 
+/* Comment */
+.comment-card {
+    background-color: var(--foreground-color);
+    padding: 0.5rem;
+}
+
+.comment-text {
+    margin: 0.25rem 0;
+}
+
+.comment-input {
+    position: sticky;
+    bottom: 0;
+    background-color: var(--background-color);
+    padding-top: 0.5rem;
+}
+
 /* Paginering */
 .pagination-buttons {
     display: flex;
@@ -354,6 +371,10 @@ a {
 
 .modal-large {
     width: 50rem;
+}
+
+.modal-website-width {
+    width: calc(var(--website-width) - 4rem);
 }
 
 /* Buttons */
@@ -571,6 +592,10 @@ button:hover {
 
 .blazor-error-boundary::after {
     content: "An error has occurred."
+}
+
+p.blazored-toast-message {
+    margin: 0 !important;
 }
 
 footer {

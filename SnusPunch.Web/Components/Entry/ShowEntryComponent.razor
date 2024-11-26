@@ -1,0 +1,362 @@
+﻿@using SnusPunch.Shared.Models.Entry
+@using SnusPunch.Shared.Models.Entry.Likes
+@using SnusPunch.Shared.Models.Pagination
+@using SnusPunch.Shared.Models.Snus
+@using SnusPunch.Web.ViewModels.Snus
+
+<MessageComponent Errors="EntryViewModel.Errors" SuccessMessages="EntryViewModel.SuccessMessages" IsBusy="EntryViewModel.IsBusy" />
+
+@if(EntryDto != null)
+{
+    <div style="max-height: calc(80vh - 1px); overflow-y: auto">
+        <div class="row justify-content-between align-items-start">
+            <div class="row align-items-center gap-1">
+                <button @onclick="() => ShowProfilePicture(EntryDto.UserName, EntryDto.UserProfilePictureUrl)" class="profile-picture-button">
+                    <img class="profile-picture-round" src="@EntryDto.UserProfilePictureUrl" />
+                </button>
+
+                <div>
+                    <p class="mn">
+                        @EntryDto.UserName tog en <a href="Snus/@EntryDto.SnusName">@EntryDto.SnusName</a>
+                    </p>
+                    <span title="@EntryDto.CreateDate">
+                        @EntryDto.GetTimeAgo()
+                    </span>
+                </div>
+            </div>
+
+
+            <AuthorizeView>
+                @if (context.User.IsInRole("Admin"))
+                {
+                    <button title="Radera inlägg" class="button-icon">
+                        <span @onclick="async () => await AdminRemoveEntry(EntryDto)" class="material-symbols--delete" />
+                    </button>
+                }
+                else
+                {
+                    if (context.User.Identity.Name == EntryDto.UserName)
+                    {
+                        <button title="Radera inlägg" class="button-icon">
+                            <span @onclick="async () => await RemoveEntry(EntryDto)" class="material-symbols--delete" />
+                        </button>
+                    }
+                }
+            </AuthorizeView>
+        </div>
+
+        @if (!string.IsNullOrEmpty(EntryDto.Description))
+        {
+            <p>
+                @EntryDto.Description
+            </p>
+        }
+
+        @if (!string.IsNullOrEmpty(EntryDto.PhotoUrl))
+        {
+            <p>
+                <img class="full-width" src="@EntryDto.PhotoUrl" />
+            </p>
+        }
+
+        <div class="row mt-1 justify-content-between">
+            <button @onclick="() => ShowLikes(EntryDto)" class="text-button">
+                <span title="Klicka för att se vilka som gillar inlägget!">@EntryDto.GetLikesString()</span>
+            </button>
+            <button class="text-button">
+                <span title="Klicka för att se kommentarer!">@EntryDto.GetCommentsString()</span>
+            </button>
+        </div>
+
+        <hr />
+
+        <div class="row gap-1">
+            <button @onclick="async () => await ToggleLike(EntryDto)" class="full-width">@(EntryDto.LikedByUser ? "Du gillar detta" : "Gilla")</button>
+            <button @onclick="@(async () => await JSRuntime.InvokeVoidAsync("focusElement", "commentInput"))" class="full-width">Kommentera</button>
+        </div>
+
+        <hr/>
+        @if (EntryDto.Comments.Count > 0)
+        {
+            <select @onchange="async (e) => await OnCommentSortChange(e)">
+                <option value="Newest">Senaste</option>
+                <option value="Oldest">Äldsta</option>
+                @* <option value="Popular">Populäraste</option> *@
+            </select>
+
+            foreach(var sComment in EntryDto.Comments)
+            {
+                <div class="comment-card mt-1">
+                    <div class="row justify-content-between align-items-start">
+                        <div class="row align-items-center gap-1">
+                            <button @onclick="() => ShowProfilePicture(sComment.UserName, sComment.ProfilePictureUrl)" class="profile-picture-button">
+                                <img class="profile-picture-round" src="@sComment.ProfilePictureUrl" />
+                            </button>
+
+                            <div>
+                                <p class="mn">
+                                    @sComment.UserName
+                                </p>
+                                <span title="@sComment.CreateDate">
+                                    @sComment.GetTimeAgo()
+                                </span>
+                            </div>
+                        </div>
+
+
+                        <AuthorizeView>
+                            @if (context.User.IsInRole("Admin"))
+                            {
+                                <button title="Radera inlägg" class="button-icon">
+                                    <span @onclick="async () => await AdminRemoveEntryComment(sComment)" class="material-symbols--delete" />
+                                </button>
+                            }
+                            else
+                            {
+                                if (context.User.Identity.Name == sComment.UserName)
+                                {
+                                    <button title="Radera inlägg" class="button-icon">
+                                        <span @onclick="async () => await RemoveEntryComment(sComment)" class="material-symbols--delete" />
+                                    </button>
+                                }
+                            }
+                        </AuthorizeView>
+                    </div>
+
+                    <p class="comment-text">
+                        @sComment.Comment
+                    </p>
+                </div>
+            }
+
+            @if ((mPaginationMetaData?.TotalCount ?? 0) > EntryDto.Comments.Count)
+            {
+                <button @onclick="async () => await FetchMoreComments()" class="text-button mt-1">Visa fler kommentarer</button>
+            }
+        }
+
+        <div class="comment-input">
+            <textarea @bind:event="oninput" @bind="mComment" class="full-width" id="commentInput" placeholder="Skriv en kommentar..." rows="2" />
+            <button disabled="@(mComment.Length == 0)" @onclick="async () => await AddEntryComment()" class="full-width">Skicka kommentar</button>
+        </div>
+    </div>
+}
+
+@code {
+    [CascadingParameter] BlazoredModalInstance BlazoredModal { get; set; } = default!;
+    [CascadingParameter] public IModalService Modal { get; set; } = default!;
+    [Parameter] public EntryDto EntryDto { get; set; }
+    [Inject] EntryViewModel EntryViewModel { get; set; }
+    [Inject] IJSRuntime JSRuntime { get; set; }
+
+    private string mComment = "";
+    private PaginationMetaData mPaginationMetaData = null;
+    private List<SnusModel> mSnusList = new List<SnusModel>();
+    private PaginationParameters mPaginationParameters = new PaginationParameters
+    {
+        SortPropertyName = "CreateDate",
+        SortOrder = SortOrderEnum.Descending,
+        PageSize = 5
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
+        await RefreshComments();
+    }
+
+    #region Comments
+    private async Task OnCommentSortChange(ChangeEventArgs aChangeEventArgs)
+    {
+        var sSortProperty = aChangeEventArgs.Value.ToString();
+
+        switch(sSortProperty)
+        {
+            // case "Popular":
+            //     mPaginationParameters.SortPropertyName = "Likes.Count";
+            //     mPaginationParameters.SortOrder = SortOrderEnum.Descending;
+            //     break;
+            case "Oldest":
+                mPaginationParameters.SortPropertyName = "CreateDate";
+                mPaginationParameters.SortOrder = SortOrderEnum.Ascending;
+                break;
+            case "Newest":
+            default:
+                mPaginationParameters.SortPropertyName = "CreateDate";
+                mPaginationParameters.SortOrder = SortOrderEnum.Descending;
+                break;
+        }
+
+        await RefreshComments();
+    }
+
+    private async Task RefreshComments()
+    {
+        mPaginationParameters.PageNumber = 1;
+        var sComments = await EntryViewModel.GetEntryComments(mPaginationParameters, EntryDto.Id);
+        EntryDto.Comments = sComments.Items;
+        mPaginationMetaData = sComments.PaginationMetaData;
+    }
+
+    private async Task FetchMoreComments()
+    {
+        mPaginationParameters.PageNumber++;
+
+        var sComments = await EntryViewModel.GetEntryComments(mPaginationParameters, EntryDto.Id);
+        mPaginationMetaData = sComments.PaginationMetaData;
+
+        EntryDto.Comments.AddRange(sComments.Items);
+        EntryDto.Comments = EntryDto.Comments.DistinctBy(x => x.Id).ToList();
+
+        StateHasChanged();
+    }
+
+    private async Task AddEntryComment()
+    {
+        if(string.IsNullOrEmpty(mComment))
+        {
+            EntryViewModel.AddError("Lite tråkigt att skicka en tom kommentar?");
+            return;
+        }
+
+        var sResult = await EntryViewModel.AddEntryComment(EntryDto.Id, mComment);
+
+        if (sResult != null)
+        {
+            mComment = "";
+
+            //Vi lägger kommentaren först, och skrollar till toppen sen
+            EntryDto.Comments.Insert(0, sResult);
+            EntryDto.CommentCount++;
+            await JSRuntime.InvokeVoidAsync("backToTop");
+        }
+
+        StateHasChanged();
+    }
+
+    private async Task RemoveEntryComment(EntryCommentDto aEntryCommentDto)
+    {
+        if (!await ConfirmDeleteEntry()) return;
+
+        if (await EntryViewModel.RemoveEntryComment(aEntryCommentDto.Id))
+        {
+            EntryDto.Comments.Remove(aEntryCommentDto);
+            EntryDto.CommentCount--;
+        }
+
+        StateHasChanged();
+    }
+
+    private async Task AdminRemoveEntryComment(EntryCommentDto aEntryCommentDto)
+    {
+        if (!await ConfirmDeleteEntry()) return;
+
+        if (await EntryViewModel.AdminRemoveEntryComment(aEntryCommentDto.Id))
+        {
+            EntryDto.Comments.Remove(aEntryCommentDto);
+            EntryDto.CommentCount--;
+        }
+
+        StateHasChanged();
+    }
+    #endregion
+
+
+    #region RemoveEntry
+    private async Task RemoveEntry(EntryDto aEntryDto)
+    {
+        if (!await ConfirmDeleteEntry()) return;
+
+        if (await EntryViewModel.RemoveEntry(aEntryDto.Id))
+        {
+            await BlazoredModal.CloseAsync();
+        }
+    }
+
+    private async Task AdminRemoveEntry(EntryDto aEntryDto)
+    {
+        if (!await ConfirmDeleteEntry()) return;
+
+        if (await EntryViewModel.AdminRemoveEntry(aEntryDto.Id))
+        {
+            await BlazoredModal.CloseAsync();
+        }
+    }
+
+    private async Task<bool> ConfirmDeleteEntry()
+    {
+        var sOptions = new ModalOptions
+            {
+                DisableBackgroundCancel = true,
+                Size = ModalSize.Custom,
+                SizeCustomClass = "modal-large",
+                Position = ModalPosition.Middle
+            };
+        var sParameters = new ModalParameters { { "Message", $"Är du säker på att du vill radera detta inlägg? Det går inte att ångra!" } };
+        var sModal = Modal.Show<ConfirmationComponent>("Bekräfta borttagning", sParameters, sOptions);
+        var sResult = await sModal.Result;
+
+        if (!sResult.Cancelled)
+        {
+            return true;
+        }
+
+        return false;
+    }
+    #endregion
+
+
+    #region Likes
+    private async Task ToggleLike(EntryDto aEntryDto)
+    {
+        if (aEntryDto.LikedByUser)
+        {
+            if (await EntryViewModel.UnlikeEntry(aEntryDto.Id))
+            {
+                aEntryDto.Likes--;
+                aEntryDto.LikedByUser = false;
+            }
+        }
+        else
+        {
+            if (await EntryViewModel.LikeEntry(aEntryDto.Id))
+            {
+                aEntryDto.Likes++;
+                aEntryDto.LikedByUser = true;
+            }
+        }
+
+        StateHasChanged();
+    }
+
+    private void ShowLikes(EntryDto aEntryDto)
+    {
+        if (aEntryDto.Likes == 0)
+        {
+            EntryViewModel.AddError("Inlägget har inga likes :(");
+            return;
+        }
+
+        var sOptions = new ModalOptions
+            {
+                DisableBackgroundCancel = false,
+                Size = ModalSize.Medium,
+                Position = ModalPosition.Middle
+            };
+
+        var sParametes = new ModalParameters { { "EntryModelId", aEntryDto.Id } };
+
+        Modal.Show<ShowEntryLikesComponent>("Likes", sParametes, sOptions);
+    }
+    #endregion
+
+
+    #region Misc
+    private void ShowProfilePicture(string aUserName, string aProfilePictureUrl)
+    {
+        var sParameters = new ModalParameters { { "ProfilePictureUrl", aProfilePictureUrl } };
+        var sOptions = new ModalOptions { Size = ModalSize.Automatic, Position = ModalPosition.Middle };
+
+        Modal.Show<ProfilePictureComponent>($"{aUserName}'s Profilbild", sParameters, sOptions);
+    }
+    #endregion
+}

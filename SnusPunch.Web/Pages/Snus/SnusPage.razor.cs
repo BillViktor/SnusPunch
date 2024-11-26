@@ -1,12 +1,10 @@
 ﻿using Blazored.Modal;
 using Blazored.Modal.Services;
 using Microsoft.AspNetCore.Components;
-using SnusPunch.Shared.Models.Auth.Email;
 using SnusPunch.Shared.Models.Errors;
 using SnusPunch.Shared.Models.Pagination;
 using SnusPunch.Shared.Models.Snus;
 using SnusPunch.Web.Components;
-using SnusPunch.Web.Identity;
 using SnusPunch.Web.Pages.Snus.Components;
 using SnusPunch.Web.ViewModels.Snus;
 
