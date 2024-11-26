@@ -70,7 +70,7 @@
 
         <hr />
 
-        <div class="row gap-1">
+        <div class="row gap-05">
             <button @onclick="async () => await ToggleLike(EntryDto)" class="full-width">@(EntryDto.LikedByUser ? "Du gillar detta" : "Gilla")</button>
             <button @onclick="@(async () => await JSRuntime.InvokeVoidAsync("focusElement", "commentInput"))" class="full-width">Kommentera</button>
         </div>
