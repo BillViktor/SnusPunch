@@ -1,0 +1,115 @@
+﻿@using SnusPunch.Shared.Models.Entry
+@using SnusPunch.Web.Components.Entry
+@using SnusPunch.Web.ViewModels.Snus
+
+<div class="row mt-1 gap-05">
+    <button @onclick="async () => await OnShowProfilePicture.InvokeAsync()" class="profile-picture-button">
+        <img class="profile-picture-round" src="@Comment.ProfilePictureUrl" />
+    </button>
+
+    <div class="full-width">
+        <div class="row align-items-center">
+            <div class="comment-card">
+                <p class="mn">@Comment.UserName</p>
+                <p class="comment-text">@Comment.Comment</p>
+            </div>
+
+            <AuthorizeView>
+                @if (context.User.IsInRole("Admin") || context.User.Identity.Name == Comment.UserName)
+                {
+                    <button title="Radera kommentar" class="button-icon">
+                        <span @onclick="async () => await OnRemove.InvokeAsync(Comment)" class="material-symbols--delete" />
+                    </button>
+                }
+                else
+                {
+                    if (context.User.Identity.Name == Comment.UserName)
+                    {
+                        <button title="Radera inlägg" class="button-icon">
+                            <span @onclick="async () => await OnAdminRemove.InvokeAsync()" class="material-symbols--delete" />
+                        </button>
+                    }
+                }
+            </AuthorizeView>
+        </div>
+
+        <div class="row gap-05 align-items-center">
+            <span title="@Comment.CreateDate">@Comment.GetTimeAgo()</span>
+            <button @onclick="async () => await OnLike.InvokeAsync(Comment)" class="text-button">
+                <span class="@(Comment.LikedByUser ? "comment-liked" : "")">Gilla</span>
+            </button>
+            <button @onclick="async () => await OnReply.InvokeAsync(Comment)" class="text-button">
+                <span>Svara</span>
+            </button>
+            <button @onclick="() => ShowLikes(Comment)" class="text-button">
+                <span title="Klicka för att se vilka som gillar kommentaren!">@Comment.GetLikesString()</span>
+            </button>
+        </div>
+
+        @if (Comment.ReplyCount > Comment.Replies.Count)
+        {
+            <button @onclick="async () => await FetchReplies(Comment)" class="text-button mt-1">
+                @(Comment.Replies.Count == 0 ? $"{Comment.ReplyCount} svar" : "Visa fler svar")
+            </button>
+        }
+
+        @if (Comment.Replies.Count > 0)
+        {
+            @foreach (var sReply in Comment.Replies)
+            {
+                <div class="nested-comment ml-1">
+                    <CommentComponent Comment="sReply"
+                                      OnLike="OnLike"
+                                      OnRemove="OnRemove"
+                                      OnAdminRemove="OnAdminRemove"
+                                      OnReply="OnReply"
+                                      OnShowProfilePicture="OnShowProfilePicture" />
+                </div>
+            }
+        }
+    </div>
+</div>
+
+@code {
+    [CascadingParameter] public IModalService Modal { get; set; } = default!;
+    [Parameter] public EntryCommentDto Comment { get; set; }
+    [Parameter] public EventCallback<EntryCommentDto> OnReply { get; set; }
+    [Parameter] public EventCallback<EntryCommentDto> OnLike { get; set; }
+    [Parameter] public EventCallback<EntryCommentDto> OnRemove { get; set; }
+    [Parameter] public EventCallback<EntryCommentDto> OnAdminRemove { get; set; }
+    [Parameter] public EventCallback<EntryCommentDto> OnShowProfilePicture { get; set; }
+
+    [Inject] EntryViewModel EntryViewModel { get; set; }
+
+    private void ShowLikes(EntryCommentDto aEntryCommentDto)
+    {
+        if (aEntryCommentDto.Likes == 0)
+        {
+            EntryViewModel.AddError("Kommentaren har inga likes :(");
+            return;
+        }
+
+        var sOptions = new ModalOptions
+            {
+                DisableBackgroundCancel = false,
+                Size = ModalSize.Medium,
+                Position = ModalPosition.Middle
+            };
+
+        var sParametes = new ModalParameters { { "EntryModelId", aEntryCommentDto.Id }, { "Comment", true } };
+
+        Modal.Show<ShowEntryLikesComponent>("Likes", sParametes, sOptions);
+    }
+
+    private async Task FetchReplies(EntryCommentDto aEntryCommentDto)
+    {
+        var sReplies = await EntryViewModel.GetEntryCommentRepliesPaginated(aEntryCommentDto.ReplyPaginationParemeters, aEntryCommentDto.Id);
+        aEntryCommentDto.ReplyPaginationMetaData = sReplies.PaginationMetaData;
+
+        aEntryCommentDto.Replies.AddRange(sReplies.Items);
+        aEntryCommentDto.Replies = aEntryCommentDto.Replies.DistinctBy(x => x.Id).ToList();
+
+        aEntryCommentDto.ReplyPaginationParemeters.PageNumber++;
+        StateHasChanged();
+    }
+}

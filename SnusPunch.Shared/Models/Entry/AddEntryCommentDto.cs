@@ -3,6 +3,7 @@
     public class AddEntryCommentDto
     {
         public int EntryModelId { get; set; }
-        public string Comment { get; set; }
+        public string Comment { get; set; } = "";
+        public int? ParentId { get; set; } = null;
     }
 }

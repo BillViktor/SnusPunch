@@ -27,7 +27,7 @@ namespace SnusPunch.Services.Entry
             mUserManager = aUserManager;
         }
 
-        public async Task<ResultModel<PaginationResponse<EntryCommentDto>>> GetEntryCommentsPaginated(PaginationParameters aPaginationParameters, int aEntryCommentModelId, ClaimsPrincipal aClaimsPrincipal)
+        public async Task<ResultModel<PaginationResponse<EntryCommentDto>>> GetEntryCommentsPaginated(PaginationParameters aPaginationParameters, int aEntryModelId, ClaimsPrincipal aClaimsPrincipal)
         {
             ResultModel<PaginationResponse<EntryCommentDto>> sResultModel = new ResultModel<PaginationResponse<EntryCommentDto>>();
 
@@ -42,11 +42,38 @@ namespace SnusPunch.Services.Entry
                     return sResultModel;
                 }
 
-                sResultModel.ResultObject = await mSnusPunchRepository.GetEntryCommentsPaginated(aPaginationParameters, aEntryCommentModelId, sUser.Id);
+                sResultModel.ResultObject = await mSnusPunchRepository.GetEntryCommentsPaginated(aPaginationParameters, aEntryModelId, sUser.Id);
             }
             catch (Exception aException)
             {
                 mLogger.LogError(aException, "Exception at GetEntryCommentsPaginated in EntryCommentService");
+                sResultModel.Success = false;
+                sResultModel.AddExceptionError(aException);
+            }
+
+            return sResultModel;
+        }
+
+        public async Task<ResultModel<PaginationResponse<EntryCommentDto>>> GetEntryCommentRepliesPaginated(PaginationParameters aPaginationParameters, int aEntryCommentModelId, ClaimsPrincipal aClaimsPrincipal)
+        {
+            ResultModel<PaginationResponse<EntryCommentDto>> sResultModel = new ResultModel<PaginationResponse<EntryCommentDto>>();
+
+            try
+            {
+                var sUser = await mUserManager.GetUserAsync(aClaimsPrincipal);
+
+                if (sUser == null)
+                {
+                    sResultModel.Success = false;
+                    sResultModel.AddError("Användaren hittades ej.");
+                    return sResultModel;
+                }
+
+                sResultModel.ResultObject = await mSnusPunchRepository.GetEntryCommentRepliesPaginated(aPaginationParameters, aEntryCommentModelId, sUser.Id);
+            }
+            catch (Exception aException)
+            {
+                mLogger.LogError(aException, "Exception at GetEntryCommentRepliesPaginated in EntryCommentService");
                 sResultModel.Success = false;
                 sResultModel.AddExceptionError(aException);
             }
@@ -74,6 +101,7 @@ namespace SnusPunch.Services.Entry
                     EntryId = aAddEntryCommentDto.EntryModelId,
                     SnusPunchUserModelId = sUser.Id,
                     Comment = aAddEntryCommentDto.Comment,
+                    ParentCommentId = aAddEntryCommentDto.ParentId
                 };
 
                 sResultModel.ResultObject = await mSnusPunchRepository.AddEntryComment(sEntryCommentModel);

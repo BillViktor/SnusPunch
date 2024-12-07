@@ -221,18 +221,43 @@ namespace SnusPunch.Web.Clients.Snus
 
 
         #region Comments
-        public async Task<ResultModel<PaginationResponse<EntryCommentDto>>> GetEntryCommentsPaginated(PaginationParameters aPaginationParameters, int aEntryCommentModelId)
+        public async Task<ResultModel<PaginationResponse<EntryCommentDto>>> GetEntryCommentsPaginated(PaginationParameters aPaginationParameters, int aEntryModelId)
         {
             ResultModel<PaginationResponse<EntryCommentDto>> sResultModel = new ResultModel<PaginationResponse<EntryCommentDto>>();
 
             try
             {
                 var sHttpClient = mHttpClientFactory.CreateClient(HttpClientEnum.EntryComment.ToString());
-                var sResponse = await sHttpClient.PostAsJsonAsync($"GetEntryCommentsPaginated/{aEntryCommentModelId}", aPaginationParameters);
+                var sResponse = await sHttpClient.PostAsJsonAsync($"GetEntryCommentsPaginated/{aEntryModelId}", aPaginationParameters);
 
                 if (!sResponse.IsSuccessStatusCode)
                 {
                     throw new Exception("Non-success status code at GetEntryCommentsPaginated in EntryClient");
+                }
+
+                sResultModel = await sResponse.Content.ReadFromJsonAsync<ResultModel<PaginationResponse<EntryCommentDto>>>();
+            }
+            catch (Exception aException)
+            {
+                sResultModel.Success = false;
+                sResultModel.AddExceptionError(aException);
+            }
+
+            return sResultModel;
+        }
+
+        public async Task<ResultModel<PaginationResponse<EntryCommentDto>>> GetEntryCommentRepliesPaginated(PaginationParameters aPaginationParameters, int aEntryCommentModelId)
+        {
+            ResultModel<PaginationResponse<EntryCommentDto>> sResultModel = new ResultModel<PaginationResponse<EntryCommentDto>>();
+
+            try
+            {
+                var sHttpClient = mHttpClientFactory.CreateClient(HttpClientEnum.EntryComment.ToString());
+                var sResponse = await sHttpClient.PostAsJsonAsync($"GetEntryCommentRepliesPaginated/{aEntryCommentModelId}", aPaginationParameters);
+
+                if (!sResponse.IsSuccessStatusCode)
+                {
+                    throw new Exception("Non-success status code at GetEntryCommentRepliesPaginated in EntryClient");
                 }
 
                 sResultModel = await sResponse.Content.ReadFromJsonAsync<ResultModel<PaginationResponse<EntryCommentDto>>>();

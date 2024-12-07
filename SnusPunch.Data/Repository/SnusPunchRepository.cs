@@ -10,6 +10,7 @@ using SnusPunch.Shared.Models.Entry.Likes;
 using SnusPunch.Shared.Models.Pagination;
 using SnusPunch.Shared.Models.Snus;
 using SnusPunch.Shared.Models.Statistics;
+using System.Xml.Linq;
 
 namespace SnusPunch.Data.Repository
 {
@@ -227,6 +228,8 @@ namespace SnusPunch.Data.Repository
 
         public async Task RemoveEntryComment(EntryCommentModel aEntryCommentModel)
         {
+            var sReplies = await mSnusPunchDbContext.EntryComments.Where(x => x.ParentCommentId == aEntryCommentModel.Id).ToListAsync();
+            mSnusPunchDbContext.RemoveRange(sReplies);
             mSnusPunchDbContext.Remove(aEntryCommentModel);
             await mSnusPunchDbContext.SaveChangesAsync();
         }
@@ -246,6 +249,7 @@ namespace SnusPunch.Data.Repository
             return new EntryCommentDto
             {
                 Id = sComment.Id,
+                ParentId = sComment.ParentCommentId,
                 CreateDate = sComment.CreateDate,
                 Comment = sComment.Comment,
                 UserName = sComment.SnusPunchUserModel.UserName,
@@ -256,7 +260,7 @@ namespace SnusPunch.Data.Repository
         public async Task<PaginationResponse<EntryCommentDto>> GetEntryCommentsPaginated(PaginationParameters aPaginationParameters, int aEntryModelId, string aSnusPunchUserModelId)
         {
             var sLikes = await mSnusPunchDbContext.EntryComments
-                .Where(x => x.EntryId == aEntryModelId)
+                .Where(x => x.EntryId == aEntryModelId && x.ParentCommentId == null) //Don't include comments with a parent (replies)
                 .Include(x => x.SnusPunchUserModel)
                 .Include(x => x.Replies)
                 .Include(x => x.CommentLikes)
@@ -277,7 +281,39 @@ namespace SnusPunch.Data.Repository
                 }).ToListAsync();
 
             var sCount = await mSnusPunchDbContext.EntryComments
-                .Where(x => x.EntryId == aEntryModelId)
+                .Where(x => x.EntryId == aEntryModelId && x.ParentCommentId == null)
+                .SearchByProperty(aPaginationParameters.SearchPropertyNames, aPaginationParameters.SearchString)
+                .CountAsync();
+
+            return new PaginationResponse<EntryCommentDto>(sLikes, sCount, aPaginationParameters.PageNumber, aPaginationParameters.PageSize);
+        }
+
+        public async Task<PaginationResponse<EntryCommentDto>> GetEntryCommentRepliesPaginated(PaginationParameters aPaginationParameters, int aEntryCommentModelId, string aSnusPunchUserModelId)
+        {
+            var sLikes = await mSnusPunchDbContext.EntryComments
+                .Where(x => x.ParentCommentId == aEntryCommentModelId) //Don't include comments with a parent (replies)
+                .Include(x => x.SnusPunchUserModel)
+                .Include(x => x.Replies)
+                .Include(x => x.CommentLikes)
+                .SearchByProperty(aPaginationParameters.SearchPropertyNames, aPaginationParameters.SearchString)
+                .OrderByProperty(aPaginationParameters.SortPropertyName, aPaginationParameters.SortOrder)
+                .Skip(aPaginationParameters.Skip)
+                .Take(aPaginationParameters.PageSize)
+                .AsNoTracking().Select(x => new EntryCommentDto
+                {
+                    UserName = x.SnusPunchUserModel.UserName,
+                    ProfilePictureUrl = $"{mConfiguration["ProfilePicturePathFull"]}{x.SnusPunchUserModel.ProfilePicturePath ?? "default.jpg"}",
+                    Comment = x.Comment,
+                    CreateDate = x.CreateDate,
+                    Id = x.Id,
+                    ParentId = x.ParentCommentId,
+                    LikedByUser = x.CommentLikes.Any(x => x.SnusPunchUserModelId == aSnusPunchUserModelId),
+                    Likes = x.CommentLikes.Count,
+                    ReplyCount = x.Replies.Count
+                }).ToListAsync();
+
+            var sCount = await mSnusPunchDbContext.EntryComments
+                .Where(x => x.ParentCommentId == aEntryCommentModelId && x.ParentCommentId == null)
                 .SearchByProperty(aPaginationParameters.SearchPropertyNames, aPaginationParameters.SearchString)
                 .CountAsync();
 

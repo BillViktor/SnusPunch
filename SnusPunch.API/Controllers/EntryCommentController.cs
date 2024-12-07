@@ -25,10 +25,16 @@ namespace SnusPunch.API.Controllers
             mEntryCommentService = aEntryCommentService;
         }
 
-        [HttpPost("GetEntryCommentsPaginated/{aEntryCommentModelId}")]
-        public async Task<ResultModel<PaginationResponse<EntryCommentDto>>> GetEntryCommentsPaginated(PaginationParameters aPaginationParameters, int aEntryCommentModelId)
+        [HttpPost("GetEntryCommentsPaginated/{aEntryModelId}")]
+        public async Task<ResultModel<PaginationResponse<EntryCommentDto>>> GetEntryCommentsPaginated(PaginationParameters aPaginationParameters, int aEntryModelId)
         {
-            return await mEntryCommentService.GetEntryCommentsPaginated(aPaginationParameters, aEntryCommentModelId, User);
+            return await mEntryCommentService.GetEntryCommentsPaginated(aPaginationParameters, aEntryModelId, User);
+        }
+
+        [HttpPost("GetEntryCommentRepliesPaginated/{aEntryCommentModelId}")]
+        public async Task<ResultModel<PaginationResponse<EntryCommentDto>>> GetEntryCommentRepliesPaginated(PaginationParameters aPaginationParameters, int aEntryCommentModelId)
+        {
+            return await mEntryCommentService.GetEntryCommentRepliesPaginated(aPaginationParameters, aEntryCommentModelId, User);
         }
 
         [HttpPost("AddEntryComment")]

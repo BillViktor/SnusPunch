@@ -255,16 +255,30 @@ namespace SnusPunch.Web.ViewModels.Snus
             return sList;
         }
 
-        public async Task<EntryCommentDto> AddEntryComment(int aEntryModelId, string aComment)
+        public async Task<PaginationResponse<EntryCommentDto>> GetEntryCommentRepliesPaginated(PaginationParameters aPaginationParameters, int aEntryCommentModelId)
+        {
+            PaginationResponse<EntryCommentDto> sList = new PaginationResponse<EntryCommentDto>();
+            IsBusy = true;
+
+            var sResult = await mEntryClient.GetEntryCommentRepliesPaginated(aPaginationParameters, aEntryCommentModelId);
+
+            if (!sResult.Success)
+            {
+                Errors.AddRange(sResult.Errors);
+            }
+            else
+            {
+                sList = sResult.ResultObject;
+            }
+
+            IsBusy = false;
+            return sList;
+        }
+
+        public async Task<EntryCommentDto> AddEntryComment(AddEntryCommentDto sAddEntryCommentDto)
         {
             EntryCommentDto? sReturnEntryComment = null;
             IsBusy = true;
-
-            AddEntryCommentDto sAddEntryCommentDto = new AddEntryCommentDto
-            {
-                EntryModelId = aEntryModelId,
-                Comment = aComment
-            };
 
             var sResult = await mEntryClient.AddEntryComment(sAddEntryCommentDto);
 
