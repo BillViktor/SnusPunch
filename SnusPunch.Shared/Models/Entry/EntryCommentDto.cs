@@ -6,6 +6,9 @@
         public string Comment { get; set; }
         public string UserName { get; set; }
         public string ProfilePictureUrl { get; set; }
+        public bool LikedByUser { get; set; }
+        public int Likes { get; set; }
+        public int ReplyCount { get; set; } 
         public DateTime CreateDate { get; set; }
 
         public string GetTimeAgo()
@@ -41,6 +44,16 @@
                 var sYears = (int)(sTimeDifference.TotalDays / 365);
                 return $"{sYears} {(sYears == 1 ? "år" : "år")} sedan";
             }
+        }
+
+        public string GetLikesString()
+        {
+            return Likes == 1 ? "1 like" : $"{Likes} likes";
+        }
+
+        public string GetCommentsString()
+        {
+            return $"{ReplyCount} svar";
         }
     }
 }

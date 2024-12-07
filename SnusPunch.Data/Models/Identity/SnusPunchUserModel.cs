@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using SnusPunch.Data.Models.Entry;
+using SnusPunch.Shared.Models;
 using SnusPunch.Shared.Models.Snus;
 
 namespace SnusPunch.Data.Models.Identity
@@ -10,5 +11,7 @@ namespace SnusPunch.Data.Models.Identity
         public string? ProfilePicturePath { get; set; }
         public SnusModel FavoriteSnus { get; set; }
         public List<EntryModel> Entries { get; set; } = new List<EntryModel>();
+        public DateTime CreateDate { get; set; }
+        public DateTime? UpdateDate { get; set; }
     }
 }

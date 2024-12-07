@@ -16,5 +16,15 @@ namespace SnusPunch.Data.Models.Entry
         //User
         public string? SnusPunchUserModelId { get; set; }
         public SnusPunchUserModel? SnusPunchUserModel { get; set; }
+
+        // Parent comment (for nested replies)
+        public int? ParentCommentId { get; set; }
+        public EntryCommentModel? ParentComment { get; set; }
+
+        //Replies
+        public List<EntryCommentModel> Replies { get; set; } = new List<EntryCommentModel>();
+
+        //Likes
+        public List<EntryCommentLikeModel> CommentLikes { get; set; } = new List<EntryCommentLikeModel>();
     }
 }

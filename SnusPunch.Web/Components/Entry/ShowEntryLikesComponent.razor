@@ -31,7 +31,7 @@
     
     <div class="row justify-content-between align-items-center mt-1">
         <p>
-            @(mPaginationMetaData?.TotalCount ?? 0) likes
+            @(mPaginationMetaData?.TotalCount ?? 0) @((mPaginationMetaData?.TotalCount ?? 0) == 1 ? "like" : "likes")
         </p>
         <button class="button-warning" @onclick="async () => await BlazoredModal.CloseAsync()">Stäng</button>
     </div>
@@ -41,6 +41,7 @@
     [CascadingParameter] BlazoredModalInstance BlazoredModal { get; set; } = default!;
     [CascadingParameter] public IModalService Modal { get; set; } = default!;
     [Parameter] public int EntryModelId { get; set; }
+    [Parameter] public bool Comment { get; set; } = false;
     [Inject] EntryViewModel EntryViewModel { get; set; }
 
     private PaginationMetaData mPaginationMetaData = null;
@@ -59,7 +60,17 @@
 
     private async Task GetEntryLikes()
     {
-        var sResult = await EntryViewModel.GetEntryLikesPaginated(mPaginationParameters, EntryModelId);
+        PaginationResponse<EntryLikeDto> sResult = null;
+
+        if(Comment)
+        {
+            sResult = await EntryViewModel.GetCommentLikesPaginated(mPaginationParameters, EntryModelId);
+        }
+        else
+        {
+            sResult = await EntryViewModel.GetEntryLikesPaginated(mPaginationParameters, EntryModelId);
+        }
+
         mPaginationMetaData = sResult.PaginationMetaData;
         mLikeList = sResult.Items;
     }

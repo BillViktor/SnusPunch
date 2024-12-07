@@ -28,7 +28,7 @@ namespace SnusPunch.API.Controllers
         [HttpPost("GetEntryCommentsPaginated/{aEntryCommentModelId}")]
         public async Task<ResultModel<PaginationResponse<EntryCommentDto>>> GetEntryCommentsPaginated(PaginationParameters aPaginationParameters, int aEntryCommentModelId)
         {
-            return await mEntryCommentService.GetEntryCommentsPaginated(aPaginationParameters, aEntryCommentModelId);
+            return await mEntryCommentService.GetEntryCommentsPaginated(aPaginationParameters, aEntryCommentModelId, User);
         }
 
         [HttpPost("AddEntryComment")]

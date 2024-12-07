@@ -187,6 +187,11 @@ textarea {
     width: 2rem;
 }
 
+.comment-liked {
+    font-weight: bold;
+    color: cyan;
+}
+
 /* Paginering */
 .pagination-buttons {
     display: flex;
@@ -234,6 +239,10 @@ textarea {
 
 .my-1 {
     margin: 1rem 0;
+}
+
+.mx-1 {
+    margin: 0 1rem;
 }
 
 .mn {

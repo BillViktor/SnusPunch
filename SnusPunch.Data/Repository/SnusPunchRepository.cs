@@ -202,7 +202,7 @@ namespace SnusPunch.Data.Repository
                 .Take(aPaginationParameters.PageSize)
                 .AsNoTracking().Select(x => new EntryLikeDto
                 {
-                    UserName = x.SnusPunchUserModel.UserName,
+                    UserName = x.SnusPunchUserModel.UserName ?? "Raderad användare",
                     ProfilePictureUrl = $"{mConfiguration["ProfilePicturePathFull"]}{x.SnusPunchUserModel.ProfilePicturePath ?? "default.jpg"}",
                 }).ToListAsync();
 
@@ -253,11 +253,13 @@ namespace SnusPunch.Data.Repository
             };
         }
 
-        public async Task<PaginationResponse<EntryCommentDto>> GetEntryCommentsPaginated(PaginationParameters aPaginationParameters, int aEntryModelId)
+        public async Task<PaginationResponse<EntryCommentDto>> GetEntryCommentsPaginated(PaginationParameters aPaginationParameters, int aEntryModelId, string aSnusPunchUserModelId)
         {
             var sLikes = await mSnusPunchDbContext.EntryComments
                 .Where(x => x.EntryId == aEntryModelId)
                 .Include(x => x.SnusPunchUserModel)
+                .Include(x => x.Replies)
+                .Include(x => x.CommentLikes)
                 .SearchByProperty(aPaginationParameters.SearchPropertyNames, aPaginationParameters.SearchString)
                 .OrderByProperty(aPaginationParameters.SortPropertyName, aPaginationParameters.SortOrder)
                 .Skip(aPaginationParameters.Skip)
@@ -269,6 +271,9 @@ namespace SnusPunch.Data.Repository
                     Comment = x.Comment,
                     CreateDate = x.CreateDate,
                     Id = x.Id,
+                    LikedByUser = x.CommentLikes.Any(x => x.SnusPunchUserModelId == aSnusPunchUserModelId),
+                    Likes = x.CommentLikes.Count,
+                    ReplyCount = x.Replies.Count
                 }).ToListAsync();
 
             var sCount = await mSnusPunchDbContext.EntryComments
@@ -279,6 +284,57 @@ namespace SnusPunch.Data.Repository
             return new PaginationResponse<EntryCommentDto>(sLikes, sCount, aPaginationParameters.PageNumber, aPaginationParameters.PageSize);
         }
         #endregion
+
+
+        #region Entry Comment Likes
+        public async Task LikeComment(EntryCommentLikeModel aEntryCommentLikeModel)
+        {
+            await mSnusPunchDbContext.AddAsync(aEntryCommentLikeModel);
+            await mSnusPunchDbContext.SaveChangesAsync();
+        }
+
+        public async Task UnlikeComment(EntryCommentLikeModel aEntryCommentLikeModel)
+        {
+            mSnusPunchDbContext.Remove(aEntryCommentLikeModel);
+            await mSnusPunchDbContext.SaveChangesAsync();
+        }
+
+        public async Task<EntryCommentLikeModel> GetCommentLike(int aEntryCommentModelid, string aSnusPunchUserModelId)
+        {
+            var sLike = await mSnusPunchDbContext.EntryCommentLikes.FirstOrDefaultAsync(x => x.EntryCommentId == aEntryCommentModelid && x.SnusPunchUserModelId == aSnusPunchUserModelId);
+
+            if (sLike == null)
+            {
+                throw new Exception("Liken hittades ej.");
+            }
+
+            return sLike;
+        }
+
+        public async Task<PaginationResponse<EntryLikeDto>> GetCommentLikesPaginated(PaginationParameters aPaginationParameters, int aEntryCommentModelId)
+        {
+            var sLikes = await mSnusPunchDbContext.EntryCommentLikes
+                .Where(x => x.EntryCommentId == aEntryCommentModelId)
+                .Include(x => x.SnusPunchUserModel)
+                .SearchByProperty(aPaginationParameters.SearchPropertyNames, aPaginationParameters.SearchString)
+                .OrderByProperty("CreateDate", SortOrderEnum.Ascending)
+                .Skip(aPaginationParameters.Skip)
+                .Take(aPaginationParameters.PageSize)
+                .AsNoTracking().Select(x => new EntryLikeDto
+                {
+                    UserName = x.SnusPunchUserModel.UserName ?? "Raderad användare",
+                    ProfilePictureUrl = $"{mConfiguration["ProfilePicturePathFull"]}{x.SnusPunchUserModel.ProfilePicturePath ?? "default.jpg"}",
+                }).ToListAsync();
+
+            var sCount = await mSnusPunchDbContext.EntryCommentLikes
+                .SearchByProperty(aPaginationParameters.SearchPropertyNames, aPaginationParameters.SearchString)
+                .Where(x => x.EntryCommentId == aEntryCommentModelId)
+                .CountAsync();
+
+            return new PaginationResponse<EntryLikeDto>(sLikes, sCount, aPaginationParameters.PageNumber, aPaginationParameters.PageSize);
+        }
+        #endregion
+
 
         #region Users
         public async Task<PaginationResponse<SnusPunchUserDto>> GetUsersPaginated(PaginationParameters aPaginationParameters)

@@ -27,13 +27,22 @@ namespace SnusPunch.Services.Entry
             mUserManager = aUserManager;
         }
 
-        public async Task<ResultModel<PaginationResponse<EntryCommentDto>>> GetEntryCommentsPaginated(PaginationParameters aPaginationParameters, int aEntryCommentModelId)
+        public async Task<ResultModel<PaginationResponse<EntryCommentDto>>> GetEntryCommentsPaginated(PaginationParameters aPaginationParameters, int aEntryCommentModelId, ClaimsPrincipal aClaimsPrincipal)
         {
             ResultModel<PaginationResponse<EntryCommentDto>> sResultModel = new ResultModel<PaginationResponse<EntryCommentDto>>();
 
             try
             {
-                sResultModel.ResultObject = await mSnusPunchRepository.GetEntryCommentsPaginated(aPaginationParameters, aEntryCommentModelId);
+                var sUser = await mUserManager.GetUserAsync(aClaimsPrincipal);
+
+                if (sUser == null)
+                {
+                    sResultModel.Success = false;
+                    sResultModel.AddError("Användaren hittades ej.");
+                    return sResultModel;
+                }
+
+                sResultModel.ResultObject = await mSnusPunchRepository.GetEntryCommentsPaginated(aPaginationParameters, aEntryCommentModelId, sUser.Id);
             }
             catch (Exception aException)
             {

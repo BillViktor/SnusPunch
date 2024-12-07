@@ -177,7 +177,7 @@ namespace SnusPunch.Web.ViewModels.Snus
         }
 
 
-        #region Likes
+        #region Entry Likes
         public async Task<bool> LikeEntry(int aEntryModelId)
         {
             IsBusy = true;
@@ -322,6 +322,63 @@ namespace SnusPunch.Web.ViewModels.Snus
 
             IsBusy = false;
             return sSuccess;
+        }
+        #endregion
+
+
+        #region Comment Likes
+        public async Task<bool> LikeComment(int aEntryCommentModelId)
+        {
+            IsBusy = true;
+            bool sSuccess = true;
+
+            var sResult = await mEntryClient.LikeComment(aEntryCommentModelId);
+
+            if (!sResult.Success)
+            {
+                sSuccess = false;
+                Errors.AddRange(sResult.Errors);
+            }
+
+            IsBusy = false;
+            return sSuccess;
+        }
+
+        public async Task<bool> UnlikeComment(int aEntryCommentModelId)
+        {
+            IsBusy = true;
+            bool sSuccess = true;
+
+            var sResult = await mEntryClient.UnlikeComment(aEntryCommentModelId);
+
+            if (!sResult.Success)
+            {
+                sSuccess = false;
+                Errors.AddRange(sResult.Errors);
+            }
+
+            IsBusy = false;
+            return sSuccess;
+        }
+
+        public async Task<PaginationResponse<EntryLikeDto>> GetCommentLikesPaginated(PaginationParameters aPaginationParameters, int aEntryCommentModelId)
+        {
+            IsBusy = true;
+            PaginationResponse<EntryLikeDto> sPaginationResponse = new PaginationResponse<EntryLikeDto>();
+
+            var sResult = await mEntryClient.GetCommentLikesPaginated(aPaginationParameters, aEntryCommentModelId);
+
+            if (!sResult.Success)
+            {
+                Errors.AddRange(sResult.Errors);
+            }
+            else
+            {
+                sPaginationResponse = sResult.ResultObject;
+            }
+
+            IsBusy = false;
+            return sPaginationResponse;
         }
         #endregion
     }

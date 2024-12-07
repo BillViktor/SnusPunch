@@ -39,6 +39,8 @@ builder.Services.AddScoped<AuthClient>();
 builder.Services.AddHttpClient(HttpClientEnum.Entry.ToString(), config => config.BaseAddress = new Uri(sBaseUrl + "Entry/")).AddHttpMessageHandler<CookieHandler>();
 builder.Services.AddHttpClient(HttpClientEnum.EntryLike.ToString(), config => config.BaseAddress = new Uri(sBaseUrl + "EntryLike/")).AddHttpMessageHandler<CookieHandler>();
 builder.Services.AddHttpClient(HttpClientEnum.EntryComment.ToString(), config => config.BaseAddress = new Uri(sBaseUrl + "EntryComment/")).AddHttpMessageHandler<CookieHandler>();
+builder.Services.AddHttpClient(HttpClientEnum.EntryCommentLike.ToString(), config => config.BaseAddress = new Uri(sBaseUrl + "EntryCommentLike/")).AddHttpMessageHandler<CookieHandler>();
+
 builder.Services.AddScoped<EntryClient>();
 
 builder.Services.AddHttpClient(HttpClientEnum.Snus.ToString(), config => config.BaseAddress = new Uri(sBaseUrl + "Snus/")).AddHttpMessageHandler<CookieHandler>();

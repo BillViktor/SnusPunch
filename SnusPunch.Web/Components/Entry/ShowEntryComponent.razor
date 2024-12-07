@@ -79,9 +79,9 @@
         @if (EntryDto.Comments.Count > 0)
         {
             <select @onchange="async (e) => await OnCommentSortChange(e)">
+                <option value="Popular">Populäraste</option>
                 <option value="Newest">Senaste</option>
                 <option value="Oldest">Äldsta</option>
-                @* <option value="Popular">Populäraste</option> *@
             </select>
 
             foreach(var sComment in EntryDto.Comments)
@@ -126,6 +126,29 @@
                     <p class="comment-text">
                         @sComment.Comment
                     </p>
+
+                    <div class="row justify-content-between">
+                        <div class="row gap-1">
+                            <button @onclick="async () => await ToggleLike(sComment)" class="text-button">
+                                <span class="@(sComment.LikedByUser ? "comment-liked" : "")">Gilla</span>
+                            </button>
+                            <button class="text-button">
+                                <span>Svara</span>
+                            </button>
+                        </div>
+
+                        <button @onclick="() => ShowLikes(sComment)" class="text-button">
+                            <span title="Klicka för att se vilka som gillar kommentaren!">@sComment.GetLikesString()</span>
+                        </button>
+                    </div>
+
+                    @if (sComment.ReplyCount > 0)
+                    {
+                        <button class="text-button">
+                            <span>Visa @sComment.ReplyCount svar</span>
+                        </button>
+                    }
+
                 </div>
             }
 
@@ -154,7 +177,7 @@
     private List<SnusModel> mSnusList = new List<SnusModel>();
     private PaginationParameters mPaginationParameters = new PaginationParameters
     {
-        SortPropertyName = "CreateDate",
+        SortPropertyName = "CommentLikes.Count",
         SortOrder = SortOrderEnum.Descending,
         PageSize = 5
     };
@@ -171,10 +194,10 @@
 
         switch(sSortProperty)
         {
-            // case "Popular":
-            //     mPaginationParameters.SortPropertyName = "Likes.Count";
-            //     mPaginationParameters.SortOrder = SortOrderEnum.Descending;
-            //     break;
+            case "Popular":
+                mPaginationParameters.SortPropertyName = "CommentLikes.Count";
+                mPaginationParameters.SortOrder = SortOrderEnum.Descending;
+                break;
             case "Oldest":
                 mPaginationParameters.SortPropertyName = "CreateDate";
                 mPaginationParameters.SortOrder = SortOrderEnum.Ascending;
@@ -305,7 +328,7 @@
     #endregion
 
 
-    #region Likes
+    #region Entry Likes
     private async Task ToggleLike(EntryDto aEntryDto)
     {
         if (aEntryDto.LikedByUser)
@@ -344,6 +367,51 @@
             };
 
         var sParametes = new ModalParameters { { "EntryModelId", aEntryDto.Id } };
+
+        Modal.Show<ShowEntryLikesComponent>("Likes", sParametes, sOptions);
+    }
+    #endregion
+
+
+    #region Comment Likes
+    private async Task ToggleLike(EntryCommentDto aEntryCommentDto)
+    {
+        if (aEntryCommentDto.LikedByUser)
+        {
+            if (await EntryViewModel.UnlikeComment(aEntryCommentDto.Id))
+            {
+                aEntryCommentDto.Likes--;
+                aEntryCommentDto.LikedByUser = false;
+            }
+        }
+        else
+        {
+            if (await EntryViewModel.LikeComment(aEntryCommentDto.Id))
+            {
+                aEntryCommentDto.Likes++;
+                aEntryCommentDto.LikedByUser = true;
+            }
+        }
+
+        StateHasChanged();
+    }
+
+    private void ShowLikes(EntryCommentDto aEntryCommentDto)
+    {
+        if (aEntryCommentDto.Likes == 0)
+        {
+            EntryViewModel.AddError("Kommentaren har inga likes :(");
+            return;
+        }
+
+        var sOptions = new ModalOptions
+            {
+                DisableBackgroundCancel = false,
+                Size = ModalSize.Medium,
+                Position = ModalPosition.Middle
+            };
+
+        var sParametes = new ModalParameters { { "EntryModelId", aEntryCommentDto.Id }, { "Comment", true } };
 
         Modal.Show<ShowEntryLikesComponent>("Likes", sParametes, sOptions);
     }

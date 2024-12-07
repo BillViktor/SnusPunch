@@ -38,6 +38,12 @@
             return;
         }
 
+        if((mStatisticsTimePeriodRequestDto.EndDate - mStatisticsTimePeriodRequestDto.StartDate).TotalDays > 365)
+        {
+            BaseViewModel.AddError("Maxintervall är ett år.");
+            return;
+        }
+
         await BlazoredModal.CloseAsync(ModalResult.Ok(mStatisticsTimePeriodRequestDto));
     }
 

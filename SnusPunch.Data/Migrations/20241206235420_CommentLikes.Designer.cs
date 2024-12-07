@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SnusPunch.Data.DbContexts;
 
@@ -11,9 +12,11 @@ using SnusPunch.Data.DbContexts;
 namespace SnusPunch.Data.Migrations
 {
     [DbContext(typeof(SnusPunchDbContext))]
-    partial class SnusPunchDbContextModelSnapshot : ModelSnapshot
+    [Migration("20241206235420_CommentLikes")]
+    partial class CommentLikes
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -207,9 +210,6 @@ namespace SnusPunch.Data.Migrations
                     b.Property<int>("EntryId")
                         .HasColumnType("int");
 
-                    b.Property<int?>("ParentCommentId")
-                        .HasColumnType("int");
-
                     b.Property<string>("SnusPunchUserModelId")
                         .HasColumnType("nvarchar(450)");
 
@@ -219,8 +219,6 @@ namespace SnusPunch.Data.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("EntryId");
-
-                    b.HasIndex("ParentCommentId");
 
                     b.HasIndex("SnusPunchUserModelId");
 
@@ -577,18 +575,11 @@ namespace SnusPunch.Data.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("SnusPunch.Data.Models.Entry.EntryCommentModel", "ParentComment")
-                        .WithMany("Replies")
-                        .HasForeignKey("ParentCommentId")
-                        .OnDelete(DeleteBehavior.ClientCascade);
-
                     b.HasOne("SnusPunch.Data.Models.Identity.SnusPunchUserModel", "SnusPunchUserModel")
                         .WithMany()
                         .HasForeignKey("SnusPunchUserModelId");
 
                     b.Navigation("EntryModel");
-
-                    b.Navigation("ParentComment");
 
                     b.Navigation("SnusPunchUserModel");
                 });
@@ -659,8 +650,6 @@ namespace SnusPunch.Data.Migrations
             modelBuilder.Entity("SnusPunch.Data.Models.Entry.EntryCommentModel", b =>
                 {
                     b.Navigation("CommentLikes");
-
-                    b.Navigation("Replies");
                 });
 
             modelBuilder.Entity("SnusPunch.Data.Models.Entry.EntryModel", b =>

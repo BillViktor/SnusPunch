@@ -142,7 +142,7 @@ namespace SnusPunch.Web.Clients.Snus
         }
 
 
-        #region Likes
+        #region Entry Likes
         public async Task<ResultModel> LikeEntry(int aEntryModelId)
         {
             ResultModel sResultModel = new ResultModel();
@@ -311,6 +311,84 @@ namespace SnusPunch.Web.Clients.Snus
                 }
 
                 sResultModel = await sResponse.Content.ReadFromJsonAsync<ResultModel>();
+            }
+            catch (Exception aException)
+            {
+                sResultModel.Success = false;
+                sResultModel.AddExceptionError(aException);
+            }
+
+            return sResultModel;
+        }
+        #endregion
+
+
+        #region Comment Likes
+        public async Task<ResultModel> LikeComment(int aEntryCommentModelId)
+        {
+            ResultModel sResultModel = new ResultModel();
+
+            try
+            {
+                var sHttpClient = mHttpClientFactory.CreateClient(HttpClientEnum.EntryCommentLike.ToString());
+                var sResponse = await sHttpClient.PostAsync($"LikeComment/{aEntryCommentModelId}", null);
+
+                if (!sResponse.IsSuccessStatusCode)
+                {
+                    throw new Exception("Non-success status code at LikeEntry in EntryClient");
+                }
+
+                sResultModel = await sResponse.Content.ReadFromJsonAsync<ResultModel>();
+            }
+            catch (Exception aException)
+            {
+                sResultModel.Success = false;
+                sResultModel.AddExceptionError(aException);
+            }
+
+            return sResultModel;
+        }
+
+        public async Task<ResultModel> UnlikeComment(int aEntryCommentModelId)
+        {
+            ResultModel sResultModel = new ResultModel();
+
+            try
+            {
+                var sHttpClient = mHttpClientFactory.CreateClient(HttpClientEnum.EntryCommentLike.ToString());
+                var sResponse = await sHttpClient.DeleteAsync($"UnlikeComment/{aEntryCommentModelId}");
+
+                if (!sResponse.IsSuccessStatusCode)
+                {
+                    throw new Exception("Non-success status code at UnlikeComment in EntryClient");
+                }
+
+                sResultModel = await sResponse.Content.ReadFromJsonAsync<ResultModel>();
+            }
+            catch (Exception aException)
+            {
+                sResultModel.Success = false;
+                sResultModel.AddExceptionError(aException);
+            }
+
+            return sResultModel;
+        }
+
+        public async Task<ResultModel<PaginationResponse<EntryLikeDto>>> GetCommentLikesPaginated(PaginationParameters aPaginationParameters, int aEntryCommentModelId)
+        {
+            ResultModel<PaginationResponse<EntryLikeDto>> sResultModel = new ResultModel<PaginationResponse<EntryLikeDto>>();
+
+            try
+            {
+                var sHttpClient = mHttpClientFactory.CreateClient(HttpClientEnum.EntryCommentLike.ToString());
+                var sResponse = await sHttpClient.PostAsJsonAsync($"GetCommentLikesPaginated/{aEntryCommentModelId}", aPaginationParameters);
+
+                if (!sResponse.IsSuccessStatusCode)
+                {
+                    throw new Exception("Non-success status code at GetCommentLikesPaginated in EntryClient");
+                }
+
+                sResultModel = await sResponse.Content.ReadFromJsonAsync<ResultModel<PaginationResponse<EntryLikeDto>>>();
             }
             catch (Exception aException)
             {

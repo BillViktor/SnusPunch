@@ -15,6 +15,8 @@ namespace SnusPunch.Data.DbContexts
         public DbSet<EntryLikeModel> EntryLikes { get; set; }
         public DbSet<EntryCommentModel> EntryComments { get; set; }
         public DbSet<StatisticsTimePeriodResponseDto> StatisticsTimePeriod { get; set; }
+        public DbSet<SnusPunchFriendModel> SnusPunchFriends { get; set; }
+        public DbSet<EntryCommentLikeModel> EntryCommentLikes { get; set; }
 
         public SnusPunchDbContext(DbContextOptions<SnusPunchDbContext> aDbContextOptions) : base(aDbContextOptions) { }
 
@@ -27,6 +29,33 @@ namespace SnusPunch.Data.DbContexts
             {
                 e.HasNoKey();
                 e.Metadata.SetIsTableExcludedFromMigrations(true);
+
+                e.Property(p => p.AvgCostPerDayInSek).HasColumnType("decimal(6,2)");
+
+                e.Property(p => p.TotalCostInSek).HasColumnType("decimal(6,2)");
+            });
+
+            aModelBuilder.Entity<SnusPunchFriendModel>(e =>
+            {
+                e.ToTable("tblSnusPunchUserFriend");
+
+                e.HasKey(e => new
+                {
+                    e.SnusPunchUserModelOneId,
+                    e.SnusPunchUserModelTwoId
+                });
+
+                e.Property(c => c.CreateDate).HasDefaultValueSql("getdate()");
+
+                e.HasOne(e => e.SnusPunchUserModelOne)
+                    .WithMany()
+                        .HasForeignKey(e => e.SnusPunchUserModelOneId)
+                            .OnDelete(DeleteBehavior.ClientCascade);
+
+                e.HasOne(e => e.SnusPunchUserModelTwo)
+                    .WithMany()
+                        .HasForeignKey(e => e.SnusPunchUserModelTwoId)
+                            .OnDelete(DeleteBehavior.ClientCascade);
             });
 
             aModelBuilder.Entity<EntryCommentModel>(e =>
@@ -39,6 +68,33 @@ namespace SnusPunch.Data.DbContexts
                 e.HasOne(e => e.EntryModel)
                     .WithMany(e => e.Comments)
                         .HasForeignKey(e => e.EntryId)
+                            .OnDelete(DeleteBehavior.Cascade);
+
+                e.HasOne(e => e.ParentComment)
+                    .WithMany(p => p.Replies)
+                        .HasForeignKey(e => e.ParentCommentId)
+                            .IsRequired(false)
+                                .OnDelete(DeleteBehavior.ClientCascade);
+            });
+
+            aModelBuilder.Entity<EntryCommentLikeModel>(e =>
+            {
+                e.ToTable("tblEntryCommentLike");
+
+                e.HasKey(e => e.Id);
+
+                //Composite key
+                e.HasIndex(c => new
+                {
+                    c.EntryCommentId,
+                    c.SnusPunchUserModelId
+                }).IsUnique();
+
+                e.Property(c => c.CreateDate).HasDefaultValueSql("getdate()");
+
+                e.HasOne(e => e.EntryCommentModel)
+                    .WithMany(e => e.CommentLikes)
+                        .HasForeignKey(e => e.EntryCommentId)
                             .OnDelete(DeleteBehavior.Cascade);
             });
 
@@ -92,6 +148,8 @@ namespace SnusPunch.Data.DbContexts
                     .WithMany()
                         .HasForeignKey(e => e.FavoriteSnusId)
                             .OnDelete(DeleteBehavior.SetNull);
+
+                e.Property(c => c.CreateDate).HasDefaultValueSql("getdate()");
             });
 
 

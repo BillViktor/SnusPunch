@@ -47,7 +47,7 @@
                 <td>@mStatisticsTimePeriodResponseDto.SnusCount</td>
                 <td>@mStatisticsTimePeriodResponseDto.TotalCostInSek</td>
                 <td>@mStatisticsTimePeriodResponseDto.TotalNicotineInMg.ToString("0.00")</td>
-                <td>@mStatisticsTimePeriodResponseDto.AvgSnusCountPerDay</td>
+                <td>@mStatisticsTimePeriodResponseDto.AvgSnusCountPerDay.ToString("0.00")</td>
                 <td>@mStatisticsTimePeriodResponseDto.AvgCostPerDayInSek.ToString("0.00")</td>
                 <td>@mStatisticsTimePeriodResponseDto.AvgNicotinePerDayInMg.ToString("0.00")</td>
                 <td>@(!string.IsNullOrEmpty(mStatisticsTimePeriodResponseDto.MostUsedSnus) ? $"{mStatisticsTimePeriodResponseDto.MostUsedSnus} ({(@mStatisticsTimePeriodResponseDto.MostUsedSnusCount)} st)" : "")</td>

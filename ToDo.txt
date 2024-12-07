@@ -4,21 +4,17 @@ SnusPunch ToDo
 - Kunna gilla kommentarer
 - Kunna svara på kommentarer
 
-*Notifikationer*
-- Få en notis när man får en like eller en kommentar
-
 *Statistik*
 - Visa en bar chart på när man snusar på dagen
 - Visa statistik jämfört med förut, snusar man mer eller mindre?
 
-*Leaderboard*
-- Visa vem som snusat mest (man ska kunna sortera på typ antal snus, antal kr samt nikotin),
-  med typ samma filter som statistik :)
-
 *Vänner*
 - Kunna lägga till vänner
 - Filtera feed på vänner
-- Chatta mellan vänner
+- Chatta mellan vänner (SignalR) https://codewithmukesh.com/blog/realtime-chat-application-with-blazor/#summary
+
+*Notifikationer*
+- Få en notis när man får en like eller en kommentar
 
 *Integritet*
 - Kunna välja vilka som ska kunna se ens inlägg
