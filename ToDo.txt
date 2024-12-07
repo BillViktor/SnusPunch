@@ -27,3 +27,5 @@ SnusPunch ToDo
 *Misc*
 - Mobilanpassning (viktigt!)
 - Google Adsense
+- Tagga folk i inlägg & kommentarer
+- Hashtags
