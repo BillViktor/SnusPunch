@@ -94,7 +94,6 @@ namespace SnusPunch.Web.Components.Entry
                 if(mAddEntryCommentDto.ParentId == null)
                 {
                     EntryDto.Comments.Insert(0, sResult);
-                    EntryDto.CommentCount++;
                 }
                 else
                 {
@@ -102,8 +101,10 @@ namespace SnusPunch.Web.Components.Entry
                     sCommentRepliedto.Replies.Add(sResult);
                     sCommentRepliedto.ReplyCount++;
                 }
+                EntryDto.CommentCount++;
 
                 mAddEntryCommentDto.Comment = "";
+                mCommentPlaceholder = "Skriv en kommentar";
                 mAddEntryCommentDto.ParentId = null;
 
                 await JSRuntime.InvokeVoidAsync("backToTop");
@@ -122,7 +123,7 @@ namespace SnusPunch.Web.Components.Entry
         private async Task ReplyToComment(EntryCommentDto aEntryCommentDto)
         {
             mAddEntryCommentDto.Comment = "";
-            mAddEntryCommentDto.ParentId = aEntryCommentDto.ParentId;
+            mAddEntryCommentDto.ParentId = aEntryCommentDto.ParentId ?? aEntryCommentDto.Id;
             mCommentPlaceholder = $"Svarar {aEntryCommentDto.UserName}";
             await JSRuntime.InvokeVoidAsync("focusElement", "commentInput");
         }
@@ -136,7 +137,6 @@ namespace SnusPunch.Web.Components.Entry
                 if (aEntryCommentDto.ParentId == null)
                 {
                     EntryDto.Comments.Remove(aEntryCommentDto);
-                    EntryDto.CommentCount--;
                 }
                 else
                 {
@@ -144,6 +144,8 @@ namespace SnusPunch.Web.Components.Entry
                     sParent.Replies.Remove(aEntryCommentDto);
                     sParent.ReplyCount--;
                 }
+
+                EntryDto.CommentCount--;
             }
 
             StateHasChanged();
