@@ -20,6 +20,7 @@
             <th class="profile-picture-cell"></th>
             <th>Användarnamn</th>
             <th>Favoritsnus</th>
+            <th>Vänner</th>
             <th>Snusningar</th>
             <th></th>
         </tr>
@@ -35,6 +36,7 @@
                 </td>
                 <td>@sUser.UserName</td>
                 <td>@sUser.FavouriteSnus</td>
+                <td>@sUser.Friends</td>
                 <td>@sUser.SnusPunches</td>
                 <td>
                     <AuthorizeView Roles="Admin">

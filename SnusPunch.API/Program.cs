@@ -83,6 +83,8 @@ builder.Services.AddScoped<EntryLikeService>();
 builder.Services.AddScoped<EntryCommentService>();
 builder.Services.AddScoped<EntryCommentLikeService>();
 
+builder.Services.AddScoped<FriendService>();
+
 builder.Services.AddScoped<SnusService>();
 builder.Services.AddScoped<StatisticsService>();
 builder.Services.AddScoped<UserService>();

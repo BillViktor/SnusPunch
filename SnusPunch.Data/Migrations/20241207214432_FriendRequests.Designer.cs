@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SnusPunch.Data.DbContexts;
 
@@ -11,9 +12,11 @@ using SnusPunch.Data.DbContexts;
 namespace SnusPunch.Data.Migrations
 {
     [DbContext(typeof(SnusPunchDbContext))]
-    partial class SnusPunchDbContextModelSnapshot : ModelSnapshot
+    [Migration("20241207214432_FriendRequests")]
+    partial class FriendRequests
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -31,11 +34,6 @@ namespace SnusPunch.Data.Migrations
                         .IsConcurrencyToken()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Discriminator")
-                        .IsRequired()
-                        .HasMaxLength(21)
-                        .HasColumnType("nvarchar(21)");
-
                     b.Property<string>("Name")
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
@@ -52,10 +50,6 @@ namespace SnusPunch.Data.Migrations
                         .HasFilter("[NormalizedName] IS NOT NULL");
 
                     b.ToTable("AspNetRoles", (string)null);
-
-                    b.HasDiscriminator().HasValue("IdentityRole");
-
-                    b.UseTphMappingStrategy();
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -138,20 +132,11 @@ namespace SnusPunch.Data.Migrations
                     b.Property<string>("RoleId")
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<string>("Discriminator")
-                        .IsRequired()
-                        .HasMaxLength(34)
-                        .HasColumnType("nvarchar(34)");
-
                     b.HasKey("UserId", "RoleId");
 
                     b.HasIndex("RoleId");
 
                     b.ToTable("AspNetUserRoles", (string)null);
-
-                    b.HasDiscriminator().HasValue("IdentityUserRole<string>");
-
-                    b.UseTphMappingStrategy();
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
@@ -545,20 +530,6 @@ namespace SnusPunch.Data.Migrations
                         });
                 });
 
-            modelBuilder.Entity("SnusPunch.Data.Models.Identity.SnusPunchRoleModel", b =>
-                {
-                    b.HasBaseType("Microsoft.AspNetCore.Identity.IdentityRole");
-
-                    b.HasDiscriminator().HasValue("SnusPunchRoleModel");
-                });
-
-            modelBuilder.Entity("SnusPunch.Data.Models.Identity.SnusPunchUserRoleModel", b =>
-                {
-                    b.HasBaseType("Microsoft.AspNetCore.Identity.IdentityUserRole<string>");
-
-                    b.HasDiscriminator().HasValue("SnusPunchUserRoleModel");
-                });
-
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
@@ -591,6 +562,12 @@ namespace SnusPunch.Data.Migrations
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
                         .WithMany()
                         .HasForeignKey("RoleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("SnusPunch.Data.Models.Identity.SnusPunchUserModel", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
@@ -682,13 +659,13 @@ namespace SnusPunch.Data.Migrations
             modelBuilder.Entity("SnusPunch.Data.Models.Identity.SnusPunchFriendModel", b =>
                 {
                     b.HasOne("SnusPunch.Data.Models.Identity.SnusPunchUserModel", "SnusPunchUserModelOne")
-                        .WithMany("FriendsAddedByUser")
+                        .WithMany()
                         .HasForeignKey("SnusPunchUserModelOneId")
                         .OnDelete(DeleteBehavior.ClientCascade)
                         .IsRequired();
 
                     b.HasOne("SnusPunch.Data.Models.Identity.SnusPunchUserModel", "SnusPunchUserModelTwo")
-                        .WithMany("FriendsAddedByOthers")
+                        .WithMany()
                         .HasForeignKey("SnusPunchUserModelTwoId")
                         .OnDelete(DeleteBehavior.ClientCascade)
                         .IsRequired();
@@ -727,25 +704,6 @@ namespace SnusPunch.Data.Migrations
                     b.Navigation("FavoriteSnus");
                 });
 
-            modelBuilder.Entity("SnusPunch.Data.Models.Identity.SnusPunchUserRoleModel", b =>
-                {
-                    b.HasOne("SnusPunch.Data.Models.Identity.SnusPunchRoleModel", "Role")
-                        .WithMany("UserRoles")
-                        .HasForeignKey("RoleId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("SnusPunch.Data.Models.Identity.SnusPunchUserModel", "SnusPunchUserModel")
-                        .WithMany("UserRoles")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Role");
-
-                    b.Navigation("SnusPunchUserModel");
-                });
-
             modelBuilder.Entity("SnusPunch.Data.Models.Entry.EntryCommentModel", b =>
                 {
                     b.Navigation("CommentLikes");
@@ -763,17 +721,6 @@ namespace SnusPunch.Data.Migrations
             modelBuilder.Entity("SnusPunch.Data.Models.Identity.SnusPunchUserModel", b =>
                 {
                     b.Navigation("Entries");
-
-                    b.Navigation("FriendsAddedByOthers");
-
-                    b.Navigation("FriendsAddedByUser");
-
-                    b.Navigation("UserRoles");
-                });
-
-            modelBuilder.Entity("SnusPunch.Data.Models.Identity.SnusPunchRoleModel", b =>
-                {
-                    b.Navigation("UserRoles");
                 });
 #pragma warning restore 612, 618
         }

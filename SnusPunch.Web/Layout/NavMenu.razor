@@ -51,9 +51,15 @@
                         </button>
                         <div id="accountDropDown" class="dropdown-content">
                             <AuthorizeView>
-                                <p class="dropdown-text">
-                                    @context.User.Identity.Name
-                                </p>
+                                <NavLink class="nav-link mn" href="@($"Profile/{context.User.Identity.Name}")">
+                                    <div class="row gap-05 align-items-center px-05">
+                                        <img class="profile-picture-round" src="@AuthViewModel.UserInfoModel?.ProfilePictureUrl" />
+
+                                        <p class="dropdown-text">
+                                            @context.User.Identity.Name
+                                        </p>
+                                    </div>
+                                </NavLink>
                             </AuthorizeView>
 
                             <hr/>

@@ -378,6 +378,9 @@ namespace SnusPunch.Data.Repository
             var sUsers = await mSnusPunchDbContext.Users
                 .Include(s => s.FavoriteSnus)
                 .Include(x => x.Entries)
+                .Include(x => x.FriendsAddedByUser)
+                .Include(x => x.FriendsAddedByOthers)
+                .Include(x => x.UserRoles)
                 .SearchByProperty(aPaginationParameters.SearchPropertyNames, aPaginationParameters.SearchString)
                 .OrderByProperty(aPaginationParameters.SortPropertyName, aPaginationParameters.SortOrder)
                 .Skip(aPaginationParameters.Skip)
@@ -387,7 +390,9 @@ namespace SnusPunch.Data.Repository
                     UserName = x.UserName,
                     FavouriteSnus = x.FavoriteSnus.Name,
                     SnusPunches = x.Entries.Count,
-                    ProfilePictureUrl = $"{mConfiguration["ProfilePicturePathFull"]}{x.ProfilePicturePath ?? "default.jpg"}"
+                    ProfilePictureUrl = $"{mConfiguration["ProfilePicturePathFull"]}{x.ProfilePicturePath ?? "default.jpg"}",
+                    Friends = x.Friends.Count,
+                    Roles = x.UserRoles.Select(x => x.RoleId).ToList(),
                 }).ToListAsync();
 
             var sCount = await mSnusPunchDbContext.Users
@@ -452,6 +457,67 @@ namespace SnusPunch.Data.Repository
                     .ToListAsync();
 
             return sStats.FirstOrDefault();
+        }
+        #endregion
+
+
+        #region Friends
+        public async Task AddFriendRequest(SnusPunchFriendRequestModel aSnusPunchFriendRequestModel)
+        {
+            await mSnusPunchDbContext.AddAsync(aSnusPunchFriendRequestModel);
+            await mSnusPunchDbContext.SaveChangesAsync();
+        }
+
+        public async Task AddFriendship(SnusPunchFriendModel aSnusPunchFriendModel)
+        {
+            await mSnusPunchDbContext.AddAsync(aSnusPunchFriendModel);
+            await mSnusPunchDbContext.SaveChangesAsync();
+        }
+
+        public async Task RemoveFriendRequest(string aSnusPunchUserModelIdOne, string aSnusPunchUserModelIdTwo)
+        {
+            var sFriendRequest = await GetFriendRequestModel(aSnusPunchUserModelIdOne, aSnusPunchUserModelIdTwo);
+
+            if(sFriendRequest == null)
+            {
+                throw new Exception("Vänförfrågan existerar ej");
+            }
+
+            mSnusPunchDbContext.Remove(sFriendRequest);
+            await mSnusPunchDbContext.SaveChangesAsync();
+        }
+
+        public async Task DenyFriendRequest(string aSnusPunchUserModelIdOne, string aSnusPunchUserModelIdTwo)
+        {
+            var sFriendRequest = await GetFriendRequestModel(aSnusPunchUserModelIdOne, aSnusPunchUserModelIdTwo);
+
+            if (sFriendRequest == null)
+            {
+                throw new Exception("Vänförfrågan existerar ej");
+            }
+
+            sFriendRequest.Denied = true;
+
+            await mSnusPunchDbContext.SaveChangesAsync();
+        }
+
+        public async Task<SnusPunchFriendRequestModel> GetFriendRequestModel(string aSnusPunchUserModelIdOne, string aSnusPunchUserModelIdTwo)
+        {
+            return await mSnusPunchDbContext.SnusPunchFriendRequests.FirstOrDefaultAsync(x => x.SnusPunchUserModelOneId == aSnusPunchUserModelIdOne && x.SnusPunchUserModelTwoId == aSnusPunchUserModelIdTwo);
+        }
+
+        public async Task RemoveFriend(string aSnusPunchUserModelIdOne, string aSnusPunchUserModelIdTwo)
+        {
+            var sFriendship = await mSnusPunchDbContext.SnusPunchFriends.FirstOrDefaultAsync(x => (x.SnusPunchUserModelOneId == aSnusPunchUserModelIdOne && x.SnusPunchUserModelTwoId == aSnusPunchUserModelIdTwo) || (x.SnusPunchUserModelTwoId == aSnusPunchUserModelIdOne && x.SnusPunchUserModelOneId == aSnusPunchUserModelIdTwo));
+
+            if(sFriendship == null)
+            {
+                throw new Exception("Du är inte vän med denna användare.");
+            }
+
+            mSnusPunchDbContext.Remove(sFriendship);
+
+            await mSnusPunchDbContext.SaveChangesAsync();
         }
         #endregion
     }

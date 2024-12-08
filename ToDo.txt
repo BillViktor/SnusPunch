@@ -1,9 +1,5 @@
 SnusPunch ToDo
 
-*Kommentarer*
-- Kunna gilla kommentarer
-- Kunna svara på kommentarer
-
 *Statistik*
 - Visa en bar chart på när man snusar på dagen
 - Visa statistik jämfört med förut, snusar man mer eller mindre?
@@ -29,3 +25,4 @@ SnusPunch ToDo
 - Google Adsense
 - Tagga folk i inlägg & kommentarer
 - Hashtags
+- Lägg till roller på användar-sidan

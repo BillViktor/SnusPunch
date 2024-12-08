@@ -1,10 +1,10 @@
-﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using SnusPunch.Data.Models.Entry;
 using SnusPunch.Data.Models.Identity;
 using SnusPunch.Shared.Models.Snus;
 using SnusPunch.Shared.Models.Statistics;
-using System.Reflection.Emit;
 
 namespace SnusPunch.Data.DbContexts
 {
@@ -15,6 +15,7 @@ namespace SnusPunch.Data.DbContexts
         public DbSet<EntryLikeModel> EntryLikes { get; set; }
         public DbSet<EntryCommentModel> EntryComments { get; set; }
         public DbSet<StatisticsTimePeriodResponseDto> StatisticsTimePeriod { get; set; }
+        public DbSet<SnusPunchFriendRequestModel> SnusPunchFriendRequests { get; set; }
         public DbSet<SnusPunchFriendModel> SnusPunchFriends { get; set; }
         public DbSet<EntryCommentLikeModel> EntryCommentLikes { get; set; }
 
@@ -38,6 +39,29 @@ namespace SnusPunch.Data.DbContexts
             aModelBuilder.Entity<SnusPunchFriendModel>(e =>
             {
                 e.ToTable("tblSnusPunchUserFriend");
+
+                e.HasKey(e => new
+                {
+                    e.SnusPunchUserModelOneId,
+                    e.SnusPunchUserModelTwoId
+                });
+
+                e.Property(c => c.CreateDate).HasDefaultValueSql("getdate()");
+
+                e.HasOne(e => e.SnusPunchUserModelOne)
+                    .WithMany(e => e.FriendsAddedByUser)
+                        .HasForeignKey(e => e.SnusPunchUserModelOneId)
+                            .OnDelete(DeleteBehavior.ClientCascade);
+
+                e.HasOne(e => e.SnusPunchUserModelTwo)
+                    .WithMany(e => e.FriendsAddedByOthers)
+                        .HasForeignKey(e => e.SnusPunchUserModelTwoId)
+                            .OnDelete(DeleteBehavior.ClientCascade);
+            });
+
+            aModelBuilder.Entity<SnusPunchFriendRequestModel>(e =>
+            {
+                e.ToTable("tblSnusPunchUserFriendRequest");
 
                 e.HasKey(e => new
                 {
@@ -144,14 +168,15 @@ namespace SnusPunch.Data.DbContexts
 
             aModelBuilder.Entity<SnusPunchUserModel>(e =>
             {
+                e.Ignore(e => e.Friends);
+
+                e.Property(c => c.CreateDate).HasDefaultValueSql("getdate()");
+
                 e.HasOne(e => e.FavoriteSnus)
                     .WithMany()
                         .HasForeignKey(e => e.FavoriteSnusId)
                             .OnDelete(DeleteBehavior.SetNull);
-
-                e.Property(c => c.CreateDate).HasDefaultValueSql("getdate()");
             });
-
 
             aModelBuilder.Entity<SnusModel>(e =>
             {
