@@ -7,8 +7,6 @@ using SnusPunch.Shared.Constants;
 using SnusPunch.Shared.Models.Entry;
 using SnusPunch.Shared.Models.Pagination;
 using SnusPunch.Shared.Models.Snus;
-using SnusPunch.Web.Components;
-using SnusPunch.Web.Components.Entry;
 using SnusPunch.Web.Components.Snus;
 using SnusPunch.Web.ViewModels.Snus;
 
@@ -69,7 +67,6 @@ namespace SnusPunch.Web.Pages
             }
         }
 
-        
 
         #region Images
         private async void LoadImage(InputFileChangeEventArgs aInputFileChangeEventArgs)
@@ -119,6 +116,7 @@ namespace SnusPunch.Web.Pages
         }
         #endregion
 
+
         #region CRUD
         private async Task AddEntry()
         {
@@ -143,94 +141,9 @@ namespace SnusPunch.Web.Pages
                 RemoveImage();
             }
         }
-
-        private async Task RemoveEntry(EntryDto aEntryDto)
-        {
-            if (!await ConfirmDeleteEntry()) return;
-
-            if (await EntryViewModel.RemoveEntry(aEntryDto.Id))
-            {
-                await GetEntries();
-            }
-        }
-
-        private async Task AdminRemoveEntry(EntryDto aEntryDto)
-        {
-            if (!await ConfirmDeleteEntry()) return;
-
-            if (await EntryViewModel.AdminRemoveEntry(aEntryDto.Id))
-            {
-                await GetEntries();
-            }
-        }
-
-        private async Task<bool> ConfirmDeleteEntry()
-        {
-            var sOptions = new ModalOptions
-            {
-                DisableBackgroundCancel = true,
-                Size = ModalSize.Custom,
-                SizeCustomClass = "modal-large",
-                Position = ModalPosition.Middle
-            };
-            var sParameters = new ModalParameters { { "Message", $"Är du säker på att du vill radera detta inlägg? Det går inte att ångra!" } };
-            var sModal = Modal.Show<ConfirmationComponent>("Bekräfta borttagning", sParameters, sOptions);
-            var sResult = await sModal.Result;
-
-            if (!sResult.Cancelled)
-            {
-                return true;
-            }
-
-            return false;
-        }
         #endregion
 
-
-        #region Likes
-        private async Task ToggleLike(EntryDto aEntryDto)
-        {
-            if (aEntryDto.LikedByUser)
-            {
-                if (await EntryViewModel.UnlikeEntry(aEntryDto.Id))
-                {
-                    aEntryDto.Likes -= 1;
-                    aEntryDto.LikedByUser = false;
-                }
-            }
-            else
-            {
-                if (await EntryViewModel.LikeEntry(aEntryDto.Id))
-                {
-                    aEntryDto.Likes += 1;
-                    aEntryDto.LikedByUser = true;
-                }
-            }
-        }
-
-        private void ShowLikes(EntryDto aEntryDto)
-        {
-            if (aEntryDto.Likes == 0)
-            {
-                EntryViewModel.AddError("Inlägget har inga likes :(");
-                return;
-            }
-
-            var sOptions = new ModalOptions
-            {
-                DisableBackgroundCancel = false,
-                Size = ModalSize.Medium,
-                Position = ModalPosition.Middle
-            };
-
-            var sParametes = new ModalParameters { { "EntryModelId", aEntryDto.Id } };
-
-            Modal.Show<ShowEntryLikesComponent>("Likes", sParametes, sOptions);
-        }
-        #endregion
-
-
-        #region Misc
+        #region Snus
         private async Task ChangeSnus()
         {
             var sOptions = new ModalOptions
@@ -252,29 +165,6 @@ namespace SnusPunch.Web.Pages
                     Id = sSnus.Id,
                     Name = sSnus.Name,
                 };
-            }
-        }
-
-        private async Task Comment(EntryDto aEntryDto)
-        {
-            var sOptions = new ModalOptions
-            {
-                DisableBackgroundCancel = true,
-                Size = ModalSize.Custom,
-                SizeCustomClass = "modal-website-width",
-                Position = ModalPosition.Middle
-            };
-
-            var sParametes = new ModalParameters { { "EntryDto", aEntryDto} };
-
-            var sModal = Modal.Show<ShowEntryComponent>($"{aEntryDto.UserName}'s inlägg", sParametes, sOptions);
-
-            var sResult = await sModal.Result;
-
-            //Inlägg raderat
-            if (!sResult.Cancelled)
-            {
-                await GetEntries();
             }
         }
 

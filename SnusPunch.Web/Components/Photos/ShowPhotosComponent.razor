@@ -1,0 +1,93 @@
+﻿@using SnusPunch.Shared.Models.Entry
+@using SnusPunch.Shared.Models.Pagination
+@using SnusPunch.Web.Components.Entry
+@using SnusPunch.Web.ViewModels.Snus
+
+<MessageComponent Errors="EntryViewModel.Errors" SuccessMessages="EntryViewModel.SuccessMessages" IsBusy="EntryViewModel.IsBusy" />
+
+
+
+<div class="flex-row">
+    @foreach (var sPhoto in mEntries)
+    {
+        <button @onclick="async () => await ShowEntry(sPhoto)" class="text-button" style="width: calc(20% - 0.5rem);">
+            <img class="image-square-profile-page" src="@sPhoto.PhotoUrl" />
+        </button>
+    }
+</div>
+
+<div class="mt-1 row justify-content-between">
+    @if ((mPaginationMetaData?.TotalCount ?? 0) > mEntries.Count)
+    {
+        <button @onclick="async () => await FetchMorePhotos()" class="text-button">Visa fler foton</button>
+    }
+
+    <span>Visar @mEntries.Count av @(mPaginationMetaData?.TotalCount ?? 0) foton</span>
+</div>
+
+@code {
+    [CascadingParameter] BlazoredModalInstance BlazoredModal { get; set; } = default!;
+    [CascadingParameter] public IModalService Modal { get; set; } = default!;
+    [Parameter] public string UserName { get; set; }
+    [Inject] EntryViewModel EntryViewModel { get; set; }
+
+    private List<EntryDto> mEntries = new List<EntryDto>();
+    private PaginationMetaData mPaginationMetaData = null;
+    private PaginationParameters mPaginationParameters = new PaginationParameters
+    {
+        SortPropertyName = "CreateDate",
+        SortOrder = SortOrderEnum.Descending,
+        PageSize = 1
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
+        mPaginationParameters.PageNumber = 1;
+        var sPhotos = await EntryViewModel.GetPhotoEntriesForUser(mPaginationParameters, UserName);
+        mEntries = sPhotos.Items;
+        mPaginationMetaData = sPhotos.PaginationMetaData;
+    }
+
+    private async Task FetchMorePhotos()
+    {
+        mPaginationParameters.PageNumber++;
+
+        var sComments = await EntryViewModel.GetPhotoEntriesForUser(mPaginationParameters, UserName);
+        mPaginationMetaData = sComments.PaginationMetaData;
+
+        mEntries.AddRange(sComments.Items);
+        mEntries = mEntries.DistinctBy(x => x.Id).ToList();
+
+        StateHasChanged();
+    }
+
+    private async Task ShowEntry(EntryDto aEntryDto)
+    {
+        //Hämta mer data om inlägget
+        var sEntry = await EntryViewModel.GetEntryById(aEntryDto.Id);
+
+        if (sEntry == null) return;
+
+        await InvokeAsync(StateHasChanged);
+
+        var sOptions = new ModalOptions
+            {
+                DisableBackgroundCancel = true,
+                Size = ModalSize.Custom,
+                SizeCustomClass = "modal-website-width",
+                Position = ModalPosition.Middle
+            };
+
+        var sParametes = new ModalParameters { { "EntryDto", sEntry } };
+
+        var sModal = Modal.Show<ShowEntryComponent>($"{sEntry.UserName}'s inlägg", sParametes, sOptions);
+
+        var sResult = await sModal.Result;
+
+        //Det raderades, ta bort det
+        if (!sResult.Cancelled)
+        {
+            mEntries.Remove(aEntryDto);
+        }
+    }
+}

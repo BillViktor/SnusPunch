@@ -234,5 +234,32 @@ namespace SnusPunch.Services.Snus
 
             return sResultModel;
         }
+
+        public async Task<ResultModel<PaginationResponse<SnusPunchUserDto>>> GetFriendsForUser(PaginationParameters aPaginationParameters, string aUserName)
+        {
+            ResultModel<PaginationResponse<SnusPunchUserDto>> sResultModel = new ResultModel<PaginationResponse<SnusPunchUserDto>>();
+
+            try
+            {
+                var sUserToFetch = await mUserManager.Users.FirstOrDefaultAsync(x => x.UserName == aUserName);
+
+                if (sUserToFetch == null)
+                {
+                    sResultModel.AddError("Användaren hittades ej");
+                    sResultModel.Success = false;
+                    return sResultModel;
+                }
+
+                sResultModel.ResultObject = await mSnusPunchRepository.GetFriendsPaginated(aPaginationParameters, aUserName);
+            }
+            catch (Exception aException)
+            {
+                mLogger.LogError(aException, "Exception at GetFriendsForUser in EntryService");
+                sResultModel.Success = false;
+                sResultModel.AddExceptionError(aException);
+            }
+
+            return sResultModel;
+        }
     }
 }

@@ -1,0 +1,85 @@
+﻿@using SnusPunch.Shared.Models.Auth
+@using SnusPunch.Shared.Models.Entry
+@using SnusPunch.Shared.Models.Pagination
+@using SnusPunch.Web.Components.Entry
+@using SnusPunch.Web.ViewModels.Snus
+
+<MessageComponent Errors="UserViewModel.Errors" SuccessMessages="UserViewModel.SuccessMessages" IsBusy="UserViewModel.IsBusy" />
+
+<div class="row align-items-center gap-1">
+    <input class="full-width" @bind:event="oninput" @bind="mPaginationParameters.SearchString" @onkeydown="async (x) => await OnKeyDown(x)" placeholder="Sök.." />
+    <button @onclick="async () => await GetFriends()">
+        <span class="align-middle material-symbols--search" />
+        <span class="align-middle"> Sök</span>
+    </button>
+</div>
+
+<div class="flex-row mt-1">
+    @foreach (var sFriend in mFriends)
+    {
+        <a href="Profile/@sFriend.UserName" style="width: calc(20% - 0.5rem);">
+            <img class="friend-square-profile-page" src="@sFriend.ProfilePictureUrl" />
+            <br />
+            <span style="font-size: 24px">@sFriend.UserName</span>
+        </a>
+    }
+</div>
+
+<div class="mt-1 row justify-content-between">
+    @if ((mPaginationMetaData?.TotalCount ?? 0) > mFriends.Count)
+    {
+        <button @onclick="async () => await FetchMoreFriends()" class="text-button">Visa fler foton</button>
+    }
+    <span>Visar @mFriends.Count av @(mPaginationMetaData?.TotalCount ?? 0) vänner</span>
+</div>
+
+@code {
+    [CascadingParameter] BlazoredModalInstance BlazoredModal { get; set; } = default!;
+    [CascadingParameter] public IModalService Modal { get; set; } = default!;
+    [Parameter] public string UserName { get; set; }
+    [Inject] UserViewModel UserViewModel { get; set; }
+
+    private List<SnusPunchUserDto> mFriends = new List<SnusPunchUserDto>();
+    private PaginationMetaData mPaginationMetaData = null;
+    private PaginationParameters mPaginationParameters = new PaginationParameters
+    {
+        SortPropertyName = "CreateDate",
+        SortOrder = SortOrderEnum.Descending,
+        PageSize = 1,
+            SearchPropertyNames = new List<string> { "SnusPunchUserModelOne.UserName", "SnusPunchUserModelTwo.UserName" }
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
+        await GetFriends();
+    }
+
+    private async Task GetFriends()
+    {
+        mPaginationParameters.PageNumber = 1;
+        var sFriends = await UserViewModel.GetFriendsForUser(mPaginationParameters, UserName);
+        mFriends = sFriends.Items;
+        mPaginationMetaData = sFriends.PaginationMetaData;
+    }
+
+    private async Task FetchMoreFriends()
+    {
+        mPaginationParameters.PageNumber++;
+
+        var sComments = await UserViewModel.GetFriendsForUser(mPaginationParameters, UserName);
+        mPaginationMetaData = sComments.PaginationMetaData;
+
+        mFriends.AddRange(sComments.Items);
+        mFriends = mFriends.DistinctBy(x => x.UserName).ToList();
+
+        StateHasChanged();
+    }
+
+    private async Task OnKeyDown(KeyboardEventArgs aKeyboardEventArgs)
+    {
+        if (aKeyboardEventArgs.Key == "Enter")
+        {
+            await GetFriends();
+        }
+    }
+}

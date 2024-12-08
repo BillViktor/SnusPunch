@@ -168,8 +168,6 @@ namespace SnusPunch.Data.DbContexts
 
             aModelBuilder.Entity<SnusPunchUserModel>(e =>
             {
-                e.Ignore(e => e.Friends);
-
                 e.Property(c => c.CreateDate).HasDefaultValueSql("getdate()");
 
                 e.HasOne(e => e.FavoriteSnus)

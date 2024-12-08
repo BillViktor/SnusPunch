@@ -7,6 +7,7 @@
         EntryLike,
         EntryComment,
         EntryCommentLike,
+        Friend,
         Snus,
         Statistics,
         User

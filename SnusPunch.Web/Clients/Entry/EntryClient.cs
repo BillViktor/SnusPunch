@@ -41,6 +41,56 @@ namespace SnusPunch.Web.Clients.Snus
             return sResultModel;
         }
 
+        public async Task<ResultModel<PaginationResponse<EntryDto>>> GetPhotoEntriesForUser(PaginationParameters aPaginationParameters, string aUserName)
+        {
+            ResultModel<PaginationResponse<EntryDto>> sResultModel = new ResultModel<PaginationResponse<EntryDto>>();
+
+            try
+            {
+                var sHttpClient = mHttpClientFactory.CreateClient(HttpClientEnum.Entry.ToString());
+                var sResponse = await sHttpClient.PostAsJsonAsync($"GetPhotoEntriesForUser/{aUserName}", aPaginationParameters);
+
+                if (!sResponse.IsSuccessStatusCode)
+                {
+                    throw new Exception("Non-success status code at GetPhotoEntriesForUser in EntryClient");
+                }
+
+                sResultModel = await sResponse.Content.ReadFromJsonAsync<ResultModel<PaginationResponse<EntryDto>>>();
+            }
+            catch (Exception aException)
+            {
+                sResultModel.Success = false;
+                sResultModel.AddExceptionError(aException);
+            }
+
+            return sResultModel;
+        }
+
+        public async Task<ResultModel<EntryDto>> GetEntryById(int aEntryId)
+        {
+            ResultModel<EntryDto> sResultModel = new ResultModel<EntryDto>();
+
+            try
+            {
+                var sHttpClient = mHttpClientFactory.CreateClient(HttpClientEnum.Entry.ToString());
+                var sResponse = await sHttpClient.GetAsync($"GetEntryById/{aEntryId}");
+
+                if (!sResponse.IsSuccessStatusCode)
+                {
+                    throw new Exception("Non-success status code at aEntryId in EntryClient");
+                }
+
+                sResultModel = await sResponse.Content.ReadFromJsonAsync<ResultModel<EntryDto>>();
+            }
+            catch (Exception aException)
+            {
+                sResultModel.Success = false;
+                sResultModel.AddExceptionError(aException);
+            }
+
+            return sResultModel;
+        }
+
         public async Task<ResultModel<EntryDto>> AddEntry(AddEntryDto aAddEntryDto)
         {
             ResultModel<EntryDto> sResultModel = new ResultModel<EntryDto>();

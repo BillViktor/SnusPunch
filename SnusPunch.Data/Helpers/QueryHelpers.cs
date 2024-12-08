@@ -1,11 +1,7 @@
-﻿using Microsoft.EntityFrameworkCore.Metadata.Internal;
-using SnusPunch.Data.Models.Entry;
+﻿using SnusPunch.Data.Models.Entry;
 using SnusPunch.Shared.Models.Entry;
 using SnusPunch.Shared.Models.Pagination;
-using System.Data.Common;
 using System.Linq.Expressions;
-using System.Reflection.Metadata;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace SnusPunch.Data.Helpers
 {

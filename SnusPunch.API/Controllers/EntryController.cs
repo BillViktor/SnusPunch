@@ -27,6 +27,18 @@ namespace SnusPunch.API.Controllers
             return await mEntryService.GetEntriesPaginated(aPaginationParameters, aFetchEmptyPunches, aEntryFilterEnum, User);
         }
 
+        [HttpPost("GetPhotoEntriesForUser/{aUserName}")]
+        public async Task<ResultModel<PaginationResponse<EntryDto>>> GetPhotoEntriesForUser(PaginationParameters aPaginationParameters, string aUserName)
+        {
+            return await mEntryService.GetPhotoEntriesForUser(aPaginationParameters, aUserName, User);
+        }
+
+        [HttpGet("GetEntryById/{aEntryId}")]
+        public async Task<ResultModel<EntryDto>> GetEntryById(int aEntryId)
+        {
+            return await mEntryService.GetEntryById(aEntryId, User);
+        }
+
         [HttpPost("AddEntry")]
         public async Task<ResultModel<EntryDto>> AddEntry(AddEntryDto aAddEntryDto)
         {

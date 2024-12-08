@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using SnusPunch.Data.Models.Entry;
@@ -54,15 +55,87 @@ namespace SnusPunch.Services.Entry
             return sResultModel;
         }
 
+        public async Task<ResultModel<PaginationResponse<EntryDto>>> GetPhotoEntriesForUser(PaginationParameters aPaginationParameters, string aUserName, ClaimsPrincipal aClaimsPrincipal)
+        {
+            ResultModel<PaginationResponse<EntryDto>> sResultModel = new ResultModel<PaginationResponse<EntryDto>>();
+
+            try
+            {
+                var sUser = await mUserManager.GetUserAsync(aClaimsPrincipal);
+
+                if (sUser == null)
+                {
+                    sResultModel.AddError("Användaren hittades ej");
+                    sResultModel.Success = false;
+                    return sResultModel;
+                }
+
+                var sUserToFetch = await mUserManager.Users.FirstOrDefaultAsync(x => x.UserName == aUserName);
+
+                if (sUserToFetch == null)
+                {
+                    sResultModel.AddError("Användaren hittades ej");
+                    sResultModel.Success = false;
+                    return sResultModel;
+                }
+
+                sResultModel.ResultObject = await mSnusPunchRepository.GetPhotoEntriesForUser(aPaginationParameters, sUserToFetch.Id, sUser.Id);
+            }
+            catch (Exception aException)
+            {
+                mLogger.LogError(aException, "Exception at GetPhotoEntriesForUser in EntryService");
+                sResultModel.Success = false;
+                sResultModel.AddExceptionError(aException);
+            }
+
+            return sResultModel;
+        }
+
+        public async Task<ResultModel<EntryDto>> GetEntryById(int aEntryId, ClaimsPrincipal aClaimsPrincipal)
+        {
+            ResultModel<EntryDto> sResultModel = new ResultModel<EntryDto>();
+
+            try
+            {
+                var sUser = await mUserManager.GetUserAsync(aClaimsPrincipal);
+
+                if (sUser == null)
+                {
+                    sResultModel.AddError("Användaren hittades ej");
+                    sResultModel.Success = false;
+                    return sResultModel;
+                }
+
+                var sEntry = await mSnusPunchRepository.GetEntryDtoById(aEntryId, sUser.Id);
+
+                if(sEntry == null)
+                {
+                    sResultModel.Success = false;
+                    sResultModel.AddError("Inlägget hittades ej");
+                    return sResultModel;
+                }
+
+                sResultModel.ResultObject = sEntry;
+            }
+            catch (Exception aException)
+            {
+                mLogger.LogError(aException, "Exception at GetEntryById in EntryService");
+                sResultModel.Success = false;
+                sResultModel.AddExceptionError(aException);
+            }
+
+            return sResultModel;
+        }
+
         public async Task<ResultModel<EntryDto>> AddEntry(AddEntryWithImageDto aAddEntryDto, ClaimsPrincipal aClaimsPrincipal)
         {
             ResultModel<EntryDto> sResultModel = new ResultModel<EntryDto>();
 
             try
             {
-                var sUserId = mUserManager.GetUserId(aClaimsPrincipal);
+                var sUser = await mUserManager.GetUserAsync(aClaimsPrincipal);
 
-                if(sUserId == null)
+                if(sUser == null)
                 {
                     sResultModel.Success = false;
                     sResultModel.AddError("Användaren hittades ej.");
@@ -73,7 +146,7 @@ namespace SnusPunch.Services.Entry
                 {
                     Description = string.IsNullOrEmpty(aAddEntryDto.Description) ? null : aAddEntryDto.Description,
                     SnusId = aAddEntryDto.SnusId,
-                    SnusPunchUserModelId = sUserId
+                    SnusPunchUserModelId = sUser.Id
                 };
 
                 //Spara bild om vi fick en sån
@@ -107,7 +180,7 @@ namespace SnusPunch.Services.Entry
                     sEntryModel.PhotoUrl = sFileName + ".jpg";
                 }
 
-                sResultModel.ResultObject = await mSnusPunchRepository.AddEntry(sEntryModel);
+                sResultModel.ResultObject = await mSnusPunchRepository.AddEntry(sEntryModel, sUser.Id);
             }
             catch (Exception aException)
             {

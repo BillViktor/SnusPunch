@@ -1,0 +1,187 @@
+﻿@using SnusPunch.Shared.Models.Entry
+@using SnusPunch.Web.Components.Entry
+@using SnusPunch.Web.ViewModels.Snus
+
+<MessageComponent Errors="EntryViewModel.Errors" SuccessMessages="EntryViewModel.SuccessMessages" IsBusy="EntryViewModel.IsBusy"/>
+
+@foreach (var sEntry in EntryList)
+{
+    <div class="entry-card @(sEntry != EntryList.First() ? "mt-1" : "")">
+        <div class="row justify-content-between align-items-start">
+            <div class="row align-items-center gap-1">
+                <a href="@($"Profile/{sEntry.UserName}")" class="profile-picture-button" title="@($"Gå till {sEntry.UserName}'s profil")">
+                    <img class="profile-picture-round" src="@sEntry.UserProfilePictureUrl" />
+                </a>
+
+                <div>
+                    <p class="mn">
+                        @sEntry.UserName tog en <a href="Snus/@sEntry.SnusName">@sEntry.SnusName</a>
+                    </p>
+                    <span title="@sEntry.CreateDate">
+                        @sEntry.GetTimeAgo()
+                    </span>
+                </div>
+            </div>
+
+
+            <AuthorizeView>
+                @if (context.User.IsInRole("Admin"))
+                {
+                    <button title="Radera inlägg" class="button-icon">
+                        <span @onclick="async () => await AdminRemoveEntry(sEntry)" class="material-symbols--delete" />
+                    </button>
+                }
+                else
+                {
+                    if (context.User.Identity.Name == sEntry.UserName)
+                    {
+                        <button title="Radera inlägg" class="button-icon">
+                            <span @onclick="async () => await RemoveEntry(sEntry)" class="material-symbols--delete" />
+                        </button>
+                    }
+                }
+            </AuthorizeView>
+        </div>
+
+        @if (!string.IsNullOrEmpty(sEntry.Description))
+        {
+            <p>
+                @sEntry.Description
+            </p>
+        }
+
+        @if (!string.IsNullOrEmpty(sEntry.PhotoUrl))
+        {
+            <p>
+                <img class="full-width" src="@sEntry.PhotoUrl" />
+            </p>
+        }
+
+        <div class="row mt-1 justify-content-between">
+            <button @onclick="() => ShowLikes(sEntry)" class="text-button">
+                <span title="Klicka för att se vilka som gillar inlägget!">@sEntry.GetLikesString()</span>
+            </button>
+            <button @onclick="async () => await Comment(sEntry)" class="text-button">
+                <span title="Klicka för att se kommentarer!">@sEntry.GetCommentsString()</span>
+            </button>
+        </div>
+
+        <hr />
+
+        <div class="row gap-1">
+            <button @onclick="async () => await ToggleLike(sEntry)" class="full-width">@(sEntry.LikedByUser ? "Du gillar detta" : "Gilla")</button>
+            <button @onclick="async () => await Comment(sEntry)" class="full-width">Kommentera</button>
+        </div>
+    </div>
+}
+
+@code {
+    [CascadingParameter] public IModalService Modal { get; set; } = default!;
+    [Parameter] public List<EntryDto> EntryList { get; set; } = new List<EntryDto>();
+    [Parameter] public EventCallback Refresh { get; set; } 
+    [Inject] EntryViewModel EntryViewModel { get; set; }
+
+    private async Task ToggleLike(EntryDto aEntryDto)
+    {
+        if (aEntryDto.LikedByUser)
+        {
+            if (await EntryViewModel.UnlikeEntry(aEntryDto.Id))
+            {
+                aEntryDto.Likes -= 1;
+                aEntryDto.LikedByUser = false;
+            }
+        }
+        else
+        {
+            if (await EntryViewModel.LikeEntry(aEntryDto.Id))
+            {
+                aEntryDto.Likes += 1;
+                aEntryDto.LikedByUser = true;
+            }
+        }
+    }
+
+    private async Task Comment(EntryDto aEntryDto)
+    {
+        var sOptions = new ModalOptions
+            {
+                DisableBackgroundCancel = true,
+                Size = ModalSize.Custom,
+                SizeCustomClass = "modal-website-width",
+                Position = ModalPosition.Middle
+            };
+
+        var sParametes = new ModalParameters { { "EntryDto", aEntryDto } };
+
+        var sModal = Modal.Show<ShowEntryComponent>($"{aEntryDto.UserName}'s inlägg", sParametes, sOptions);
+
+        var sResult = await sModal.Result;
+
+        //Inlägg raderat
+        if (!sResult.Cancelled)
+        {
+            await Refresh.InvokeAsync();
+        }
+    }
+
+    private async Task RemoveEntry(EntryDto aEntryDto)
+    {
+        if (!await ConfirmDeleteEntry()) return;
+
+        if (await EntryViewModel.RemoveEntry(aEntryDto.Id))
+        {
+            await Refresh.InvokeAsync();
+        }
+    }
+
+    private async Task AdminRemoveEntry(EntryDto aEntryDto)
+    {
+        if (!await ConfirmDeleteEntry()) return;
+
+        if (await EntryViewModel.AdminRemoveEntry(aEntryDto.Id))
+        {
+            await Refresh.InvokeAsync();
+        }
+    }
+
+    private async Task<bool> ConfirmDeleteEntry()
+    {
+        var sOptions = new ModalOptions
+            {
+                DisableBackgroundCancel = true,
+                Size = ModalSize.Custom,
+                SizeCustomClass = "modal-large",
+                Position = ModalPosition.Middle
+            };
+        var sParameters = new ModalParameters { { "Message", $"Är du säker på att du vill radera detta inlägg? Det går inte att ångra!" } };
+        var sModal = Modal.Show<ConfirmationComponent>("Bekräfta borttagning", sParameters, sOptions);
+        var sResult = await sModal.Result;
+
+        if (!sResult.Cancelled)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    private void ShowLikes(EntryDto aEntryDto)
+    {
+        if (aEntryDto.Likes == 0)
+        {
+            EntryViewModel.AddError("Inlägget har inga likes :(");
+            return;
+        }
+
+        var sOptions = new ModalOptions
+            {
+                DisableBackgroundCancel = false,
+                Size = ModalSize.Medium,
+                Position = ModalPosition.Middle
+            };
+
+        var sParametes = new ModalParameters { { "EntryModelId", aEntryDto.Id } };
+
+        Modal.Show<ShowEntryLikesComponent>("Likes", sParametes, sOptions);
+    }
+}

@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Microsoft.IdentityModel.Tokens;
 using SnusPunch.Data.DbContexts;
 using SnusPunch.Data.Helpers;
 using SnusPunch.Data.Models.Entry;
@@ -96,8 +97,6 @@ namespace SnusPunch.Data.Repository
         public async Task<PaginationResponse<EntryDto>> GetEntriesPaginated(PaginationParameters aPaginationParameters, bool aFetchEmptyPunches, EntryFilterEnum aEntryFilterEnum, string aSnusPunchUserModelId)
         {
             var sSnus = await mSnusPunchDbContext.Entries
-                .Include(x => x.Snus)
-                .Include(x => x.SnusPunchUserModel)
                 .SearchByProperty(aPaginationParameters.SearchPropertyNames, aPaginationParameters.SearchString)
                 .FilterEntryHelper(aSnusPunchUserModelId, aEntryFilterEnum, aFetchEmptyPunches)
                 .OrderByProperty(aPaginationParameters.SortPropertyName, aPaginationParameters.SortOrder)
@@ -125,37 +124,71 @@ namespace SnusPunch.Data.Repository
             return new PaginationResponse<EntryDto>(sSnus, sCount, aPaginationParameters.PageNumber, aPaginationParameters.PageSize);
         }
 
+        public async Task<PaginationResponse<EntryDto>> GetPhotoEntriesForUser(PaginationParameters aPaginationParameters, string aSnusPunchUserModelIdToFetch, string aSnusPunchUserModelId)
+        {
+            var sSnus = await mSnusPunchDbContext.Entries
+                .Where(x => x.SnusPunchUserModelId == aSnusPunchUserModelIdToFetch && x.PhotoUrl != null)
+                .SearchByProperty(aPaginationParameters.SearchPropertyNames, aPaginationParameters.SearchString)
+                .OrderByProperty(aPaginationParameters.SortPropertyName, aPaginationParameters.SortOrder)
+                .Skip(aPaginationParameters.Skip)
+                .Take(aPaginationParameters.PageSize)
+                .AsNoTracking().Select(x => new EntryDto
+                {
+                    Id = x.Id,
+                    CreateDate = x.CreateDate,
+                    Description = x.Description,
+                    PhotoUrl = x.PhotoUrl != null ? mConfiguration["PostPicturePathFull"] + x.PhotoUrl : null,
+                    SnusName = x.SnusName,
+                    UserName = x.SnusPunchUserModel.UserName,
+                    UserProfilePictureUrl = $"{mConfiguration["ProfilePicturePathFull"]}{x.SnusPunchUserModel.ProfilePicturePath ?? "default.jpg"}",
+                    Likes = x.Likes.Count,
+                    CommentCount = x.Comments.Count,
+                    LikedByUser = x.Likes.Any(x => x.SnusPunchUserModelId == aSnusPunchUserModelId)
+                }).ToListAsync();
+
+            var sCount = await mSnusPunchDbContext.Entries
+                .Where(x => x.SnusPunchUserModelId == aSnusPunchUserModelIdToFetch && x.PhotoUrl != null)
+                .SearchByProperty(aPaginationParameters.SearchPropertyNames, aPaginationParameters.SearchString)
+                .CountAsync();
+
+            return new PaginationResponse<EntryDto>(sSnus, sCount, aPaginationParameters.PageNumber, aPaginationParameters.PageSize);
+        }
+
         public async Task<EntryModel> GetEntryById(int aEntryModelId)
         {
             return await mSnusPunchDbContext.Entries.AsNoTracking().FirstOrDefaultAsync(x => x.Id == aEntryModelId);
         }
 
-        private async Task<EntryDto> GetEntryDtoById(int aEntryModelId)
+        public async Task<EntryDto> GetEntryDtoById(int aEntryModelId, string aUserId)
         {
             var sEntry = await mSnusPunchDbContext.Entries
-                .Include(x => x.Snus)
                 .Include(x => x.SnusPunchUserModel)
+                .Include(x => x.Likes)
+                .Include(x => x.Comments)
                 .AsNoTracking()
                 .FirstOrDefaultAsync(x => x.Id == aEntryModelId);
 
             return new EntryDto
             {
-                Id = aEntryModelId,
+                Id = sEntry.Id,
                 CreateDate = sEntry.CreateDate,
                 Description = sEntry.Description,
+                PhotoUrl = sEntry.PhotoUrl != null ? mConfiguration["PostPicturePathFull"] + sEntry.PhotoUrl : null,
                 SnusName = sEntry.SnusName,
                 UserName = sEntry.SnusPunchUserModel.UserName,
                 UserProfilePictureUrl = $"{mConfiguration["ProfilePicturePathFull"]}{sEntry.SnusPunchUserModel.ProfilePicturePath ?? "default.jpg"}",
-                PhotoUrl = sEntry.PhotoUrl == null ? null : mConfiguration["PostPicturePathFull"] + sEntry.PhotoUrl,
+                Likes = sEntry.Likes.Count,
+                CommentCount = sEntry.Comments.Count,
+                LikedByUser = sEntry.Likes.Any(x => x.SnusPunchUserModelId == aUserId)
             };
         }
 
-        public async Task<EntryDto> AddEntry(EntryModel aEntryModel)
+        public async Task<EntryDto> AddEntry(EntryModel aEntryModel, string aUserId)
         {
             await mSnusPunchDbContext.AddAsync(aEntryModel);
             await mSnusPunchDbContext.SaveChangesAsync();
 
-            return await GetEntryDtoById(aEntryModel.Id);
+            return await GetEntryDtoById(aEntryModel.Id, aUserId);
         }
 
         public async Task RemoveEntry(EntryModel aEntryModel)
@@ -376,10 +409,6 @@ namespace SnusPunch.Data.Repository
         public async Task<PaginationResponse<SnusPunchUserDto>> GetUsersPaginated(PaginationParameters aPaginationParameters)
         {
             var sUsers = await mSnusPunchDbContext.Users
-                .Include(s => s.FavoriteSnus)
-                .Include(x => x.Entries)
-                .Include(x => x.FriendsAddedByUser)
-                .Include(x => x.FriendsAddedByOthers)
                 .SearchByProperty(aPaginationParameters.SearchPropertyNames, aPaginationParameters.SearchString)
                 .OrderByProperty(aPaginationParameters.SortPropertyName, aPaginationParameters.SortOrder)
                 .Skip(aPaginationParameters.Skip)
@@ -390,7 +419,7 @@ namespace SnusPunch.Data.Repository
                     FavouriteSnus = x.FavoriteSnus.Name,
                     SnusPunches = x.Entries.Count,
                     ProfilePictureUrl = $"{mConfiguration["ProfilePicturePathFull"]}{x.ProfilePicturePath ?? "default.jpg"}",
-                    Friends = x.Friends.Count,
+                    Friends = x.FriendsAddedByOthers.Count() + x.FriendsAddedByUser.Count()
                 }).ToListAsync();
 
             var sCount = await mSnusPunchDbContext.Users
@@ -398,6 +427,62 @@ namespace SnusPunch.Data.Repository
                 .CountAsync();
 
             return new PaginationResponse<SnusPunchUserDto>(sUsers, sCount, aPaginationParameters.PageNumber, aPaginationParameters.PageSize);
+        }
+
+        public async Task<SnusPunchUserProfileDto> GetUserProfile(string aUserNameToFetch, string aUserIdToFetch, string aCurrentUserId)
+        {
+            return await mSnusPunchDbContext.Users
+                .AsNoTracking().Select(x => new SnusPunchUserProfileDto
+                {
+                    UserName = x.UserName,
+                    FavouriteSnus = x.FavoriteSnus.Name,
+                    EntryCount = x.Entries.Count,
+                    ProfilePictureUrl = $"{mConfiguration["ProfilePicturePathFull"]}{x.ProfilePicturePath ?? "default.jpg"}",
+                    FriendsCount = x.FriendsAddedByOthers.Count() + x.FriendsAddedByUser.Count(),
+                    Friends = mSnusPunchDbContext.SnusPunchFriends
+                        .Where(x => x.SnusPunchUserModelOneId == aUserIdToFetch || x.SnusPunchUserModelTwoId == aUserIdToFetch)
+                        .OrderByDescending(x => x.CreateDate)
+                        .Select(x => new SnusPunchUserDto
+                        {
+                            UserName = x.SnusPunchUserModelOneId == aUserIdToFetch ? x.SnusPunchUserModelTwo.UserName : x.SnusPunchUserModelOne.UserName,
+                            ProfilePictureUrl = x.SnusPunchUserModelOneId == aUserIdToFetch ? $"{mConfiguration["ProfilePicturePathFull"]}{x.SnusPunchUserModelTwo.ProfilePicturePath ?? "default.jpg"}" : $"{mConfiguration["ProfilePicturePathFull"]}{x.SnusPunchUserModelOne.ProfilePicturePath ?? "default.jpg"}",
+                        }).Take(9).ToList(),
+                    PhotoEntries = x.Entries.Where(x => x.PhotoUrl != null).Select(x => new EntryDto
+                    {
+                        Id = x.Id,
+                        PhotoUrl = mConfiguration["PostPicturePathFull"] + x.PhotoUrl
+                    }).Take(9).ToList()
+                }).FirstOrDefaultAsync(x => x.UserName == aUserNameToFetch);
+        }
+
+        public async Task<FriendshipStatusEnum> GetFriendshipStatus(string aUserIdToFetch, string aCurrentUserId)
+        {
+            if(await mSnusPunchDbContext.SnusPunchFriends.AnyAsync(x => (x.SnusPunchUserModelOneId == aUserIdToFetch && x.SnusPunchUserModelTwoId == aCurrentUserId) || (x.SnusPunchUserModelTwoId == aUserIdToFetch && x.SnusPunchUserModelOneId == aCurrentUserId)))
+            {
+                return FriendshipStatusEnum.Friends;
+            }
+
+            var sFriendRequestFromCurrentUser = await mSnusPunchDbContext.SnusPunchFriendRequests.FirstOrDefaultAsync(x => x.SnusPunchUserModelOneId == aCurrentUserId);
+
+            if(sFriendRequestFromCurrentUser != null)
+            {
+                if(sFriendRequestFromCurrentUser.Denied)
+                {
+                    return FriendshipStatusEnum.Rejected;
+                }
+
+                return FriendshipStatusEnum.Pending;
+            }
+
+            var sFriendRequestFromUser = await mSnusPunchDbContext.SnusPunchFriendRequests.FirstOrDefaultAsync(x => x.SnusPunchUserModelOneId == aUserIdToFetch);
+
+            if (sFriendRequestFromUser != null)
+            {
+                return FriendshipStatusEnum.Received;
+            }
+
+
+            return FriendshipStatusEnum.None;
         }
         #endregion
 
@@ -516,6 +601,50 @@ namespace SnusPunch.Data.Repository
             mSnusPunchDbContext.Remove(sFriendship);
 
             await mSnusPunchDbContext.SaveChangesAsync();
+        }
+
+        public async Task<PaginationResponse<SnusPunchUserDto>> GetFriendsPaginated(PaginationParameters aPaginationParameters, string aUserName)
+        {
+            var sQuery = mSnusPunchDbContext.SnusPunchFriends
+                .Where(x => x.SnusPunchUserModelOne.UserName == aUserName || x.SnusPunchUserModelTwo.UserName == aUserName)
+                .SearchByProperty(aPaginationParameters.SearchPropertyNames, aPaginationParameters.SearchString)
+                .OrderByProperty(aPaginationParameters.SortPropertyName, aPaginationParameters.SortOrder).AsQueryable();
+
+            var sSearchString = aPaginationParameters.SearchString;
+
+            if (!aPaginationParameters.SearchString.IsNullOrEmpty())
+            {
+                sQuery = sQuery.Where(x => (x.SnusPunchUserModelOne.UserName.Contains(sSearchString) && x.SnusPunchUserModelOne.UserName != aUserName) || (x.SnusPunchUserModelTwo.UserName.Contains(sSearchString) && x.SnusPunchUserModelTwo.UserName != aUserName));
+            }
+
+            var sFriends = await sQuery
+                .Skip(aPaginationParameters.Skip)
+                .Take(aPaginationParameters.PageSize)
+                .AsNoTracking().Select(x => new SnusPunchUserDto
+                {
+                    UserName = x.SnusPunchUserModelOne.UserName == aUserName ? x.SnusPunchUserModelTwo.UserName : x.SnusPunchUserModelOne.UserName,
+                    ProfilePictureUrl = x.SnusPunchUserModelOne.UserName == aUserName ? $"{mConfiguration["ProfilePicturePathFull"]}{x.SnusPunchUserModelTwo.ProfilePicturePath ?? "default.jpg"}" : $"{mConfiguration["ProfilePicturePathFull"]}{x.SnusPunchUserModelOne.ProfilePicturePath ?? "default.jpg"}",
+                }).ToListAsync();
+
+            int sCount = 0;
+
+            if (!aPaginationParameters.SearchString.IsNullOrEmpty())
+            {
+                sCount = await mSnusPunchDbContext.SnusPunchFriends
+                .Where(x => x.SnusPunchUserModelOne.UserName == aUserName || x.SnusPunchUserModelTwo.UserName == aUserName)
+                .Where(x => (x.SnusPunchUserModelOne.UserName.Contains(sSearchString) && x.SnusPunchUserModelOne.UserName != aUserName) || (x.SnusPunchUserModelTwo.UserName.Contains(sSearchString) && x.SnusPunchUserModelTwo.UserName != aUserName))
+                .SearchByProperty(aPaginationParameters.SearchPropertyNames, aPaginationParameters.SearchString)
+                .CountAsync();
+            }
+            else
+            {
+                sCount = await mSnusPunchDbContext.SnusPunchFriends
+                .Where(x => x.SnusPunchUserModelOne.UserName == aUserName || x.SnusPunchUserModelTwo.UserName == aUserName)
+                .SearchByProperty(aPaginationParameters.SearchPropertyNames, aPaginationParameters.SearchString)
+                .CountAsync();
+            }
+
+            return new PaginationResponse<SnusPunchUserDto>(sFriends, sCount, aPaginationParameters.PageNumber, aPaginationParameters.PageSize);
         }
         #endregion
     }

@@ -39,6 +39,31 @@ namespace SnusPunch.Web.Clients.Snus
             return sResultModel;
         }
 
+        public async Task<ResultModel<SnusPunchUserProfileDto>> GetUserProfile(string aUserName)
+        {
+            ResultModel<SnusPunchUserProfileDto> sResultModel = new ResultModel<SnusPunchUserProfileDto>();
+
+            try
+            {
+                var sHttpClient = mHttpClientFactory.CreateClient(HttpClientEnum.User.ToString());
+                var sResponse = await sHttpClient.GetAsync($"GetUserProfile/{aUserName}");
+
+                if (!sResponse.IsSuccessStatusCode)
+                {
+                    throw new Exception("Non-success status code at GetUserProfile in UserClient");
+                }
+
+                sResultModel = await sResponse.Content.ReadFromJsonAsync<ResultModel<SnusPunchUserProfileDto>>();
+            }
+            catch (Exception aException)
+            {
+                sResultModel.Success = false;
+                sResultModel.AddExceptionError(aException);
+            }
+
+            return sResultModel;
+        }
+
         public async Task<ResultModel> Delete()
         {
             ResultModel sResultModel = new ResultModel();

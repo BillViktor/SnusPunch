@@ -18,9 +18,9 @@
                 {
                     <tr>
                         <td class="row justify-content-start profile-picture-cell">
-                            <button @onclick="() => ShowProfilePicture(sUser)" class="profile-picture-button">
+                            <a href="@($"Profile/{sUser.UserName}")" class="profile-picture-button">
                                 <img class="profile-picture-round" src="@sUser.ProfilePictureUrl" />
-                            </button>
+                            </a>
                         </td>
                         <td>@sUser.UserName</td>
                     </tr>
@@ -81,13 +81,5 @@
         {
             await GetEntryLikes();
         }
-    }
-
-    private void ShowProfilePicture(EntryLikeDto aEntryLikeDto)
-    {
-        var sParameters = new ModalParameters { { "ProfilePictureUrl", aEntryLikeDto.ProfilePictureUrl } };
-        var sOptions = new ModalOptions { Size = ModalSize.Automatic, Position = ModalPosition.Middle };
-
-        Modal.Show<ProfilePictureComponent>($"{aEntryLikeDto.UserName}'s Profilbild", sParameters, sOptions);
     }
 }

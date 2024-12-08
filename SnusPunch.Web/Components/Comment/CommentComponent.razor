@@ -62,8 +62,7 @@
                                       OnLike="OnLike"
                                       OnRemove="OnRemove"
                                       OnAdminRemove="OnAdminRemove"
-                                      OnReply="OnReply"
-                                      OnShowProfilePicture="OnShowProfilePicture" />
+                                      OnReply="OnReply" />
                 </div>
             }
         }
@@ -77,7 +76,6 @@
     [Parameter] public EventCallback<EntryCommentDto> OnLike { get; set; }
     [Parameter] public EventCallback<EntryCommentDto> OnRemove { get; set; }
     [Parameter] public EventCallback<EntryCommentDto> OnAdminRemove { get; set; }
-    [Parameter] public EventCallback<EntryCommentDto> OnShowProfilePicture { get; set; }
 
     [Inject] EntryViewModel EntryViewModel { get; set; }
 

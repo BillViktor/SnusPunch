@@ -275,6 +275,13 @@ hr {
     display: flex;
 }
 
+.flex-row {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    align-items: flex-start;
+}
+
 .full-width {
     width: 100%;
 }
@@ -422,6 +429,7 @@ a {
     font-size: 1rem;
     font-weight: normal;
     height: auto;
+    display: inline;
 }
 
 .button-icon {
@@ -442,6 +450,16 @@ a {
     width: auto;
 }
 
+.profile-picture-button-large {
+    background-color: transparent;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    border-radius: 1.25rem;
+    width: auto;
+    height: auto;
+}
+
 button {
     display: inline-block;
     text-decoration: none;
@@ -452,6 +470,22 @@ button {
     font-weight: bold;
     font-size: 1.25rem;
     padding: 0 1rem;
+    background-color: var(--primary-color);
+    color: #fff;
+    outline: none;
+    border: 1px solid transparent;
+    border-color: #ccc;
+}
+
+.button {
+    display: inline-block;
+    text-decoration: none;
+    vertical-align: middle;
+    white-space: nowrap;
+    border-radius: 0.25rem;
+    font-weight: bold;
+    font-size: 1.25rem;
+    padding: 0.5rem 1rem;
     background-color: var(--primary-color);
     color: #fff;
     outline: none;
@@ -572,10 +606,39 @@ button:hover {
     pointer-events: none;
 }
 
+.profile-picture-round-large {
+    height: 10rem;
+    width: 10rem;
+    border-radius: 50%;
+    object-fit: cover;
+    pointer-events: none;
+}
+
+.profile-picture-round-friends-list {
+    width: 30%;
+    aspect-ratio: 1 / 1;
+    border-radius: 50%;
+    object-fit: cover;
+    pointer-events: none;
+}
+
 .profile-picture-full-size {
     max-height: 40vh;
     max-width: 40vw;
 }
+
+.image-square-profile-page {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    object-fit: cover;
+}
+
+.friend-square-profile-page {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    object-fit: cover;
+}
+
 /* Från app.css */
 .btn-primary {
     color: #fff;

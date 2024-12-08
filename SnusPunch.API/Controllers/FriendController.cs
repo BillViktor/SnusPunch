@@ -1,10 +1,9 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SnusPunch.Services.Snus;
+using SnusPunch.Shared.Models.Auth;
 using SnusPunch.Shared.Models.Pagination;
 using SnusPunch.Shared.Models.ResultModel;
-using SnusPunch.Shared.Models.Snus;
-using System.Security.Claims;
 
 namespace SnusPunch.API.Controllers
 {
@@ -50,6 +49,12 @@ namespace SnusPunch.API.Controllers
         public async Task<ResultModel> RemoveFriend(string aUserName)
         {
             return await mFriendService.RemoveFriend(aUserName, User);
+        }
+
+        [HttpPost("GetFriendsForUser/{aUserName}")]
+        public async Task<ResultModel<PaginationResponse<SnusPunchUserDto>>> GetFriendsForUser(PaginationParameters aPaginationParameters, string aUserName)
+        {
+            return await mFriendService.GetFriendsForUser(aPaginationParameters, aUserName);
         }
     }
 }

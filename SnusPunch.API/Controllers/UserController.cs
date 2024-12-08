@@ -22,11 +22,16 @@ namespace SnusPunch.API.Controllers
             mUserService = aUserService;
         }
 
-        [Authorize]
         [HttpPost("GetUsersPaginated")]
         public async Task<ResultModel<PaginationResponse<SnusPunchUserDto>>> AddSnus(PaginationParameters aPaginationParameters)
         {
             return await mUserService.GetUsersPaginated(aPaginationParameters);
+        }
+
+        [HttpGet("GetUserProfile/{aUserName}")]
+        public async Task<ResultModel<SnusPunchUserProfileDto>> GetUserProfile(string aUserName)
+        {
+            return await mUserService.GetUserProfile(aUserName, User);
         }
     }
 }

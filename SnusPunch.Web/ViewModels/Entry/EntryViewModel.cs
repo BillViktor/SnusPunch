@@ -47,6 +47,46 @@ namespace SnusPunch.Web.ViewModels.Snus
             return sPaginationResponse;
         }
 
+        public async Task<PaginationResponse<EntryDto>> GetPhotoEntriesForUser(PaginationParameters aPaginationParameters, string aUserName)
+        {
+            IsBusy = true;
+            PaginationResponse<EntryDto> sPaginationResponse = new PaginationResponse<EntryDto>();
+
+            var sResult = await mEntryClient.GetPhotoEntriesForUser(aPaginationParameters, aUserName);
+
+            if (!sResult.Success)
+            {
+                Errors.AddRange(sResult.Errors);
+            }
+            else
+            {
+                sPaginationResponse = sResult.ResultObject;
+            }
+
+            IsBusy = false;
+            return sPaginationResponse;
+        }
+
+        public async Task<EntryDto> GetEntryById(int aEntryId)
+        {
+            IsBusy = true;
+            EntryDto sEntryDto = null;
+
+            var sResult = await mEntryClient.GetEntryById(aEntryId);
+
+            if (!sResult.Success)
+            {
+                Errors.AddRange(sResult.Errors);
+            }
+            else
+            {
+                sEntryDto = sResult.ResultObject;
+            }
+
+            IsBusy = false;
+            return sEntryDto;
+        }
+
         public async Task<EntryDto> AddEntry(int aSnusId, string? aDescription, IBrowserFile aBrowserFile)
         {
             return aBrowserFile == null ? await AddEntry(aSnusId, aDescription) : await AddEntryWithImage(aSnusId, aDescription, aBrowserFile);
