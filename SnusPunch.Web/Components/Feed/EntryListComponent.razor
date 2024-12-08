@@ -130,6 +130,7 @@
 
         if (await EntryViewModel.RemoveEntry(aEntryDto.Id))
         {
+            EntryList.Remove(aEntryDto);
             await Refresh.InvokeAsync();
         }
     }
@@ -140,6 +141,7 @@
 
         if (await EntryViewModel.AdminRemoveEntry(aEntryDto.Id))
         {
+            EntryList.Remove(aEntryDto);
             await Refresh.InvokeAsync();
         }
     }
