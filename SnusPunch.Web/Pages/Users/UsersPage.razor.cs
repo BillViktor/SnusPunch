@@ -39,14 +39,6 @@ namespace SnusPunch.Web.Pages.Users
         }
 
         #region Actions
-        private void ShowProfilePicture(SnusPunchUserDto aSnusPunchUserDto)
-        {
-            var sParameters = new ModalParameters { { "ProfilePictureUrl", aSnusPunchUserDto.ProfilePictureUrl } };
-            var sOptions = new ModalOptions { Size = ModalSize.Automatic, Position = ModalPosition.Middle };
-
-            Modal.Show<ProfilePictureComponent>($"{aSnusPunchUserDto.UserName}'s Profilbild", sParameters, sOptions);
-        }
-
         private async Task DeleteUser(SnusPunchUserDto aSnusPunchUserDto)
         {
             var sOptions = new ModalOptions

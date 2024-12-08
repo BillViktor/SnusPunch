@@ -3,9 +3,9 @@
 @using SnusPunch.Web.ViewModels.Snus
 
 <div class="row mt-1 gap-05">
-    <button @onclick="async () => await OnShowProfilePicture.InvokeAsync()" class="profile-picture-button">
+    <a href="@($"Profile/{Comment.UserName}")" class="profile-picture-button">
         <img class="profile-picture-round" src="@Comment.ProfilePictureUrl" />
-    </button>
+    </a>
 
     <div class="full-width">
         <div class="row align-items-center">

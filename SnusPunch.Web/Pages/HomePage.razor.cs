@@ -289,14 +289,6 @@ namespace SnusPunch.Web.Pages
                 };
             }
         }
-
-        private void ShowProfilePicture(EntryDto aEntryDto)
-        {
-            var sParameters = new ModalParameters { { "ProfilePictureUrl", aEntryDto.UserProfilePictureUrl } };
-            var sOptions = new ModalOptions { Size = ModalSize.Automatic, Position = ModalPosition.Middle };
-
-            Modal.Show<ProfilePictureComponent>($"{aEntryDto.UserName}'s Profilbild", sParameters, sOptions);
-        }
         #endregion
     }
 }

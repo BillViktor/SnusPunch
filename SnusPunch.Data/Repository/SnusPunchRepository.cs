@@ -380,7 +380,6 @@ namespace SnusPunch.Data.Repository
                 .Include(x => x.Entries)
                 .Include(x => x.FriendsAddedByUser)
                 .Include(x => x.FriendsAddedByOthers)
-                .Include(x => x.UserRoles)
                 .SearchByProperty(aPaginationParameters.SearchPropertyNames, aPaginationParameters.SearchString)
                 .OrderByProperty(aPaginationParameters.SortPropertyName, aPaginationParameters.SortOrder)
                 .Skip(aPaginationParameters.Skip)
@@ -392,7 +391,6 @@ namespace SnusPunch.Data.Repository
                     SnusPunches = x.Entries.Count,
                     ProfilePictureUrl = $"{mConfiguration["ProfilePicturePathFull"]}{x.ProfilePicturePath ?? "default.jpg"}",
                     Friends = x.Friends.Count,
-                    Roles = x.UserRoles.Select(x => x.RoleId).ToList(),
                 }).ToListAsync();
 
             var sCount = await mSnusPunchDbContext.Users

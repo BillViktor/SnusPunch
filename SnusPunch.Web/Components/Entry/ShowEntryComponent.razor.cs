@@ -280,16 +280,5 @@ namespace SnusPunch.Web.Components.Entry
 
         
         #endregion
-
-
-        #region Misc
-        private void ShowProfilePicture(string aUserName, string aProfilePictureUrl)
-        {
-            var sParameters = new ModalParameters { { "ProfilePictureUrl", aProfilePictureUrl } };
-            var sOptions = new ModalOptions { Size = ModalSize.Automatic, Position = ModalPosition.Middle };
-
-            Modal.Show<ProfilePictureComponent>($"{aUserName}'s Profilbild", sParameters, sOptions);
-        }
-        #endregion
     }
 }

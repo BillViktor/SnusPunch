@@ -10,11 +10,12 @@ namespace SnusPunch.Data.Models.Identity
         public int? FavoriteSnusId { get; set; }
         public string? ProfilePicturePath { get; set; }
         public SnusModel FavoriteSnus { get; set; }
-        public virtual ICollection<IdentityUserRole<string>> UserRoles { get; set; } = new List<IdentityUserRole<string>>();
         public List<EntryModel> Entries { get; set; } = new List<EntryModel>();
-        public List<SnusPunchFriendModel> FriendsAddedByUser { get; set; } = new List<SnusPunchFriendModel>();
+
+        //Unfortenately these two have to be seperated
+        public List<SnusPunchFriendModel> FriendsAddedByUser { get; set; } = new List<SnusPunchFriendModel>(); 
         public List<SnusPunchFriendModel> FriendsAddedByOthers { get; set; } = new List<SnusPunchFriendModel>();
-        public List<SnusPunchFriendModel> Friends 
+        public List<SnusPunchFriendModel> Friends //Unmapped
         {
             get
             {

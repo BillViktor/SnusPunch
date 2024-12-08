@@ -30,9 +30,9 @@
         {
             <tr>
                 <td class="row justify-content-start profile-picture-cell">
-                    <button @onclick="() => ShowProfilePicture(sUser)" class="profile-picture-button">
+                    <a href="@($"Profile/{sUser.UserName}")" class="profile-picture-button">
                         <img class="profile-picture-round" src="@sUser.ProfilePictureUrl" />
-                    </button>
+                    </a>
                 </td>
                 <td>@sUser.UserName</td>
                 <td>@sUser.FavouriteSnus</td>

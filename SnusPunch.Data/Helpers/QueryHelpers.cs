@@ -93,7 +93,7 @@ namespace SnusPunch.Data.Helpers
                     sQuery = sQuery.Where(x => x.SnusPunchUserModelId == aSnusPunchUserModelId);
                     break;
                 case EntryFilterEnum.Friends:
-                    sQuery = sQuery.Where(x => x.SnusPunchUserModelId == aSnusPunchUserModelId);
+                    sQuery = sQuery.Where(x => x.SnusPunchUserModel.FriendsAddedByOthers.Any(x => x.SnusPunchUserModelOneId == aSnusPunchUserModelId) || x.SnusPunchUserModel.FriendsAddedByUser.Any(x => x.SnusPunchUserModelTwoId == aSnusPunchUserModelId));
                     break;
             }
 
