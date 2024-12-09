@@ -8,6 +8,7 @@ using SnusPunch.Data.Models.Identity;
 using SnusPunch.Data.Repository;
 using SnusPunch.Services.Email;
 using SnusPunch.Services.Entry;
+using SnusPunch.Services.NotificationService;
 using SnusPunch.Services.Snus;
 using SnusPunch.Services.Statistics;
 using Swashbuckle.AspNetCore.Filters;
@@ -47,6 +48,8 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 
+builder.Services.AddSignalR();
+
 #region Auth
 builder.Services.AddAuthorization();
 builder.Services.AddIdentityApiEndpoints<SnusPunchUserModel>
@@ -66,12 +69,14 @@ builder.Services.AddIdentityApiEndpoints<SnusPunchUserModel>
 builder.Services.Configure<DataProtectionTokenProviderOptions>(opt => opt.TokenLifespan = TimeSpan.FromHours(1));
 #endregion
 
+
 #region Database
 builder.Services.AddDbContext<SnusPunchDbContext>(option =>
     option.UseSqlServer(builder.Configuration.GetConnectionString("SnusPunch")));
 
 builder.Services.AddScoped<SnusPunchRepository>();
 #endregion
+
 
 #region Services
 builder.Services.AddScoped<AuthService>();
@@ -117,5 +122,7 @@ app.UseFileServer(new FileServerOptions
 app.UseAuthorization();
 
 app.MapControllers();
+
+app.MapHub<NotificationHub>("Notifications");
 
 app.Run();

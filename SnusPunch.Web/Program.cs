@@ -25,10 +25,12 @@ builder.Services.AddScoped<AuthenticationStateProvider>(
   p => p.GetService<CookieAuthenticationStateProvider>());
 #endregion
 
+
 #region Blazored
 builder.Services.AddBlazoredModal();
 builder.Services.AddBlazoredToast();
 #endregion
+
 
 #region Clients
 string sBaseUrl = builder.Configuration.GetValue<string>("BaseUrl");
@@ -54,6 +56,7 @@ builder.Services.AddScoped<StatisticsClient>();
 builder.Services.AddHttpClient(HttpClientEnum.User.ToString(), config => config.BaseAddress = new Uri(sBaseUrl + "User/")).AddHttpMessageHandler<CookieHandler>();
 builder.Services.AddScoped<UserClient>();
 #endregion
+
 
 #region ViewModels
 builder.Services.AddScoped<AuthViewModel>();

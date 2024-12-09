@@ -52,8 +52,16 @@ header nav ul li a {
     font-weight: bold;
 }
 
+header nav ul li .dropdown {
+    color: var(--font-color);
+    text-decoration: none;
+    margin: 0 0.5rem;
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
 header nav ul li .active {
-    text-decoration: underline;
+    color: var(--primary-color);
 }
 
 .header-wrapper {
@@ -441,6 +449,10 @@ a {
     height: 2rem;
 }
 
+.button-icon-vertical {
+    vertical-align: unset;
+}
+
 .profile-picture-button {
     background-color: transparent;
     border: none;
@@ -541,7 +553,7 @@ button:hover {
     color: var(--font-color);
     border: none;
     cursor: pointer;
-    padding: 0 0.5rem;
+    padding: 0;
 }
 
 .dropdown {
@@ -599,8 +611,8 @@ button:hover {
 
 /* Images */
 .profile-picture-round {
-    height: 2.5rem;
-    width: 2.5rem;
+    height: 2rem;
+    width: 2rem;
     border-radius: 50%;
     object-fit: cover;
     pointer-events: none;

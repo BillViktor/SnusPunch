@@ -168,6 +168,8 @@ namespace SnusPunch.Data.DbContexts
 
             aModelBuilder.Entity<SnusPunchUserModel>(e =>
             {
+                e.ToTable("AspNetUsers", tb => tb.HasTrigger("TR_AspNetUsers_Update"));
+
                 e.Property(c => c.CreateDate).HasDefaultValueSql("getdate()");
 
                 e.HasOne(e => e.FavoriteSnus)

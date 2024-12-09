@@ -1,4 +1,6 @@
-﻿@using SnusPunch.Web.ViewModels.Snus
+﻿@using Microsoft.AspNetCore.SignalR.Client
+@using SnusPunch.Web.Identity
+@using SnusPunch.Web.ViewModels.Snus
 
 <header>
      <div class="header-wrapper">
@@ -11,35 +13,44 @@
             <ul>
                 <li>
                     <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                        Hem 
+                        <span class="material-symbols--home" />
                     </NavLink>
                 </li>
                 <li>
                     <NavLink class="nav-link" href="Statistics" Match="NavLinkMatch.All">
-                        Statistik
+                        <span class="icomoon-free--stats-bars" />
                     </NavLink>
                 </li>
                 <li>
                     <NavLink class="nav-link" href="Snus" Match="NavLinkMatch.All">
-                        Snus
+                        <span class="material-symbols--circle"/>
                     </NavLink>
                 </li>
                 <li>
                     <NavLink class="nav-link" href="Users" Match="NavLinkMatch.All">
-                        Användare
+                        <span class="mdi--users" />
                     </NavLink>
                 </li>
                 <li>
-                    
+                    <div class="dropdown">
+                        <button title="Vänförfrågningar" onclick="toggleFriendRequestsDropDown()" class="button-icon button-icon-vertical">
+                            <span class="weui--add-friends-filled" />
+                        </button>
+                        <div id="friendRequestDropDown" class="dropdown-content">
+                            <p class="dropdown-text">
+                                Du har inga vänförfrågningar! :(
+                            </p>
+                        </div>
+                    </div>
                 </li>
                 <li>
                     <div class="dropdown">
-                        <button title="Notifikationer" onclick="togglenotificationDropDown()" class="button-icon">
+                        <button title="Notifikationer" onclick="togglenotificationDropDown()" class="button-icon button-icon-vertical">
                             <span class="mingcute--notification-fill" />
                         </button>
                         <div id="notificationDropDown" class="dropdown-content">
                             <p class="dropdown-text">
-                                Tomt här!
+                                Du har inga notifikationer!
                             </p>
                         </div>
                     </div>
@@ -79,10 +90,21 @@
  <script>
     function toggleAccountDropDown() {
         document.getElementById("accountDropDown").classList.toggle("show");
+        document.getElementById("friendRequestDropDown").classList.remove("show");
+        document.getElementById("notificationDropDown").classList.remove("show");
     }
 
     function togglenotificationDropDown() {
         document.getElementById("notificationDropDown").classList.toggle("show");
+        document.getElementById("friendRequestDropDown").classList.remove("show");
+        document.getElementById("accountDropDown").classList.remove("show");
+    }
+
+    function toggleFriendRequestsDropDown() {
+        console.log("friend");
+        document.getElementById("friendRequestDropDown").classList.toggle("show");
+        document.getElementById("notificationDropDown").classList.remove("show");
+        document.getElementById("accountDropDown").classList.remove("show");
     }
 
     //Stäng om man klickar utanför
@@ -101,8 +123,23 @@
  </script>
 
 @code {
+    [Inject] IConfiguration Configuration { get; set; }
     [Inject] AuthViewModel AuthViewModel { get; set; }
+    [Inject] CookieHandler CookieHandler { get; set; }
 
-    //TODO
-    //Hämta notiser & ändra färg på klockan
+    private HubConnection? mHubConnection;
+
+    protected override async Task OnInitializedAsync() 
+    {
+        try 
+        {
+            mHubConnection = new HubConnectionBuilder().WithUrl(Configuration["BaseUrl"] + "Notifications").Build();
+            await mHubConnection.StartAsync();
+        }
+        catch(Exception ex)
+        {
+            Console.WriteLine($"Kunde inte ansluta till notifikationscentret: {ex.Message}");
+        }
+        
+    }
  }
