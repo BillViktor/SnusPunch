@@ -1,5 +1,9 @@
-﻿@using Microsoft.AspNetCore.SignalR.Client
+﻿@using Microsoft.AspNetCore.Http.Connections
+@using Microsoft.AspNetCore.SignalR.Client
+@using SnusPunch.Shared.Models.Auth
+@using SnusPunch.Shared.Models.Notification
 @using SnusPunch.Web.Identity
+@using SnusPunch.Web.ViewModels
 @using SnusPunch.Web.ViewModels.Snus
 
 <header>
@@ -33,25 +37,82 @@
                 </li>
                 <li>
                     <div class="dropdown">
-                        <button title="Vänförfrågningar" onclick="toggleFriendRequestsDropDown()" class="button-icon button-icon-vertical">
+                        <button title="Vänförfrågningar" @onclick="ShowFriendRequests" class="button-icon button-icon-vertical">
                             <span class="weui--add-friends-filled" />
+                            @if(AuthViewModel.UserInfoModel?.FriendRequests > 0)
+                            {
+                                <span class="notification-badge" id="notificationBadge">@(AuthViewModel.UserInfoModel.FriendRequests > 99 ? "99+" : AuthViewModel.UserInfoModel.FriendRequests)</span>
+                            }
                         </button>
                         <div id="friendRequestDropDown" class="dropdown-content">
-                            <p class="dropdown-text">
-                                Du har inga vänförfrågningar! :(
-                            </p>
+                            @if ((AuthViewModel.UserInfoModel?.FriendRequests ?? 0) == 0)
+                            {
+                                <p class="dropdown-text-small">
+                                    Du har inga vänförfrågningar!
+                                </p>
+                            }
+                            else
+                            {
+                                @foreach(var sFriendRequest in UserViewModel.FriendRequests)
+                                {
+                                    <div class="row gap-05 align-items-center">
+                                        <a class="row align-items-center gap-05" href="Profile/@sFriendRequest.UserName">
+                                            <img class="profile-picture-round" src="@sFriendRequest?.ProfilePictureUrl" />
+
+                                            @sFriendRequest.UserName
+                                        </a>
+                                            
+
+                                        <button @onclick="async () => await AcceptFriendRequest(sFriendRequest)">Bekräfta</button>
+
+                                        <button @onclick="async () => await DenyFriendRequest(sFriendRequest)" class="button-warning">Ta bort</button>
+                                    </div>
+                                        
+                                }
+                            }
                         </div>
                     </div>
                 </li>
                 <li>
                     <div class="dropdown">
-                        <button title="Notifikationer" onclick="togglenotificationDropDown()" class="button-icon button-icon-vertical">
+                        <button title="Notifikationer" @onclick="ShowNotifications" class="button-icon button-icon-vertical">
                             <span class="mingcute--notification-fill" />
+                            @if(AuthViewModel.UserInfoModel?.UnreadNotifications > 0)
+                            {
+                                <span class="notification-badge" id="notificationBadge">@(AuthViewModel.UserInfoModel.UnreadNotifications > 99 ? "99+" : AuthViewModel.UserInfoModel.UnreadNotifications)</span>
+                            }
                         </button>
                         <div id="notificationDropDown" class="dropdown-content">
-                            <p class="dropdown-text">
-                                Du har inga notifikationer!
-                            </p>
+                            @if (UserViewModel.NotificationPaginationMetaData != null && UserViewModel.NotificationPaginationMetaData.TotalCount == 0)
+                            {
+                                <p class="dropdown-text-small">
+                                    Du har inga notifikationer!
+                                </p>
+                            }
+                            else
+                            {
+                                @foreach(var sNotification in UserViewModel.Notifications)
+                                {
+                                    <div class="notification-row @(sNotification.NotificationViewed ? "" : "notification-not-viewed")">
+                                        <a style="margin-top: 0 !important" class="row align-items-center gap-05" href="Profile/@sNotification.UserName">
+                                            <img class="profile-picture-round" src="@sNotification?.ProfilePictureUrl" />
+
+                                            @sNotification.UserName
+                                        </a>
+
+                                        <button style="white-space: nowrap; font-size: 1.5rem; margin-top: 0 !important" @onclick="async () => await OnNotificationClick(sNotification)" class="text-button">
+                                            @sNotification.ToString()
+                                        </button>
+
+                                        <span title="@sNotification.CreateDate" style="white-space: nowrap; font-size: 1rem; font-weight: normal; margin-left: 0.5rem"> @sNotification.GetTimeAgo()</span>
+                                    </div>
+                                }
+
+                                @if ((UserViewModel.NotificationPaginationMetaData?.TotalCount ?? 0) > UserViewModel.Notifications.Count)
+                                {
+                                    <button style="margin-left: 1rem" @onclick="async () => await UserViewModel.FetchMoreNotifications()" class="text-button">Visa fler notifikationer</button>
+                                }
+                            }
                         </div>
                     </div>
                 </li>
@@ -78,7 +139,7 @@
                             <NavLink class="nav-link" href="Account">
                                 Inställningar
                             </NavLink>
-                            <button class="button-drop-down" @onclick="async () => await AuthViewModel.Logout()">Logga ut</button>
+                            <button style="padding: 0.5rem" class="button-drop-down" @onclick="async () => await AuthViewModel.Logout()">Logga ut</button>
                         </div>
                     </div>
                 </li>
@@ -94,22 +155,26 @@
         document.getElementById("notificationDropDown").classList.remove("show");
     }
 
-    function togglenotificationDropDown() {
+    function toggleNotificationDropDown() {
         document.getElementById("notificationDropDown").classList.toggle("show");
         document.getElementById("friendRequestDropDown").classList.remove("show");
         document.getElementById("accountDropDown").classList.remove("show");
     }
 
     function toggleFriendRequestsDropDown() {
-        console.log("friend");
         document.getElementById("friendRequestDropDown").classList.toggle("show");
         document.getElementById("notificationDropDown").classList.remove("show");
         document.getElementById("accountDropDown").classList.remove("show");
     }
 
+    function playNotificationSound() {
+        const audio = new Audio("sounds/notification.mp3");
+        audio.play();
+    }
+
     //Stäng om man klickar utanför
     window.onclick = function (event) {
-        if (!event.target.matches('.button-drop-down') && !event.target.matches('.button-icon')) {
+        if (!event.target.matches('.button-drop-down') && !event.target.matches('.button-icon') && !event.target.closest('.dropdown-content')) {
             var dropdowns = document.getElementsByClassName("dropdown-content");
             var i;
             for (i = 0; i < dropdowns.length; i++) {
@@ -121,25 +186,3 @@
         }
     }
  </script>
-
-@code {
-    [Inject] IConfiguration Configuration { get; set; }
-    [Inject] AuthViewModel AuthViewModel { get; set; }
-    [Inject] CookieHandler CookieHandler { get; set; }
-
-    private HubConnection? mHubConnection;
-
-    protected override async Task OnInitializedAsync() 
-    {
-        try 
-        {
-            mHubConnection = new HubConnectionBuilder().WithUrl(Configuration["BaseUrl"] + "Notifications").Build();
-            await mHubConnection.StartAsync();
-        }
-        catch(Exception ex)
-        {
-            Console.WriteLine($"Kunde inte ansluta till notifikationscentret: {ex.Message}");
-        }
-        
-    }
- }

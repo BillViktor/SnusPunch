@@ -231,9 +231,12 @@ namespace SnusPunch.Services.Snus
                     UserName = sUser.UserName,
                     RoleClaims = sRoles,
                     FavouriteSnusId = sUser.FavoriteSnusId,
-                    ProfilePictureUrl = $"{mConfiguration["ProfilePicturePathFull"]}{sUser.ProfilePicturePath ?? "default.jpg"}"
+                    ProfilePictureUrl = $"{mConfiguration["ProfilePicturePathFull"]}{sUser.ProfilePicturePath ?? "default.jpg"}",
+                    EntryPrivacySettingEnum = sUser.EntryPrivacySetting,
+                    FriendPrivacySettingEnum = sUser.FriendPrivacySetting
                 };
 
+                //Favoritsnus
                 if(sResultModel.ResultObject.FavouriteSnusId != null)
                 {
                     var sSnus = await mSnusPunchRepository.GetSnusById((int)sResultModel.ResultObject.FavouriteSnusId);
@@ -243,6 +246,12 @@ namespace SnusPunch.Services.Snus
                         sResultModel.ResultObject.FavouriteSnusName = sSnus.Name;
                     }
                 }
+
+                //Vänförfrågningar
+                sResultModel.ResultObject.FriendRequests = await mSnusPunchRepository.GetAllFriendRequestsCount(sUser.Id);
+
+                //Notifikationer
+                sResultModel.ResultObject.UnreadNotifications = await mSnusPunchRepository.GetAllUnreadNotificationsCount(sUser.Id);
             }
             catch (Exception ex)
             {
@@ -782,6 +791,35 @@ namespace SnusPunch.Services.Snus
                 {
                     File.Delete(sFilePath);
                 }
+            }
+            catch (Exception ex)
+            {
+                sResultModel.Success = false;
+                sResultModel.AddExceptionError(ex);
+            }
+
+            return sResultModel;
+        }
+        #endregion
+
+
+        #region Privacy
+        public async Task<ResultModel> UpdatePrivacySettings(UpdatePrivacySettingsRequestModel aUpdatePrivacySettingsRequestModel, ClaimsPrincipal aClaimsPrincipal)
+        {
+            ResultModel sResultModel = new ResultModel();
+
+            try
+            {
+                var sUser = await mUserManager.GetUserAsync(aClaimsPrincipal);
+
+                if(sUser == null)
+                {
+                    sResultModel.Success = false;
+                    sResultModel.AddError("Användaren hittades ej");
+                    return sResultModel;
+                }
+
+                await mSnusPunchRepository.UpdatePrivacySettings(sUser.Id, aUpdatePrivacySettingsRequestModel.EntryPrivacySetting, aUpdatePrivacySettingsRequestModel.FriendPrivacySetting);
             }
             catch (Exception ex)
             {

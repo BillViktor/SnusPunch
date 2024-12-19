@@ -1,0 +1,28 @@
+﻿@using SnusPunch.Shared.Models.Auth
+<MessageComponent Errors="AuthViewModel.Errors" SuccessMessages="AuthViewModel.SuccessMessages" IsBusy="AuthViewModel.IsBusy" />
+
+<EditForm Model="mUpdatePrivacySettingsRequestModel" OnValidSubmit="Confirm">
+    <DataAnnotationsValidator />
+
+    <p>
+        <label for="entryPrivacySettingInput">Vilka ska kunna se dina inlägg/stämplingar?</label>
+        <select class="full-width" id="entryPrivacySettingInput" @bind="mUpdatePrivacySettingsRequestModel.EntryPrivacySetting">
+            <option value="@PrivacySettingEnum.All">Alla</option>
+            <option value="@PrivacySettingEnum.Friends">Endast vänner</option>
+            <option value="@PrivacySettingEnum.Private">Endast du</option>
+        </select>
+
+        <label class="mt-1" for="friendPrivacySettingInput">Vilka ska kunna se dina vänner?</label>
+        <select class="full-width" id="friendPrivacySettingInput" @bind="mUpdatePrivacySettingsRequestModel.FriendPrivacySetting">
+            <option value="@PrivacySettingEnum.All">Alla</option>
+            <option value="@PrivacySettingEnum.Friends">Endast vänner</option>
+            <option value="@PrivacySettingEnum.Private">Endast du</option>
+        </select>
+    </p>
+
+    <div class="row gap-1">
+        <button class="full-width button-success" type="submit">Spara ändringar</button>
+        <button @onclick="async () => await Close()" class="full-width button-warning" type="button">Avbryt</button>
+    </div>
+    
+</EditForm>

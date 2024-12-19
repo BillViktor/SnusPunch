@@ -4,7 +4,9 @@ using Microsoft.Extensions.Logging;
 using SnusPunch.Data.Models.Entry;
 using SnusPunch.Data.Models.Identity;
 using SnusPunch.Data.Repository;
+using SnusPunch.Services.NotificationService;
 using SnusPunch.Shared.Models.Entry.Likes;
+using SnusPunch.Shared.Models.Notification;
 using SnusPunch.Shared.Models.Pagination;
 using SnusPunch.Shared.Models.ResultModel;
 using System.Security.Claims;
@@ -17,13 +19,15 @@ namespace SnusPunch.Services.Entry
         private readonly IConfiguration mConfiguration;
         private readonly SnusPunchRepository mSnusPunchRepository;
         private readonly UserManager<SnusPunchUserModel> mUserManager;
+        private readonly NotificationHub mNotificationHub;
 
-        public EntryLikeService(ILogger<EntryLikeService> aLogger, IConfiguration aConfiguration, SnusPunchRepository aSnusPunchRepository, UserManager<SnusPunchUserModel> aUserManager)
+        public EntryLikeService(ILogger<EntryLikeService> aLogger, IConfiguration aConfiguration, SnusPunchRepository aSnusPunchRepository, UserManager<SnusPunchUserModel> aUserManager, NotificationHub aNotificationHub)
         {
             mLogger = aLogger;
             mConfiguration = aConfiguration;
             mSnusPunchRepository = aSnusPunchRepository;
             mUserManager = aUserManager;
+            mNotificationHub = aNotificationHub;
         }
 
         public async Task<ResultModel> LikeEntry(int aEntryModelId, ClaimsPrincipal aClaimsPrincipal)
@@ -57,6 +61,13 @@ namespace SnusPunch.Services.Entry
                 };
 
                 await mSnusPunchRepository.LikeEntry(sEntryLikeModel);
+
+                //Skicka notis
+                if(sUser.Id != sEntry.SnusPunchUserModelId)
+                {
+                    await mNotificationHub.AddNotification(sEntry.SnusPunchUserModelId, sUser.Id, NotificationActionEnum.EntryLike, sEntry.Id);
+                    await mNotificationHub.SendNotification(NotificationTypeEnum.EntryEvent, $"{sUser.UserName} har gillat ditt inlägg!", sEntry.SnusPunchUserModelId);
+                }
             }
             catch (Exception aException)
             {

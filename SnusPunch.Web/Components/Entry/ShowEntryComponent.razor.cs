@@ -106,6 +106,7 @@ namespace SnusPunch.Web.Components.Entry
                 mAddEntryCommentDto.Comment = "";
                 mCommentPlaceholder = "Skriv en kommentar";
                 mAddEntryCommentDto.ParentId = null;
+                mAddEntryCommentDto.SnusPunchUserNameRepliedTo = null;
 
                 await JSRuntime.InvokeVoidAsync("backToTop");
             }
@@ -116,6 +117,7 @@ namespace SnusPunch.Web.Components.Entry
         private async Task Comment()
         {
             mAddEntryCommentDto.ParentId = null;
+            mAddEntryCommentDto.SnusPunchUserNameRepliedTo = null;
             mCommentPlaceholder = "Skriv en kommentar";
             await JSRuntime.InvokeVoidAsync("focusElement", "commentInput");
         }
@@ -124,6 +126,7 @@ namespace SnusPunch.Web.Components.Entry
         {
             mAddEntryCommentDto.Comment = "";
             mAddEntryCommentDto.ParentId = aEntryCommentDto.ParentId ?? aEntryCommentDto.Id;
+            mAddEntryCommentDto.SnusPunchUserNameRepliedTo = aEntryCommentDto.ParentId == null ? null : aEntryCommentDto.UserName;
             mCommentPlaceholder = $"Svarar {aEntryCommentDto.UserName}";
             await JSRuntime.InvokeVoidAsync("focusElement", "commentInput");
         }

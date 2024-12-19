@@ -36,16 +36,29 @@
                 </td>
                 <td>@sUser.UserName</td>
                 <td>@sUser.FavouriteSnus</td>
-                <td>@sUser.Friends</td>
+                <td>
+                    @if(sUser.Friends != -1)
+                    {
+                        @sUser.Friends
+                    }
+                    else
+                    {
+                        <span class="material-symbols--lock"/>
+                    }
+                </td>
                 <td>@sUser.SnusPunches</td>
                 <td>
-                    <AuthorizeView Roles="Admin">
-                        <div class="icon-row">
+                    <div class="icon-row">
+                        @if(sUser.Friend)
+                        {
+                            <span style="height: 1.5rem; width: 1.5rem" class="mdi--users" title="Ni är vänner!"/>
+                        }
+                        <AuthorizeView Roles="Admin">
                             <button @onclick="async () => await DeleteUser(sUser)" title="Radera" disabled="@UserViewModel.IsBusy" class="button-icon">
                                 <span class="icon-button material-symbols--delete" />
                             </button>
-                        </div>
-                    </AuthorizeView>
+                        </AuthorizeView>
+                    </div>
                 </td>
 
             </tr>

@@ -3,12 +3,16 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using SnusPunch.Data.DbContexts;
 using SnusPunch.Data.Helpers;
+using SnusPunch.Data.Migrations;
+using SnusPunch.Data.Models;
 using SnusPunch.Data.Models.Entry;
 using SnusPunch.Data.Models.Identity;
 using SnusPunch.Shared.Models.Auth;
 using SnusPunch.Shared.Models.Entry;
 using SnusPunch.Shared.Models.Entry.Likes;
+using SnusPunch.Shared.Models.Notification;
 using SnusPunch.Shared.Models.Pagination;
+using SnusPunch.Shared.Models.ResultModel;
 using SnusPunch.Shared.Models.Snus;
 using SnusPunch.Shared.Models.Statistics;
 using System.Xml.Linq;
@@ -215,7 +219,7 @@ namespace SnusPunch.Data.Repository
 
         public async Task<EntryLikeModel> GetEntryLike(int aEntryModelId, string aSnusPunchUserModelId)
         {
-            var sLike = await mSnusPunchDbContext.EntryLikes.FirstOrDefaultAsync(x => x.EntryId == aEntryModelId && x.SnusPunchUserModelId == aSnusPunchUserModelId);
+            var sLike = await mSnusPunchDbContext.EntryLikes.Include(x => x.EntryModel).FirstOrDefaultAsync(x => x.EntryId == aEntryModelId && x.SnusPunchUserModelId == aSnusPunchUserModelId);
 
             if(sLike == null)
             {
@@ -276,6 +280,7 @@ namespace SnusPunch.Data.Repository
         {
             var sComment = await mSnusPunchDbContext.EntryComments
                 .Include(x => x.SnusPunchUserModel)
+                .Include(x => x.SnusPunchUserModelRepliedTo)
                 .AsNoTracking()
                 .FirstOrDefaultAsync(x => x.Id == aEntryCommentModelId);
 
@@ -287,6 +292,7 @@ namespace SnusPunch.Data.Repository
                 Comment = sComment.Comment,
                 UserName = sComment.SnusPunchUserModel.UserName,
                 ProfilePictureUrl = $"{mConfiguration["ProfilePicturePathFull"]}{sComment.SnusPunchUserModel.ProfilePicturePath ?? "default.jpg"}",
+                UserNameAnswered = sComment.SnusPunchUserModelRepliedTo?.UserName
             };
         }
 
@@ -326,6 +332,7 @@ namespace SnusPunch.Data.Repository
             var sLikes = await mSnusPunchDbContext.EntryComments
                 .Where(x => x.ParentCommentId == aEntryCommentModelId) //Don't include comments with a parent (replies)
                 .Include(x => x.SnusPunchUserModel)
+                .Include(x => x.SnusPunchUserModelRepliedTo)
                 .Include(x => x.Replies)
                 .Include(x => x.CommentLikes)
                 .SearchByProperty(aPaginationParameters.SearchPropertyNames, aPaginationParameters.SearchString)
@@ -342,7 +349,8 @@ namespace SnusPunch.Data.Repository
                     ParentId = x.ParentCommentId,
                     LikedByUser = x.CommentLikes.Any(x => x.SnusPunchUserModelId == aSnusPunchUserModelId),
                     Likes = x.CommentLikes.Count,
-                    ReplyCount = x.Replies.Count
+                    ReplyCount = x.Replies.Count,
+                    UserNameAnswered = x.SnusPunchUserModelRepliedTo == null ? null : x.SnusPunchUserModelRepliedTo.UserName
                 }).ToListAsync();
 
             var sCount = await mSnusPunchDbContext.EntryComments
@@ -406,7 +414,7 @@ namespace SnusPunch.Data.Repository
 
 
         #region Users
-        public async Task<PaginationResponse<SnusPunchUserDto>> GetUsersPaginated(PaginationParameters aPaginationParameters)
+        public async Task<PaginationResponse<SnusPunchUserDto>> GetUsersPaginated(PaginationParameters aPaginationParameters, string aCurrentUserId)
         {
             var sUsers = await mSnusPunchDbContext.Users
                 .SearchByProperty(aPaginationParameters.SearchPropertyNames, aPaginationParameters.SearchString)
@@ -419,7 +427,17 @@ namespace SnusPunch.Data.Repository
                     FavouriteSnus = x.FavoriteSnus.Name,
                     SnusPunches = x.Entries.Count,
                     ProfilePictureUrl = $"{mConfiguration["ProfilePicturePathFull"]}{x.ProfilePicturePath ?? "default.jpg"}",
-                    Friends = x.FriendsAddedByOthers.Count() + x.FriendsAddedByUser.Count()
+                    FriendPrivacySettingEnum = x.FriendPrivacySetting,
+                    Friend = mSnusPunchDbContext.SnusPunchFriends.Any(y => (y.SnusPunchUserModelOneId == aCurrentUserId && y.SnusPunchUserModelTwoId == x.Id) || (y.SnusPunchUserModelTwoId == aCurrentUserId && y.SnusPunchUserModelOneId == x.Id)),
+                    Friends = x.FriendPrivacySetting == PrivacySettingEnum.Private && x.Id != aCurrentUserId
+                    ? -1
+                    : x.FriendPrivacySetting == PrivacySettingEnum.Friends
+                        ? mSnusPunchDbContext.SnusPunchFriends.Any(f =>
+                            (f.SnusPunchUserModelOneId == aCurrentUserId && f.SnusPunchUserModelTwoId == x.Id) ||
+                            (f.SnusPunchUserModelTwoId == aCurrentUserId && f.SnusPunchUserModelOneId == x.Id))
+                            ? x.FriendsAddedByUser.Count + x.FriendsAddedByOthers.Count
+                            : -1
+                        : x.FriendsAddedByUser.Count + x.FriendsAddedByOthers.Count,
                 }).ToListAsync();
 
             var sCount = await mSnusPunchDbContext.Users
@@ -439,19 +457,29 @@ namespace SnusPunch.Data.Repository
                     EntryCount = x.Entries.Count,
                     ProfilePictureUrl = $"{mConfiguration["ProfilePicturePathFull"]}{x.ProfilePicturePath ?? "default.jpg"}",
                     FriendsCount = x.FriendsAddedByOthers.Count() + x.FriendsAddedByUser.Count(),
-                    Friends = mSnusPunchDbContext.SnusPunchFriends
+                    EntryPrivacySettingEnum = x.EntryPrivacySetting,
+                    FriendsPrivacySettingEnum = x.FriendPrivacySetting,
+                    Friends = x.Id == aCurrentUserId 
+                    || x.FriendPrivacySetting == PrivacySettingEnum.All 
+                    || (x.FriendPrivacySetting == PrivacySettingEnum.Friends && (x.FriendsAddedByUser.Any(x => x.SnusPunchUserModelTwoId == aCurrentUserId) || x.FriendsAddedByOthers.Any(x => x.SnusPunchUserModelOneId == aCurrentUserId))) 
+                    ? mSnusPunchDbContext.SnusPunchFriends
                         .Where(x => x.SnusPunchUserModelOneId == aUserIdToFetch || x.SnusPunchUserModelTwoId == aUserIdToFetch)
                         .OrderByDescending(x => x.CreateDate)
                         .Select(x => new SnusPunchUserDto
                         {
                             UserName = x.SnusPunchUserModelOneId == aUserIdToFetch ? x.SnusPunchUserModelTwo.UserName : x.SnusPunchUserModelOne.UserName,
                             ProfilePictureUrl = x.SnusPunchUserModelOneId == aUserIdToFetch ? $"{mConfiguration["ProfilePicturePathFull"]}{x.SnusPunchUserModelTwo.ProfilePicturePath ?? "default.jpg"}" : $"{mConfiguration["ProfilePicturePathFull"]}{x.SnusPunchUserModelOne.ProfilePicturePath ?? "default.jpg"}",
-                        }).Take(9).ToList(),
-                    PhotoEntries = x.Entries.Where(x => x.PhotoUrl != null).Select(x => new EntryDto
+                        }).Take(9).ToList() 
+                        : new List<SnusPunchUserDto>(),
+                    PhotoEntries = x.Id == aCurrentUserId
+                    || x.EntryPrivacySetting == PrivacySettingEnum.All
+                    || (x.FriendPrivacySetting == PrivacySettingEnum.Friends && (x.FriendsAddedByUser.Any(x => x.SnusPunchUserModelTwoId == aCurrentUserId) || x.FriendsAddedByOthers.Any(x => x.SnusPunchUserModelOneId == aCurrentUserId)))
+                    ? x.Entries.Where(x => x.PhotoUrl != null).Select(x => new EntryDto
                     {
                         Id = x.Id,
                         PhotoUrl = mConfiguration["PostPicturePathFull"] + x.PhotoUrl
                     }).Take(9).ToList()
+                    : new List<EntryDto>(),
                 }).FirstOrDefaultAsync(x => x.UserName == aUserNameToFetch);
         }
 
@@ -460,6 +488,13 @@ namespace SnusPunch.Data.Repository
             if(await mSnusPunchDbContext.SnusPunchFriends.AnyAsync(x => (x.SnusPunchUserModelOneId == aUserIdToFetch && x.SnusPunchUserModelTwoId == aCurrentUserId) || (x.SnusPunchUserModelTwoId == aUserIdToFetch && x.SnusPunchUserModelOneId == aCurrentUserId)))
             {
                 return FriendshipStatusEnum.Friends;
+            }
+
+            var sFriendRequestFromUser = await mSnusPunchDbContext.SnusPunchFriendRequests.FirstOrDefaultAsync(x => x.SnusPunchUserModelOneId == aUserIdToFetch);
+
+            if (sFriendRequestFromUser != null && !sFriendRequestFromUser.Denied)
+            {
+                return FriendshipStatusEnum.Received;
             }
 
             var sFriendRequestFromCurrentUser = await mSnusPunchDbContext.SnusPunchFriendRequests.FirstOrDefaultAsync(x => x.SnusPunchUserModelOneId == aCurrentUserId);
@@ -474,15 +509,20 @@ namespace SnusPunch.Data.Repository
                 return FriendshipStatusEnum.Pending;
             }
 
-            var sFriendRequestFromUser = await mSnusPunchDbContext.SnusPunchFriendRequests.FirstOrDefaultAsync(x => x.SnusPunchUserModelOneId == aUserIdToFetch);
-
-            if (sFriendRequestFromUser != null)
-            {
-                return FriendshipStatusEnum.Received;
-            }
-
-
             return FriendshipStatusEnum.None;
+        }
+        #endregion
+
+
+        #region Auth
+        public async Task UpdatePrivacySettings(string aSnusPunchUserModelId, PrivacySettingEnum aPrivacySettingEnumEntry, PrivacySettingEnum aPrivacySettingEnumFriends)
+        {
+            var sUser = await mSnusPunchDbContext.Users.FirstOrDefaultAsync(x => x.Id == aSnusPunchUserModelId);
+
+            sUser.EntryPrivacySetting = aPrivacySettingEnumEntry;
+            sUser.FriendPrivacySetting = aPrivacySettingEnumFriends;
+
+            await mSnusPunchDbContext.SaveChangesAsync();
         }
         #endregion
 
@@ -572,15 +612,21 @@ namespace SnusPunch.Data.Repository
 
         public async Task DenyFriendRequest(string aSnusPunchUserModelIdOne, string aSnusPunchUserModelIdTwo)
         {
-            var sFriendRequest = await GetFriendRequestModel(aSnusPunchUserModelIdOne, aSnusPunchUserModelIdTwo);
+            var sFriendRequest = await GetFriendRequestModel(aSnusPunchUserModelIdTwo, aSnusPunchUserModelIdOne);
 
             if (sFriendRequest == null)
             {
                 throw new Exception("Vänförfrågan existerar ej");
             }
 
-            sFriendRequest.Denied = true;
+            //Check, kolla ifall den andra användaren har nekat ens FQ förut. Då raderar vi den så att man kan lägga till varandra igen
+            var sFriendRequest2 = await GetFriendRequestModel(aSnusPunchUserModelIdOne, aSnusPunchUserModelIdTwo);
+            if(sFriendRequest2 != null && sFriendRequest2.Denied)
+            {
+                mSnusPunchDbContext.Remove(sFriendRequest2);
+            }
 
+            sFriendRequest.Denied = true;
             await mSnusPunchDbContext.SaveChangesAsync();
         }
 
@@ -645,6 +691,74 @@ namespace SnusPunch.Data.Repository
             }
 
             return new PaginationResponse<SnusPunchUserDto>(sFriends, sCount, aPaginationParameters.PageNumber, aPaginationParameters.PageSize);
+        }
+
+        public async Task<List<FriendRequestDto>> GetAllFriendRequests(string aUserId)
+        {
+            return await mSnusPunchDbContext.SnusPunchFriendRequests
+                .Where(x => x.SnusPunchUserModelTwoId == aUserId && !x.Denied)
+                .AsNoTracking()
+                .Select(x => new FriendRequestDto
+                {
+                    ProfilePictureUrl = $"{mConfiguration["ProfilePicturePathFull"]}{x.SnusPunchUserModelOne.ProfilePicturePath ?? "default.jpg"}",
+                    UserName = x.SnusPunchUserModelOne.UserName,
+                    CreateDate = x.CreateDate
+                }).ToListAsync();
+        }
+
+        public async Task<int> GetAllFriendRequestsCount(string aUserId)
+        {
+            return await mSnusPunchDbContext.SnusPunchFriendRequests
+                .Where(x => x.SnusPunchUserModelTwoId == aUserId && !x.Denied)
+                .AsNoTracking().CountAsync();
+        }
+        #endregion
+
+
+        #region Notifications
+        public async Task<PaginationResponse<NotificationDto>> GetNotificationsPaginated(PaginationParameters aPaginationParameters, string aSnusPunchUserModelId)
+        {
+            var sNotifications = await mSnusPunchDbContext.Notifications
+                .Where(x => x.SnusPunchUserModelIdOne == aSnusPunchUserModelId)
+                .OrderBy(x => x.NotificationViewed)
+                .ThenByDescending(x => x.CreateDate)
+                .Skip(aPaginationParameters.Skip)
+                .Take(aPaginationParameters.PageSize)
+                .AsNoTracking()
+                .Select(x => new NotificationDto
+                {
+                    UserName = x.SnusPunchUserModelTwo.UserName,
+                    EntityId = x.EntityId,
+                    NotificationType = x.NotificationActionEnum,
+                    NotificationViewed = x.NotificationViewed,
+                    ProfilePictureUrl = x.SnusPunchUserModelTwo.ProfilePicturePath != null ? mConfiguration["ProfilePicturePathFull"] + x.SnusPunchUserModelTwo.ProfilePicturePath : null,
+                    CreateDate = x.CreateDate,
+                }).ToListAsync();
+
+            var sCount = await mSnusPunchDbContext.Notifications
+                .Where(x => x.SnusPunchUserModelIdOne == aSnusPunchUserModelId)
+                .SearchByProperty(aPaginationParameters.SearchPropertyNames, aPaginationParameters.SearchString)
+                .CountAsync();
+
+            return new PaginationResponse<NotificationDto>(sNotifications, sCount, aPaginationParameters.PageNumber, aPaginationParameters.PageSize);
+        }
+
+        public async Task<int> GetAllUnreadNotificationsCount(string aSnusPunchUserModelId)
+        {
+            return await mSnusPunchDbContext.Notifications.Where(x => x.SnusPunchUserModelIdOne == aSnusPunchUserModelId && !x.NotificationViewed).CountAsync();
+        }
+
+        public async Task AddNotification(NotificationModel aNotficationModel)
+        {
+            await mSnusPunchDbContext.AddAsync(aNotficationModel);
+            await mSnusPunchDbContext.SaveChangesAsync();
+        }
+
+        public async Task SetAllNotificationsAsRead(string aSnusPunchUserModelId)
+        {
+            var sNotifications = mSnusPunchDbContext.Notifications.Where(x => !x.NotificationViewed && x.SnusPunchUserModelIdOne == aSnusPunchUserModelId);
+            await sNotifications.ForEachAsync(e => e.NotificationViewed = true);
+            await mSnusPunchDbContext.SaveChangesAsync();
         }
         #endregion
     }

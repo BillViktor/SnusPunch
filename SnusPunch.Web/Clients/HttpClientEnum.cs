@@ -8,6 +8,7 @@
         EntryComment,
         EntryCommentLike,
         Friend,
+        Notification,
         Snus,
         Statistics,
         User

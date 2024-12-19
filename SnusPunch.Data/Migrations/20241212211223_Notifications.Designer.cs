@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SnusPunch.Data.DbContexts;
 
@@ -11,9 +12,11 @@ using SnusPunch.Data.DbContexts;
 namespace SnusPunch.Data.Migrations
 {
     [DbContext(typeof(SnusPunchDbContext))]
-    partial class SnusPunchDbContextModelSnapshot : ModelSnapshot
+    [Migration("20241212211223_Notifications")]
+    partial class Notifications
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -213,9 +216,6 @@ namespace SnusPunch.Data.Migrations
                     b.Property<string>("SnusPunchUserModelId")
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<string>("SnusPunchUserModelIdRepliedTo")
-                        .HasColumnType("nvarchar(450)");
-
                     b.Property<DateTime?>("UpdateDate")
                         .HasColumnType("datetime2");
 
@@ -226,8 +226,6 @@ namespace SnusPunch.Data.Migrations
                     b.HasIndex("ParentCommentId");
 
                     b.HasIndex("SnusPunchUserModelId");
-
-                    b.HasIndex("SnusPunchUserModelIdRepliedTo");
 
                     b.ToTable("tblEntryComment", (string)null);
                 });
@@ -391,18 +389,8 @@ namespace SnusPunch.Data.Migrations
                     b.Property<bool>("EmailConfirmed")
                         .HasColumnType("bit");
 
-                    b.Property<string>("EntryPrivacySetting")
-                        .IsRequired()
-                        .HasMaxLength(32)
-                        .HasColumnType("nvarchar(32)");
-
                     b.Property<int?>("FavoriteSnusId")
                         .HasColumnType("int");
-
-                    b.Property<string>("FriendPrivacySetting")
-                        .IsRequired()
-                        .HasMaxLength(32)
-                        .HasColumnType("nvarchar(32)");
 
                     b.Property<bool>("LockoutEnabled")
                         .HasColumnType("bit");
@@ -476,7 +464,7 @@ namespace SnusPunch.Data.Migrations
                         .HasColumnType("datetime2")
                         .HasDefaultValueSql("getdate()");
 
-                    b.Property<int>("EntityId")
+                    b.Property<int>("EntryModelId")
                         .HasColumnType("int");
 
                     b.Property<string>("NotificationActionEnum")
@@ -497,6 +485,8 @@ namespace SnusPunch.Data.Migrations
                         .HasColumnType("datetime2");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("EntryModelId");
 
                     b.HasIndex("SnusPunchUserModelIdOne");
 
@@ -674,18 +664,11 @@ namespace SnusPunch.Data.Migrations
                         .WithMany()
                         .HasForeignKey("SnusPunchUserModelId");
 
-                    b.HasOne("SnusPunch.Data.Models.Identity.SnusPunchUserModel", "SnusPunchUserModelRepliedTo")
-                        .WithMany()
-                        .HasForeignKey("SnusPunchUserModelIdRepliedTo")
-                        .OnDelete(DeleteBehavior.NoAction);
-
                     b.Navigation("EntryModel");
 
                     b.Navigation("ParentComment");
 
                     b.Navigation("SnusPunchUserModel");
-
-                    b.Navigation("SnusPunchUserModelRepliedTo");
                 });
 
             modelBuilder.Entity("SnusPunch.Data.Models.Entry.EntryLikeModel", b =>
@@ -772,6 +755,12 @@ namespace SnusPunch.Data.Migrations
 
             modelBuilder.Entity("SnusPunch.Data.Models.NotificationModel", b =>
                 {
+                    b.HasOne("SnusPunch.Data.Models.Entry.EntryModel", "EntryModel")
+                        .WithMany()
+                        .HasForeignKey("EntryModelId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("SnusPunch.Data.Models.Identity.SnusPunchUserModel", "SnusPunchUserModelOne")
                         .WithMany()
                         .HasForeignKey("SnusPunchUserModelIdOne")
@@ -781,6 +770,8 @@ namespace SnusPunch.Data.Migrations
                         .WithMany()
                         .HasForeignKey("SnusPunchUserModelIdTwo")
                         .OnDelete(DeleteBehavior.ClientCascade);
+
+                    b.Navigation("EntryModel");
 
                     b.Navigation("SnusPunchUserModelOne");
 

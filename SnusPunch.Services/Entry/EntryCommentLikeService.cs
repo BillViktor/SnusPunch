@@ -4,7 +4,10 @@ using Microsoft.Extensions.Logging;
 using SnusPunch.Data.Models.Entry;
 using SnusPunch.Data.Models.Identity;
 using SnusPunch.Data.Repository;
+using SnusPunch.Services.NotificationService;
+using SnusPunch.Shared.Models.Entry;
 using SnusPunch.Shared.Models.Entry.Likes;
+using SnusPunch.Shared.Models.Notification;
 using SnusPunch.Shared.Models.Pagination;
 using SnusPunch.Shared.Models.ResultModel;
 using System.Security.Claims;
@@ -17,13 +20,15 @@ namespace SnusPunch.Services.Entry
         private readonly IConfiguration mConfiguration;
         private readonly SnusPunchRepository mSnusPunchRepository;
         private readonly UserManager<SnusPunchUserModel> mUserManager;
+        private readonly NotificationHub mNotificationHub;
 
-        public EntryCommentLikeService(ILogger<EntryCommentLikeService> aLogger, IConfiguration aConfiguration, SnusPunchRepository aSnusPunchRepository, UserManager<SnusPunchUserModel> aUserManager)
+        public EntryCommentLikeService(ILogger<EntryCommentLikeService> aLogger, IConfiguration aConfiguration, SnusPunchRepository aSnusPunchRepository, UserManager<SnusPunchUserModel> aUserManager, NotificationHub aNotificationHub)
         {
             mLogger = aLogger;
             mConfiguration = aConfiguration;
             mSnusPunchRepository = aSnusPunchRepository;
             mUserManager = aUserManager;
+            mNotificationHub = aNotificationHub;
         }
 
         public async Task<ResultModel> LikeComment(int aEntryCommentModelid, ClaimsPrincipal aClaimsPrincipal)
@@ -57,6 +62,13 @@ namespace SnusPunch.Services.Entry
                 };
 
                 await mSnusPunchRepository.LikeComment(sEntryLikeModel);
+
+                //Skicka notis
+                if (sUser.Id != sComment.SnusPunchUserModelId)
+                {
+                    await mNotificationHub.AddNotification(sComment.SnusPunchUserModelId, sUser.Id, NotificationActionEnum.CommentLike, sComment.Id);
+                    await mNotificationHub.SendNotification(NotificationTypeEnum.EntryEvent, $"{sUser.UserName} har gillat din kommentar!", sComment.SnusPunchUserModelId);
+                }
             }
             catch (Exception aException)
             {

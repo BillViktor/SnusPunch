@@ -1,5 +1,6 @@
 ﻿@page "/Account"
 @using Microsoft.AspNetCore.Components.Authorization
+@using SnusPunch.Shared.Models.Auth
 @using SnusPunch.Shared.Models.Snus
 @attribute [Authorize]
 
@@ -16,6 +17,14 @@
 <p>
     <b>E-postadress: </b> @AuthViewModel.UserInfoModel.Email
     <b style="color: @(AuthViewModel.UserInfoModel.IsEmailConfirmed ? "green" : "red")">(@(AuthViewModel.UserInfoModel.IsEmailConfirmed ? "Verifierad" : "Ej verifierad"))</b>
+</p>
+
+<p>
+    <b>Vilka kan se dina inlägg:</b> @PrivacySettingHelper.ToString(AuthViewModel.UserInfoModel.EntryPrivacySettingEnum)
+</p>
+
+<p>
+    <b>Vilka kan se dina vänner:</b> @PrivacySettingHelper.ToString(AuthViewModel.UserInfoModel.FriendPrivacySettingEnum)
 </p>
 
 @if(AuthViewModel.UserInfoModel.RoleClaims.Count > 0)
@@ -50,5 +59,6 @@
     }
     <button class="button-warning" @onclick="async () => await ChangeEmail()">Byt E-post</button>
     <button class="button-warning" @onclick="async () => await ChangePassword()">Byt Lösenord</button>
+    <button class="button-warning" @onclick="async () => await PrivacySettings()">Sekretess</button>
     <button class="button-danger" @onclick="async () => await DeleteAccount()">Radera Konto</button>
 </div>

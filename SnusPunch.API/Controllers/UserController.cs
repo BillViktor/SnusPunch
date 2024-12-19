@@ -25,7 +25,7 @@ namespace SnusPunch.API.Controllers
         [HttpPost("GetUsersPaginated")]
         public async Task<ResultModel<PaginationResponse<SnusPunchUserDto>>> AddSnus(PaginationParameters aPaginationParameters)
         {
-            return await mUserService.GetUsersPaginated(aPaginationParameters);
+            return await mUserService.GetUsersPaginated(aPaginationParameters, User);
         }
 
         [HttpGet("GetUserProfile/{aUserName}")]

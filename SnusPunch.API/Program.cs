@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.OpenApi.Models;
@@ -90,9 +89,13 @@ builder.Services.AddScoped<EntryCommentLikeService>();
 
 builder.Services.AddScoped<FriendService>();
 
+builder.Services.AddScoped<NotificationService>();
+
 builder.Services.AddScoped<SnusService>();
 builder.Services.AddScoped<StatisticsService>();
 builder.Services.AddScoped<UserService>();
+
+builder.Services.AddScoped<NotificationHub>();
 #endregion
 
 //Load Smtp Credentials

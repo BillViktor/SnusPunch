@@ -3,10 +3,11 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using SnusPunch.Data.Models.Identity;
 using SnusPunch.Data.Repository;
+using SnusPunch.Services.NotificationService;
 using SnusPunch.Shared.Models.Auth;
+using SnusPunch.Shared.Models.Notification;
 using SnusPunch.Shared.Models.Pagination;
 using SnusPunch.Shared.Models.ResultModel;
-using SnusPunch.Shared.Models.Snus;
 using System.Security.Claims;
 
 namespace SnusPunch.Services.Snus
@@ -16,12 +17,14 @@ namespace SnusPunch.Services.Snus
         private readonly ILogger<FriendService> mLogger;
         private readonly SnusPunchRepository mSnusPunchRepository;
         private readonly UserManager<SnusPunchUserModel> mUserManager;
+        private readonly NotificationHub mNotificationHub;
 
-        public FriendService(ILogger<FriendService> aLogger, SnusPunchRepository aSnusPunchRepository, UserManager<SnusPunchUserModel> aUserManager)
+        public FriendService(ILogger<FriendService> aLogger, SnusPunchRepository aSnusPunchRepository, UserManager<SnusPunchUserModel> aUserManager, NotificationHub aNotificationHub)
         {
             mLogger = aLogger;
             mSnusPunchRepository = aSnusPunchRepository;
             mUserManager = aUserManager;
+            mNotificationHub = aNotificationHub;
         }
 
         public async Task<ResultModel> SendFriendRequest(string aSnusPunchUserName, ClaimsPrincipal aClaimsPrincipal)
@@ -62,6 +65,9 @@ namespace SnusPunch.Services.Snus
                 };
 
                 await mSnusPunchRepository.AddFriendRequest(sSnusPunchFriendRequestModel);
+
+                //Skicka notis
+                await mNotificationHub.SendNotification(NotificationTypeEnum.FriendRequest ,$"Du har fått en vänförfrågan av {sUser.UserName}!", sUser2.Id);
             }
             catch (Exception aException)
             {
@@ -98,6 +104,9 @@ namespace SnusPunch.Services.Snus
                 }
 
                 await mSnusPunchRepository.RemoveFriendRequest(sUser.Id, sUser2.Id);
+
+                //Skicka notis
+                await mNotificationHub.SendNotification(NotificationTypeEnum.FriendRequestRemoved, $"Din vänförfrågan från {sUser.UserName} har tagits tillbaka :(", sUser2.Id);
             }
             catch (Exception aException)
             {
@@ -224,6 +233,14 @@ namespace SnusPunch.Services.Snus
 
                 //Radera förfrågan
                 await mSnusPunchRepository.RemoveFriendRequest(sUser2.Id, sUser.Id);
+
+                //Radera den från andra hållet också om den finns
+                var sFriendRequest2 = await mSnusPunchRepository.GetFriendRequestModel(sUser.Id, sUser2.Id);
+
+                if(sFriendRequest2 != null)
+                {
+                    await mSnusPunchRepository.RemoveFriendRequest(sUser.Id, sUser2.Id);
+                }
             }
             catch (Exception aException)
             {
@@ -254,7 +271,34 @@ namespace SnusPunch.Services.Snus
             }
             catch (Exception aException)
             {
-                mLogger.LogError(aException, "Exception at GetFriendsForUser in EntryService");
+                mLogger.LogError(aException, "Exception at GetFriendsForUser in FriendService");
+                sResultModel.Success = false;
+                sResultModel.AddExceptionError(aException);
+            }
+
+            return sResultModel;
+        }
+
+        public async Task<ResultModel<List<FriendRequestDto>>> GetAllFriendRequests(ClaimsPrincipal aClaimsPrincipal)
+        {
+            ResultModel<List<FriendRequestDto>> sResultModel = new ResultModel<List<FriendRequestDto>>();
+
+            try
+            {
+                var sUser = await mUserManager.GetUserAsync(aClaimsPrincipal);
+
+                if (sUser == null)
+                {
+                    sResultModel.Success = false;
+                    sResultModel.AddError("Användaren hittades ej.");
+                    return sResultModel;
+                }
+
+                sResultModel.ResultObject = await mSnusPunchRepository.GetAllFriendRequests(sUser.Id);
+            }
+            catch (Exception aException)
+            {
+                mLogger.LogError(aException, "Exception at GetAllFriendRequests in FriendService");
                 sResultModel.Success = false;
                 sResultModel.AddExceptionError(aException);
             }

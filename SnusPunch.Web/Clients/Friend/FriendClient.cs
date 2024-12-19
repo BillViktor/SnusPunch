@@ -25,7 +25,7 @@ namespace SnusPunch.Web.Clients.Snus
 
                 if (!sResponse.IsSuccessStatusCode)
                 {
-                    throw new Exception("Non-success status code at GetUsersPaginated in UserClient");
+                    throw new Exception("Non-success status code at GetUsersPaginated in FriendClient");
                 }
 
                 sResultModel = await sResponse.Content.ReadFromJsonAsync<ResultModel<PaginationResponse<SnusPunchUserDto>>>();
@@ -50,7 +50,7 @@ namespace SnusPunch.Web.Clients.Snus
 
                 if (!sResponse.IsSuccessStatusCode)
                 {
-                    throw new Exception("Non-success status code at SendFriendRequest in UserClient");
+                    throw new Exception("Non-success status code at SendFriendRequest in FriendClient");
                 }
 
                 sResultModel = await sResponse.Content.ReadFromJsonAsync<ResultModel>();
@@ -75,7 +75,7 @@ namespace SnusPunch.Web.Clients.Snus
 
                 if (!sResponse.IsSuccessStatusCode)
                 {
-                    throw new Exception("Non-success status code at RemoveFriendRequest in UserClient");
+                    throw new Exception("Non-success status code at RemoveFriendRequest in FriendClient");
                 }
 
                 sResultModel = await sResponse.Content.ReadFromJsonAsync<ResultModel>();
@@ -100,7 +100,7 @@ namespace SnusPunch.Web.Clients.Snus
 
                 if (!sResponse.IsSuccessStatusCode)
                 {
-                    throw new Exception("Non-success status code at DenyFriendRequest in UserClient");
+                    throw new Exception("Non-success status code at DenyFriendRequest in FriendClient");
                 }
 
                 sResultModel = await sResponse.Content.ReadFromJsonAsync<ResultModel>();
@@ -125,7 +125,7 @@ namespace SnusPunch.Web.Clients.Snus
 
                 if (!sResponse.IsSuccessStatusCode)
                 {
-                    throw new Exception("Non-success status code at AcceptFriendRequest in UserClient");
+                    throw new Exception("Non-success status code at AcceptFriendRequest in FriendClient");
                 }
 
                 sResultModel = await sResponse.Content.ReadFromJsonAsync<ResultModel>();
@@ -150,10 +150,35 @@ namespace SnusPunch.Web.Clients.Snus
 
                 if (!sResponse.IsSuccessStatusCode)
                 {
-                    throw new Exception("Non-success status code at RemoveFriend in UserClient");
+                    throw new Exception("Non-success status code at RemoveFriend in FriendClient");
                 }
 
                 sResultModel = await sResponse.Content.ReadFromJsonAsync<ResultModel>();
+            }
+            catch (Exception aException)
+            {
+                sResultModel.Success = false;
+                sResultModel.AddExceptionError(aException);
+            }
+
+            return sResultModel;
+        }
+
+        public async Task<ResultModel<List<FriendRequestDto>>> GetAllFriendRequests()
+        {
+            ResultModel<List<FriendRequestDto>> sResultModel = new ResultModel<List<FriendRequestDto>>();
+
+            try
+            {
+                var sHttpClient = mHttpClientFactory.CreateClient(HttpClientEnum.Friend.ToString());
+                var sResponse = await sHttpClient.GetAsync($"GetAllFriendRequests");
+
+                if (!sResponse.IsSuccessStatusCode)
+                {
+                    throw new Exception("Non-success status code at GetAllFriendRequests in FriendClient");
+                }
+
+                sResultModel = await sResponse.Content.ReadFromJsonAsync<ResultModel<List<FriendRequestDto>>>();
             }
             catch (Exception aException)
             {

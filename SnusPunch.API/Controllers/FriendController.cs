@@ -56,5 +56,11 @@ namespace SnusPunch.API.Controllers
         {
             return await mFriendService.GetFriendsForUser(aPaginationParameters, aUserName);
         }
+
+        [HttpGet("GetAllFriendRequests")]
+        public async Task<ResultModel<List<FriendRequestDto>>> GetAllFriendRequests()
+        {
+            return await mFriendService.GetAllFriendRequests(User);
+        }
     }
 }

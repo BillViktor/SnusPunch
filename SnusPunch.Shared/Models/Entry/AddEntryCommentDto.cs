@@ -5,5 +5,6 @@
         public int EntryModelId { get; set; }
         public string Comment { get; set; } = "";
         public int? ParentId { get; set; } = null;
+        public string? SnusPunchUserNameRepliedTo { get; set; } = null;
     }
 }

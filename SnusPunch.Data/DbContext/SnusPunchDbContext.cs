@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using SnusPunch.Data.Models;
 using SnusPunch.Data.Models.Entry;
 using SnusPunch.Data.Models.Identity;
 using SnusPunch.Shared.Models.Snus;
@@ -18,12 +19,34 @@ namespace SnusPunch.Data.DbContexts
         public DbSet<SnusPunchFriendRequestModel> SnusPunchFriendRequests { get; set; }
         public DbSet<SnusPunchFriendModel> SnusPunchFriends { get; set; }
         public DbSet<EntryCommentLikeModel> EntryCommentLikes { get; set; }
+        public DbSet<NotificationModel> Notifications { get; set; }
 
         public SnusPunchDbContext(DbContextOptions<SnusPunchDbContext> aDbContextOptions) : base(aDbContextOptions) { }
 
         protected override void OnModelCreating(ModelBuilder aModelBuilder)
         {
             base.OnModelCreating(aModelBuilder);
+
+            aModelBuilder.Entity<NotificationModel>(e =>
+            {
+                e.ToTable("tblSnusPunchUserNotifications");
+
+                e.HasKey(e => e.Id);
+
+                e.Property(c => c.CreateDate).HasDefaultValueSql("getdate()");
+
+                e.HasOne(e => e.SnusPunchUserModelOne)
+                    .WithMany()
+                        .HasForeignKey(e => e.SnusPunchUserModelIdOne)
+                            .OnDelete(DeleteBehavior.ClientCascade);
+
+                e.HasOne(e => e.SnusPunchUserModelTwo)
+                    .WithMany()
+                        .HasForeignKey(e => e.SnusPunchUserModelIdTwo)
+                            .OnDelete(DeleteBehavior.ClientCascade);
+
+                e.Property(e => e.NotificationActionEnum).HasConversion<string>().HasMaxLength(64);
+            });
 
             //No table, used in a query
             aModelBuilder.Entity<StatisticsTimePeriodResponseDto>(e =>
@@ -85,6 +108,7 @@ namespace SnusPunch.Data.DbContexts
             aModelBuilder.Entity<EntryCommentModel>(e =>
             {
                 e.ToTable("tblEntryComment");
+
                 e.HasKey(e => e.Id);
 
                 e.Property(c => c.CreateDate).HasDefaultValueSql("getdate()");
@@ -99,6 +123,12 @@ namespace SnusPunch.Data.DbContexts
                         .HasForeignKey(e => e.ParentCommentId)
                             .IsRequired(false)
                                 .OnDelete(DeleteBehavior.ClientCascade);
+
+                e.HasOne(e => e.SnusPunchUserModelRepliedTo)
+                    .WithMany()
+                        .HasForeignKey(e => e.SnusPunchUserModelIdRepliedTo)
+                            .IsRequired(false)
+                                .OnDelete(DeleteBehavior.NoAction);
             });
 
             aModelBuilder.Entity<EntryCommentLikeModel>(e =>
@@ -176,6 +206,12 @@ namespace SnusPunch.Data.DbContexts
                     .WithMany()
                         .HasForeignKey(e => e.FavoriteSnusId)
                             .OnDelete(DeleteBehavior.SetNull);
+
+                e.Property(e => e.EntryPrivacySetting).HasConversion<string>().HasMaxLength(32);
+                e.Property(c => c.CreateDate).HasDefaultValueSql("All");
+
+                e.Property(e => e.FriendPrivacySetting).HasConversion<string>().HasMaxLength(32);
+                e.Property(c => c.CreateDate).HasDefaultValueSql("All");
             });
 
             aModelBuilder.Entity<SnusModel>(e =>

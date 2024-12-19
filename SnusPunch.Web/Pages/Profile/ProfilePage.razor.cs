@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Components;
 using SnusPunch.Shared.Models.Auth;
 using SnusPunch.Shared.Models.Entry;
 using SnusPunch.Shared.Models.Pagination;
-using SnusPunch.Shared.Models.Snus;
 using SnusPunch.Web.Components;
 using SnusPunch.Web.Components.Entry;
 using SnusPunch.Web.Components.Friends;
@@ -57,9 +56,12 @@ namespace SnusPunch.Web.Pages.Profile
 
         private async Task GetEntries()
         {
-            var sResult = await EntryViewModel.GetEntriesPaginated(mPaginationParameters, mFetchEmptyPunches, EntryFilterEnum.All);
-            mPaginationMetaData = sResult.PaginationMetaData;
-            mEntryList = sResult.Items;
+            if(mSnusPunchUserProfileDto.IsAllowedToSeeEntries(AuthViewModel.UserInfoModel.UserName))
+            {
+                var sResult = await EntryViewModel.GetEntriesPaginated(mPaginationParameters, mFetchEmptyPunches, EntryFilterEnum.All);
+                mPaginationMetaData = sResult.PaginationMetaData;
+                mEntryList = sResult.Items;
+            }
         }
 
         private async Task FetchMoreEntries()
@@ -211,6 +213,14 @@ namespace SnusPunch.Web.Pages.Profile
                 mSnusPunchUserProfileDto.FriendshipStatusEnum = FriendshipStatusEnum.Friends;
                 mSnusPunchUserProfileDto.FriendsCount++;
                 mSnusPunchUserProfileDto.Friends.Insert(0, new SnusPunchUserDto { UserName = AuthViewModel.UserInfoModel.UserName, ProfilePictureUrl = AuthViewModel.UserInfoModel.ProfilePictureUrl });
+            }
+        }
+
+        private async Task DenyFriendRequest()
+        {
+            if (await UserViewModel.DenyFriendRequest(mSnusPunchUserProfileDto.UserName))
+            {
+                mSnusPunchUserProfileDto.FriendshipStatusEnum = FriendshipStatusEnum.None;
             }
         }
         #endregion

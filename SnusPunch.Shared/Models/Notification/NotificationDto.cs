@@ -1,34 +1,31 @@
-﻿using SnusPunch.Shared.Models.Pagination;
-
-namespace SnusPunch.Shared.Models.Entry
+﻿namespace SnusPunch.Shared.Models.Notification
 {
-    public class EntryCommentDto
+    public class NotificationDto
     {
-        public int Id { get; set; }
-        public int? ParentId { get; set; }
-        public string? UserNameAnswered { get; set; }
-        public string Comment { get; set; }
         public string UserName { get; set; }
         public string ProfilePictureUrl { get; set; }
-        public bool LikedByUser { get; set; }
-        public int Likes { get; set; }
-        public int ReplyCount { get; set; } 
+        public NotificationActionEnum NotificationType { get; set; }
+        public bool NotificationViewed { get; set; }
+        public int EntityId { get; set; }
         public DateTime CreateDate { get; set; }
 
-        //Replies
-        public PaginationParameters ReplyPaginationParemeters { get; set; } = new PaginationParameters
+        public override string ToString()
         {
-            SortPropertyName = "CreateDate",
-            SortOrder = SortOrderEnum.Ascending,
-            PageSize = 5
-        };
-        public PaginationMetaData ReplyPaginationMetaData { get; set; } = null;
-        public List<EntryCommentDto> Replies { get; set; } = new List<EntryCommentDto>();
+            if(NotificationType == NotificationActionEnum.EntryLike)
+            {
+                return "har gillat ditt inlägg";
+            }
+            else if (NotificationType == NotificationActionEnum.CommentLike)
+            {
+                return "har gillat din kommentar";
+            }
+            else if (NotificationType == NotificationActionEnum.Comment)
+            {
+                return "har kommenterat ditt inlägg";
+            }
 
-        //Reply
-        public bool ShowReplyInput { get; set; } = false;
-        public string ReplyInput { get; set; }
-
+            return "";
+        }
 
         public string GetTimeAgo()
         {
@@ -63,16 +60,6 @@ namespace SnusPunch.Shared.Models.Entry
                 var sYears = (int)(sTimeDifference.TotalDays / 365);
                 return $"{sYears} år";
             }
-        }
-
-        public string GetLikesString()
-        {
-            return Likes == 1 ? "1 like" : $"{Likes} likes";
-        }
-
-        public string GetCommentsString()
-        {
-            return $"{ReplyCount} svar";
         }
     }
 }

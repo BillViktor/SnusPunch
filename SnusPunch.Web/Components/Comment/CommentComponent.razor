@@ -10,7 +10,16 @@
     <div class="full-width">
         <div class="row align-items-center">
             <div class="comment-card">
-                <p class="mn">@Comment.UserName</p>
+                <p class="mn">
+                    @if (Comment.UserNameAnswered != null)
+                    {
+                        <p class="mn"><a title="Klicka för att se @(Comment.UserName)'s profil!" href="@($"Profile/{Comment.UserName}")">@Comment.UserName</a> => <a title="Klicka för att se @(Comment.UserNameAnswered)'s profil!" href="@($"Profile/{Comment.UserNameAnswered}")">@Comment.UserNameAnswered</a></p>
+                    }
+                    else
+                    {
+                        <a title="Klicka för att se @(Comment.UserName)'s profil!" href="@($"Profile/{Comment.UserName}")">@Comment.UserName</a>
+                    }
+                </p>
                 <p class="comment-text">@Comment.Comment</p>
             </div>
 

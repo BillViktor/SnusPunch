@@ -25,13 +25,22 @@ namespace SnusPunch.Services.Snus
             mUserManager = aUserManager;
         }
 
-        public async Task<ResultModel<PaginationResponse<SnusPunchUserDto>>> GetUsersPaginated(PaginationParameters aPaginationParameters)
+        public async Task<ResultModel<PaginationResponse<SnusPunchUserDto>>> GetUsersPaginated(PaginationParameters aPaginationParameters, ClaimsPrincipal aClaimsPrincipal)
         {
             ResultModel<PaginationResponse<SnusPunchUserDto>> sResultModel = new ResultModel<PaginationResponse<SnusPunchUserDto>>();
 
             try
             {
-                sResultModel.ResultObject = await mSnusPunchRepository.GetUsersPaginated(aPaginationParameters);
+                var sCurrentUser = await mUserManager.GetUserAsync(aClaimsPrincipal);
+
+                if (sCurrentUser == null)
+                {
+                    sResultModel.AddError("Användaren hittades ej");
+                    sResultModel.Success = false;
+                    return sResultModel;
+                }
+
+                sResultModel.ResultObject = await mSnusPunchRepository.GetUsersPaginated(aPaginationParameters, sCurrentUser.Id);
             }
             catch (Exception aException)
             {

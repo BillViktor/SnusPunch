@@ -60,6 +60,18 @@ namespace SnusPunch.Web.Pages.Account
             _ = await sModal.Result;
         }
 
+        private async Task PrivacySettings()
+        {
+            var sOptions = new ModalOptions
+            {
+                DisableBackgroundCancel = true,
+                Size = ModalSize.Medium,
+                Position = ModalPosition.Middle
+            };
+            var sModal = Modal.Show<UpdatePrivacySettingsComponent>("Uppdatera sekretess", sOptions);
+            _ = await sModal.Result;
+        }
+
         private async Task ChangeEmail()
         {
             var sOptions = new ModalOptions

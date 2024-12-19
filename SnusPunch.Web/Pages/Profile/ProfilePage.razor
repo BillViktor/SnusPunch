@@ -1,5 +1,6 @@
 ﻿@page "/Profile/{UserName}"
 @using Microsoft.AspNetCore.Components.Authorization
+@using SnusPunch.Shared.Models.Auth
 @using SnusPunch.Shared.Models.Snus
 @using SnusPunch.Web.Components.Feed
 @layout FeedLayout
@@ -28,13 +29,19 @@
                         </p>
                     }
 
-                    <p>
-                        Stämplingar: @mSnusPunchUserProfileDto.EntryCount
-                    </p>
+                    @if (mSnusPunchUserProfileDto.IsAllowedToSeeEntries(AuthViewModel.UserInfoModel.UserName))
+                    {
+                        <p>
+                            Stämplingar: @mSnusPunchUserProfileDto.EntryCount
+                        </p>
+                    }
 
-                    <button class="text-button">
-                        <span>@mSnusPunchUserProfileDto.FriendsCount @(mSnusPunchUserProfileDto.FriendsCount == 1 ? "vän" : "vänner")</span>
-                    </button>
+                    @if (mSnusPunchUserProfileDto.IsAllowedToSeeFriendList(AuthViewModel.UserInfoModel.UserName))
+                    {
+                        <button class="text-button">
+                            <span>@mSnusPunchUserProfileDto.FriendsCount @(mSnusPunchUserProfileDto.FriendsCount == 1 ? "vän" : "vänner")</span>
+                        </button>
+                    }
                 </div>
 
             </div>
@@ -49,23 +56,24 @@
                 else
                 {
                     <div class="row gap-05">
-                        @if(mSnusPunchUserProfileDto.FriendshipStatusEnum == Shared.Models.Auth.FriendshipStatusEnum.None)
+                        @if(mSnusPunchUserProfileDto.FriendshipStatusEnum == FriendshipStatusEnum.None)
                         {
                             <button @onclick="async () => await AddFriend()">Lägg till vän</button>
                         }
-                        else if (mSnusPunchUserProfileDto.FriendshipStatusEnum == Shared.Models.Auth.FriendshipStatusEnum.Pending)
+                        else if (mSnusPunchUserProfileDto.FriendshipStatusEnum == FriendshipStatusEnum.Pending)
                         {
                             <button @onclick="async () => await RemoveFriendRequest()">Avbryt vänförfrågan</button>
                         }
-                        else if (mSnusPunchUserProfileDto.FriendshipStatusEnum == Shared.Models.Auth.FriendshipStatusEnum.Received)
+                        else if (mSnusPunchUserProfileDto.FriendshipStatusEnum == FriendshipStatusEnum.Received)
                         {
-                            <button @onclick="async () => await AcceptFriendRequest()">Acceptera @(UserName)'s vänförfrågan</button>
+                            <button @onclick="async () => await AcceptFriendRequest()">Acceptera vänförfrågan</button>
+                            <button @onclick="async () => await DenyFriendRequest()">Neka vänförfrågan</button>
                         }
-                        else if (mSnusPunchUserProfileDto.FriendshipStatusEnum == Shared.Models.Auth.FriendshipStatusEnum.Rejected)
+                        else if (mSnusPunchUserProfileDto.FriendshipStatusEnum == FriendshipStatusEnum.Rejected)
                         {
                             <button disabled>Vänförfrågan nekad</button>
                         }
-                        else if (mSnusPunchUserProfileDto.FriendshipStatusEnum == Shared.Models.Auth.FriendshipStatusEnum.Friends)
+                        else if (mSnusPunchUserProfileDto.FriendshipStatusEnum == FriendshipStatusEnum.Friends)
                         {
                             <button @onclick="async () => await RemoveFriend()">Ta bort vän</button>
                         }
@@ -81,68 +89,88 @@
     <div class="row mt-1 gap-1">
         <div style="width: 40%">
             <div class="content">
-                <div class="row justify-content-between">
-                    <h3>Senaste Foton</h3>
-
-                    <button @onclick="ShowAllPhotos" class="text-button">
-                        Visa alla foton
-                    </button>
-                </div>
-
-                @if (mSnusPunchUserProfileDto.PhotoEntries.Count == 0)
+                @if (mSnusPunchUserProfileDto.IsAllowedToSeeEntries(AuthViewModel.UserInfoModel.UserName))
                 {
-                    <p>@mSnusPunchUserProfileDto.UserName har inte laddat upp några foton.</p>
+                    <div class="row justify-content-between">
+                        <h3>Senaste Foton</h3>
+
+                        <button @onclick="ShowAllPhotos" class="text-button">
+                            Visa alla foton
+                        </button>
+                    </div>
+
+                    @if (mSnusPunchUserProfileDto.PhotoEntries.Count == 0)
+                    {
+                        <p>@mSnusPunchUserProfileDto.UserName har inte laddat upp några foton.</p>
+                    }
+                    else
+                    {
+                        <div class="flex-row">
+                            @foreach (var sPhoto in mSnusPunchUserProfileDto.PhotoEntries)
+                            {
+                                <button @onclick="async () => await ShowEntry(sPhoto)" class="text-button" style="width: calc(33.33% - 0.5rem);">
+                                    <img class="image-square-profile-page" src="@sPhoto.PhotoUrl" />
+                                </button>
+                            }
+                        </div>
+                    }
                 }
                 else
                 {
-                    <div class="flex-row">
-                        @foreach (var sPhoto in mSnusPunchUserProfileDto.PhotoEntries)
-                        {
-                            <button @onclick="async () => await ShowEntry(sPhoto)" class="text-button" style="width: calc(33.33% - 0.5rem);">
-                                <img class="image-square-profile-page" src="@sPhoto.PhotoUrl" />
-                            </button>
-                        }
-                    </div>
+                    <h3>Senaste Foton</h3>
+                    <p>@(mSnusPunchUserProfileDto.UserName)'s inlägg är privata.</p>
                 }
             </div>
 
             <div class="content mt-1">
-                <div class="row justify-content-between">
-                    <h3>Senaste Vänner</h3>
-
-                    <button @onclick="ShowAllFriends" class="text-button">
-                        Visa alla vänner
-                    </button>
-                </div>
-
-                <span>@mSnusPunchUserProfileDto.FriendsCount @(mSnusPunchUserProfileDto.FriendsCount == 1 ? "vän" : "vänner")</span>
-
-                @if(mSnusPunchUserProfileDto.Friends.Count == 0)
+                @if (mSnusPunchUserProfileDto.IsAllowedToSeeFriendList(AuthViewModel.UserInfoModel.UserName))
                 {
-                    @if (AuthViewModel.UserInfoModel.UserName != mSnusPunchUserProfileDto.UserName)
+                    <div class="row justify-content-between">
+                        <h3>Senaste Vänner</h3>
+
+                        <button @onclick="ShowAllFriends" class="text-button">
+                            Visa alla vänner
+                        </button>
+
+                    </div>
+
+                    <span>@mSnusPunchUserProfileDto.FriendsCount @(mSnusPunchUserProfileDto.FriendsCount == 1 ? "vän" : "vänner")</span>
+
+                    @if (mSnusPunchUserProfileDto.Friends.Count == 0)
                     {
-                        <p>
-                            @mSnusPunchUserProfileDto.UserName har inga vänner! Ska du bli den första?
-                        </p>
+                        @if (AuthViewModel.UserInfoModel.UserName != mSnusPunchUserProfileDto.UserName)
+                        {
+                            <p>
+                                @mSnusPunchUserProfileDto.UserName har inga vänner! Ska du bli den första?
+                            </p>
+                        }
+                        else
+                        {
+                            <p>Du har inga vänner! :(</p>
+                        }
+
                     }
                     else
                     {
-                        <p>Du har inga vänner! :(</p>
+                        <div class="flex-row">
+                            @foreach (var sFriend in mSnusPunchUserProfileDto.Friends)
+                            {
+                                <a href="Profile/@sFriend.UserName" style="width: calc(33.33% - 0.5rem);">
+                                    <img class="friend-square-profile-page" src="@sFriend.ProfilePictureUrl" />
+                                    <br />
+                                    <span>@sFriend.UserName</span>
+                                </a>
+                            }
+                        </div>
                     }
-                    
                 }
                 else
                 {
-                    <div class="flex-row">
-                        @foreach (var sFriend in mSnusPunchUserProfileDto.Friends)
-                        {
-                            <a href="Profile/@sFriend.UserName" style="width: calc(33.33% - 0.5rem);">
-                                <img class="friend-square-profile-page" src="@sFriend.ProfilePictureUrl" />
-                                <br />
-                                <span>@sFriend.UserName</span>
-                            </a>
-                        }
-                    </div>
+                    <h3>Senaste vänner</h3>
+
+                    <p>
+                        @(mSnusPunchUserProfileDto.UserName)'s vänlista är privat.
+                    </p>
                 }
             </div>
         </div>
@@ -151,23 +179,33 @@
             <div class="row content justify-content-between">
                 <h3>Inlägg</h3>
 
-                <div class="row align-items-center gap-05">
-                    <label for="fetchEmptyPunches">Visa tomma inlägg</label>
-                    <input @bind="mFetchEmptyPunches" @bind:after="async () => await ToggleEmpty()" class="checkbox" type="checkbox" id="fetchEmptyPunches" />
-                </div>
+                @if (mSnusPunchUserProfileDto.IsAllowedToSeeEntries(AuthViewModel.UserInfoModel.UserName))
+                {
+                    <div class="row align-items-center gap-05">
+                        <label for="fetchEmptyPunches">Visa tomma inlägg</label>
+                        <input @bind="mFetchEmptyPunches" @bind:after="async () => await ToggleEmpty()" class="checkbox" type="checkbox" id="fetchEmptyPunches" />
+                    </div>
+                }
             </div>
 
             <div class="content mt-1">
                 <!-- Visar alla inlägg -->
-                <EntryListComponent EntryList="mEntryList" />
+                @if (mSnusPunchUserProfileDto.IsAllowedToSeeEntries(AuthViewModel.UserInfoModel.UserName))
+                {
+                    <EntryListComponent EntryList="mEntryList" />
 
-                <div class="mt-1 row justify-content-between">
-                    @if ((mPaginationMetaData?.TotalCount ?? 0) > mEntryList.Count)
-                    {
-                        <button @onclick="async () => await FetchMoreEntries()" class="text-button">Visa fler inlägg</button>
-                    }
-                    <span>Visar @mEntryList.Count av @(mPaginationMetaData?.TotalCount ?? 0) inlägg</span>
-                </div>
+                    <div class="mt-1 row justify-content-between">
+                        @if ((mPaginationMetaData?.TotalCount ?? 0) > mEntryList.Count)
+                        {
+                            <button @onclick="async () => await FetchMoreEntries()" class="text-button">Visa fler inlägg</button>
+                        }
+                        <span>Visar @mEntryList.Count av @(mPaginationMetaData?.TotalCount ?? 0) inlägg</span>
+                    </div>
+                }
+                else
+                {
+                    <p>@(mSnusPunchUserProfileDto.UserName)'s inlägg är privata.</p>
+                }
             </div>
         </div>
     </div>

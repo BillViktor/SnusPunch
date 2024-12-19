@@ -21,6 +21,10 @@ namespace SnusPunch.Data.Models.Entry
         public int? ParentCommentId { get; set; }
         public EntryCommentModel? ParentComment { get; set; }
 
+        //If replying to a reply, which user is it?
+        public string? SnusPunchUserModelIdRepliedTo { get; set; }
+        public SnusPunchUserModel? SnusPunchUserModelRepliedTo { get; set; }
+
         //Replies
         public List<EntryCommentModel> Replies { get; set; } = new List<EntryCommentModel>();
 

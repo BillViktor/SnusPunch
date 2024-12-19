@@ -3,8 +3,10 @@ using Blazored.Toast;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
+using Microsoft.AspNetCore.SignalR.Client;
 using SnusPunch.Web;
 using SnusPunch.Web.Clients;
+using SnusPunch.Web.Clients.Notification;
 using SnusPunch.Web.Clients.Snus;
 using SnusPunch.Web.Identity;
 using SnusPunch.Web.ViewModels;
@@ -47,6 +49,9 @@ builder.Services.AddScoped<EntryClient>();
 builder.Services.AddHttpClient(HttpClientEnum.Friend.ToString(), config => config.BaseAddress = new Uri(sBaseUrl + "Friend/")).AddHttpMessageHandler<CookieHandler>();
 builder.Services.AddScoped<FriendClient>();
 
+builder.Services.AddHttpClient(HttpClientEnum.Notification.ToString(), config => config.BaseAddress = new Uri(sBaseUrl + "Notification/")).AddHttpMessageHandler<CookieHandler>();
+builder.Services.AddScoped<NotificationClient>();
+
 builder.Services.AddHttpClient(HttpClientEnum.Snus.ToString(), config => config.BaseAddress = new Uri(sBaseUrl + "Snus/")).AddHttpMessageHandler<CookieHandler>();
 builder.Services.AddScoped<SnusClient>();
 
@@ -66,5 +71,6 @@ builder.Services.AddScoped<SnusViewModel>();
 builder.Services.AddScoped<StatisticsViewModel>();
 builder.Services.AddScoped<UserViewModel>();
 #endregion
+
 
 await builder.Build().RunAsync();

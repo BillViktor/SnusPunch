@@ -123,6 +123,10 @@ p {
     margin: 1rem 0;
 }
 
+b {
+    font-weight: bold;
+}
+
 /* Inputs */
 input {
     height: 2.5rem;
@@ -332,6 +336,17 @@ hr {
 
 .text-center {
     text-align: center;
+}
+
+.notification-not-viewed {
+    background-color: var(--primary-color);
+}
+
+.notification-row {
+    padding: 0.5rem;
+    display: flex;
+    align-items: center;
+
 }
 
 .text-end {
@@ -547,6 +562,12 @@ button:hover {
     padding: 0 0.5rem;
 }
 
+.dropdown-text-small {
+    font-size: 1rem !important;
+    margin: 0;
+    padding: 0 0.5rem;
+}
+
 .button-drop-down {
     background-color: transparent;
     font-size: 1.5rem !important;
@@ -571,6 +592,8 @@ button:hover {
     z-index: 1;
     padding: 1rem 0;
     right: 0;
+    max-height: 50vh;
+    overflow-y: auto;
 }
 
 .dropdown-content a, .dropdown-content button {
@@ -610,6 +633,10 @@ button:hover {
 }
 
 /* Images */
+.entry-image {
+    max-width: 100%;
+}
+
 .profile-picture-round {
     height: 2rem;
     width: 2rem;

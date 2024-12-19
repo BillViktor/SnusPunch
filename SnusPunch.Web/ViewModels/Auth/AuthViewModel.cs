@@ -95,6 +95,29 @@ namespace SnusPunch.Web.ViewModels.Snus
             await mCookieAuthenticationStateProvider.CheckAuthenticatedAsync();
         }
 
+        public async Task<bool> UpdatePrivacySettings(UpdatePrivacySettingsRequestModel aUpdatePrivacySettingsRequestModel)
+        {
+            bool sSuccess = true;
+            IsBusy = true;
+
+            var sResult = await mAuthClient.UpdatePrivacySettings(aUpdatePrivacySettingsRequestModel);
+
+            if (!sResult.Success)
+            {
+                Errors.AddRange(sResult.Errors);
+                sSuccess = false;
+            }
+            else
+            {
+                UserInfoModel.EntryPrivacySettingEnum = aUpdatePrivacySettingsRequestModel.EntryPrivacySetting;
+                UserInfoModel.FriendPrivacySettingEnum = aUpdatePrivacySettingsRequestModel.FriendPrivacySetting;
+                SuccessMessages.Add("Sekretessinställningarna är nu uppdaterade!");
+            }
+
+            IsBusy = false;
+            return sSuccess;
+        }
+
 
         #region Email
         public async Task<bool> VerifyEmail(VerifyEmailRequest aVerifyEmailRequest)

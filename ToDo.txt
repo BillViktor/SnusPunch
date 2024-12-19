@@ -1,11 +1,10 @@
 SnusPunch ToDo:
 
 *Notifikationer*
-- Få en notis när man får en like eller en kommentar eller vänförfrågan 
-
-*Statistik*
-- Visa en bar chart på när man snusar på dagen
-- Visa statistik jämfört med förut, snusar man mer eller mindre?
+- Gör notis klickbar:
+- Inte skicka dubbla notiser
+- Ta bort notiser
+- Notis när någon svarar på ens kommentar
 
 *Integritet*
 - Kunna välja vilka som ska kunna se ens inlägg
@@ -14,6 +13,9 @@ SnusPunch ToDo:
 *Chatt*
 - Kunna chatta med andra användare
 
+*Statistik*
+- Visa en bar chart på när man snusar på dagen
+- Visa statistik jämfört med förut, snusar man mer eller mindre?
 
 *Misc*
 - Mobilanpassning (viktigt!)
@@ -21,3 +23,5 @@ SnusPunch ToDo:
 - Tagga folk i inlägg & kommentarer
 - Hashtags
 - Lägg till roller på användar-sidan
+- Lägg till return url
+- Kunna svara på en kommentar bättre (typ tagga en person)

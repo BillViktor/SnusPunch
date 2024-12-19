@@ -1,4 +1,5 @@
 ﻿using SnusPunch.Data.Models.Entry;
+using SnusPunch.Shared.Models.Auth;
 using SnusPunch.Shared.Models.Entry;
 using SnusPunch.Shared.Models.Pagination;
 using System.Linq.Expressions;
@@ -80,6 +81,7 @@ namespace SnusPunch.Data.Helpers
         {
             IQueryable<EntryModel> sQuery = aQuery;
 
+            //Vilka inlägg ska vi se?
             switch (aEntryFilterEnum)
             {
                 default:
@@ -93,10 +95,15 @@ namespace SnusPunch.Data.Helpers
                     break;
             }
 
+            //Ska tomma inlägg visas?
             if(!aFetchEmptyPunches)
             {
                 sQuery = sQuery.Where(x => x.PhotoUrl != null || x.Description != null);
             }
+
+            //Ta hänsyn till privacy settings
+            sQuery = sQuery.Where(x => x.SnusPunchUserModelId == aSnusPunchUserModelId || x.SnusPunchUserModel.EntryPrivacySetting == PrivacySettingEnum.All ||
+            (x.SnusPunchUserModel.EntryPrivacySetting == PrivacySettingEnum.Friends && (x.SnusPunchUserModel.FriendsAddedByUser.Any(x => x.SnusPunchUserModelTwoId == aSnusPunchUserModelId) || x.SnusPunchUserModel.FriendsAddedByOthers.Any(x => x.SnusPunchUserModelOneId == aSnusPunchUserModelId))));
 
             return sQuery;
         }

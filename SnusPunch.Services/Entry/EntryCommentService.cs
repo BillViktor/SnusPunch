@@ -1,11 +1,13 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using SnusPunch.Data.Models.Entry;
 using SnusPunch.Data.Models.Identity;
 using SnusPunch.Data.Repository;
+using SnusPunch.Services.NotificationService;
 using SnusPunch.Shared.Models.Entry;
-using SnusPunch.Shared.Models.Entry.Likes;
+using SnusPunch.Shared.Models.Notification;
 using SnusPunch.Shared.Models.Pagination;
 using SnusPunch.Shared.Models.ResultModel;
 using System.Security.Claims;
@@ -18,13 +20,15 @@ namespace SnusPunch.Services.Entry
         private readonly IConfiguration mConfiguration;
         private readonly SnusPunchRepository mSnusPunchRepository;
         private readonly UserManager<SnusPunchUserModel> mUserManager;
+        private readonly NotificationHub mNotificationHub;
 
-        public EntryCommentService(ILogger<EntryCommentService> aLogger, IConfiguration aConfiguration, SnusPunchRepository aSnusPunchRepository, UserManager<SnusPunchUserModel> aUserManager)
+        public EntryCommentService(ILogger<EntryCommentService> aLogger, IConfiguration aConfiguration, SnusPunchRepository aSnusPunchRepository, UserManager<SnusPunchUserModel> aUserManager, NotificationHub aNotificationHub)
         {
             mLogger = aLogger;
             mConfiguration = aConfiguration;
             mSnusPunchRepository = aSnusPunchRepository;
             mUserManager = aUserManager;
+            mNotificationHub = aNotificationHub;
         }
 
         public async Task<ResultModel<PaginationResponse<EntryCommentDto>>> GetEntryCommentsPaginated(PaginationParameters aPaginationParameters, int aEntryModelId, ClaimsPrincipal aClaimsPrincipal)
@@ -96,15 +100,47 @@ namespace SnusPunch.Services.Entry
                     return sResultModel;
                 }
 
+                string? sUserIdRepliedTo = null;
+                if(aAddEntryCommentDto.SnusPunchUserNameRepliedTo != null)
+                {
+                    var sUserRepliedTo = await mUserManager.Users.FirstOrDefaultAsync(x => x.UserName == aAddEntryCommentDto.SnusPunchUserNameRepliedTo);
+
+                    if (sUserRepliedTo == null)
+                    {
+                        sResultModel.Success = false;
+                        sResultModel.AddError("Användaren hittades ej.");
+                        return sResultModel;
+                    }
+
+                    sUserIdRepliedTo = sUserRepliedTo.Id;
+                }
+
                 EntryCommentModel sEntryCommentModel = new EntryCommentModel
                 {
                     EntryId = aAddEntryCommentDto.EntryModelId,
                     SnusPunchUserModelId = sUser.Id,
                     Comment = aAddEntryCommentDto.Comment,
-                    ParentCommentId = aAddEntryCommentDto.ParentId
+                    ParentCommentId = aAddEntryCommentDto.ParentId,
+                    SnusPunchUserModelIdRepliedTo = sUserIdRepliedTo
                 };
 
                 sResultModel.ResultObject = await mSnusPunchRepository.AddEntryComment(sEntryCommentModel);
+
+                //Skicka notis
+                var sEntry = await mSnusPunchRepository.GetEntryById(aAddEntryCommentDto.EntryModelId);
+                if (sUser.Id != sEntry.SnusPunchUserModelId)
+                {
+                    //Till den som gjort inlägget
+                    await mNotificationHub.AddNotification(sEntry.SnusPunchUserModelId, sUser.Id, NotificationActionEnum.Comment, sEntry.Id);
+                    await mNotificationHub.SendNotification(NotificationTypeEnum.EntryEvent, $"{sUser.UserName} har kommenterat ditt inlägg!", sEntry.SnusPunchUserModelId);
+                }
+
+                //Till den vars kommentar man svarade på, om man inte svarade sig själv
+                if (sUserIdRepliedTo != null && sUserIdRepliedTo != sUser.Id)
+                {
+                    await mNotificationHub.AddNotification(sUserIdRepliedTo, sUser.Id, NotificationActionEnum.CommentAnswered, sEntry.Id);
+                    await mNotificationHub.SendNotification(NotificationTypeEnum.EntryEvent, $"{sUser.UserName} har svarat på din kommentar!", sUserIdRepliedTo);
+                }
             }
             catch (Exception aException)
             {

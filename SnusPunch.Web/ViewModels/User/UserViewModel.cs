@@ -1,7 +1,9 @@
 ﻿using SnusPunch.Shared.Models.Auth;
+using SnusPunch.Shared.Models.Notification;
 using SnusPunch.Shared.Models.Pagination;
-using SnusPunch.Shared.Models.Snus;
+using SnusPunch.Web.Clients.Notification;
 using SnusPunch.Web.Clients.Snus;
+using System.Collections.Generic;
 
 namespace SnusPunch.Web.ViewModels.Snus
 {
@@ -9,10 +11,28 @@ namespace SnusPunch.Web.ViewModels.Snus
     {
         private readonly UserClient mUserClient;
         private readonly FriendClient mFriendClient;
-        public UserViewModel(UserClient aUserClient, FriendClient aFriendClient)
+        private readonly NotificationClient mNotificationClient;
+
+        //Friend requests
+        private List<FriendRequestDto> mFriendRequests = new List<FriendRequestDto>();
+        public List<FriendRequestDto> FriendRequests { get { return mFriendRequests; } set { SetValue(ref mFriendRequests, value); } }
+
+        //Notifications
+        private List<NotificationDto> mNofitications = new List<NotificationDto>();
+        private PaginationMetaData mNotificationPaginationMetaData = null;
+        private PaginationParameters mNotificationPaginationParameters = new PaginationParameters
+        {
+            PageSize = 10,
+        };
+        public List<NotificationDto> Notifications { get { return mNofitications; } set { SetValue(ref mNofitications, value); } }
+        public PaginationMetaData NotificationPaginationMetaData { get { return mNotificationPaginationMetaData; } set { SetValue(ref mNotificationPaginationMetaData, value); } }
+        public PaginationParameters NotificationPaginationParameters { get { return mNotificationPaginationParameters; } set { SetValue(ref mNotificationPaginationParameters, value); } }
+
+        public UserViewModel(UserClient aUserClient, FriendClient aFriendClient, NotificationClient aNotificationClient)
         {
             mUserClient = aUserClient;
             mFriendClient = aFriendClient;
+            mNotificationClient = aNotificationClient;
         }
 
         public async Task<PaginationResponse<SnusPunchUserDto>> GetUsersPaginated(PaginationParameters aPaginationParameters)
@@ -229,6 +249,81 @@ namespace SnusPunch.Web.ViewModels.Snus
             IsBusy = false;
 
             return sSuccess;
+        }
+
+        public async Task GetFriendRequests()
+        {
+            IsBusy = true;
+
+            var sResult = await mFriendClient.GetAllFriendRequests();
+
+            if (sResult.Success)
+            {
+                mFriendRequests = sResult.ResultObject;
+            }
+            else
+            {
+                AddError($"Kunde inte hämta vänförfrågningar!");
+            }
+
+            IsBusy = false;
+        }
+        #endregion
+
+
+        #region Notifications
+        public async Task GetNotificationsPaginated()
+        {
+            IsBusy = true;
+
+            var sResult = await mNotificationClient.GetNotificationsPaginated(mNotificationPaginationParameters);
+
+            if (!sResult.Success)
+            {
+                Errors.AddRange(sResult.Errors);
+            }
+            else
+            {
+                Notifications = sResult.ResultObject.Items;
+                NotificationPaginationMetaData =  sResult.ResultObject.PaginationMetaData;
+            }
+
+            IsBusy = false;
+        }
+
+        public async Task FetchMoreNotifications()
+        {
+            NotificationPaginationParameters.PageNumber++;
+
+            var sNotifications = await mNotificationClient.GetNotificationsPaginated(mNotificationPaginationParameters);
+
+            if(!sNotifications.Success)
+            {
+                Errors.AddRange(sNotifications.Errors);
+                return;
+            }
+
+            NotificationPaginationMetaData = sNotifications.ResultObject.PaginationMetaData;
+
+            Notifications.AddRange(sNotifications.ResultObject.Items);
+            Notifications = Notifications.Distinct().ToList();
+        }
+
+        public async Task<bool> SetAllNotificationsAsRead()
+        {
+            IsBusy = true;
+
+            var sResult = await mNotificationClient.SetAllNotificationsAsRead();
+
+            if (!sResult.Success)
+            {
+                Errors.AddRange(sResult.Errors);
+                IsBusy = false;
+                return false;
+            }
+
+            IsBusy = false;
+            return true;
         }
         #endregion
     }

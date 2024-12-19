@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SnusPunch.Data.DbContexts;
 
@@ -11,9 +12,11 @@ using SnusPunch.Data.DbContexts;
 namespace SnusPunch.Data.Migrations
 {
     [DbContext(typeof(SnusPunchDbContext))]
-    partial class SnusPunchDbContextModelSnapshot : ModelSnapshot
+    [Migration("20241217170939_CommentReply")]
+    partial class CommentReply
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -391,18 +394,8 @@ namespace SnusPunch.Data.Migrations
                     b.Property<bool>("EmailConfirmed")
                         .HasColumnType("bit");
 
-                    b.Property<string>("EntryPrivacySetting")
-                        .IsRequired()
-                        .HasMaxLength(32)
-                        .HasColumnType("nvarchar(32)");
-
                     b.Property<int?>("FavoriteSnusId")
                         .HasColumnType("int");
-
-                    b.Property<string>("FriendPrivacySetting")
-                        .IsRequired()
-                        .HasMaxLength(32)
-                        .HasColumnType("nvarchar(32)");
 
                     b.Property<bool>("LockoutEnabled")
                         .HasColumnType("bit");

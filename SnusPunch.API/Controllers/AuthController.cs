@@ -67,6 +67,13 @@ namespace SnusPunch.API.Controllers
             return await mAuthService.DeleteUser(aUserName);
         }
 
+        [Authorize]
+        [HttpPut("UpdatePrivacySettings")]
+        public async Task<ResultModel> UpdatePrivacySettings(UpdatePrivacySettingsRequestModel aUpdatePrivacySettingsRequestModel)
+        {
+            return await mAuthService.UpdatePrivacySettings(aUpdatePrivacySettingsRequestModel, User);
+        }
+
         #region Profile Picture
         [Authorize]
         [HttpPut("AddOrUpdateProfilePicture")]
